@@ -132,5 +132,8 @@ STATICFILES_DIRS = [
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+#Custom user
+AUTH_USER_MODEL = 'api.User'
+
 # Activate Django-Heroku.
 django_heroku.settings(locals())

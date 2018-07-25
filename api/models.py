@@ -2,7 +2,17 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
-	pass
+	TYPE_CHOICES = (
+		('staff', 'Staff'),
+		('student', 'Student'),
+		('superadmin', 'Super Admin')
+	)
+	type_of_user = models.CharField(
+		max_length=11,
+		choices=TYPE_CHOICES,
+		blank=False,
+		null=False,
+	)
 
 # SuperAdmin
 class SuperAdmin(models.Model):
@@ -33,19 +43,9 @@ class Centre(models.Model):
 
 # Admins and Students
 class Profile(models.Model):
-	TYPE_CHOICES = (
-		('staff', 'Staff'),
-		('student', 'Student'),
-	)
 	user = models.OneToOneField(
 		User, 
 		on_delete=models.CASCADE,
-		blank=False,
-		null=False,
-	)
-	type_of_user = models.CharField(
-		max_length=11,
-		choices=TYPE_CHOICES,
 		blank=False,
 		null=False,
 	)

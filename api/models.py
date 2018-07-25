@@ -43,7 +43,7 @@ class User(AbstractUser):
 		null=False,
 	)
 
-# SuperAdmin
+# SuperAdmin - 1 for each institution
 class SuperAdmin(models.Model):
 	institution_name = models.CharField(max_length=99, blank=False, null=False)
 	user = models.OneToOneField(

@@ -1,8 +1,47 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
+
+class CustomUserManager(UserManager):
+    def create_user(self, username, email, password=None):
+        """
+        Creates and saves a User.
+        """
+        user = self.model(
+            username=username,
+            email=email
+        )
+
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email, password):
+        """
+        Creates and saves a superuser.
+        """
+        user = self.create_user(
+        	username=username,
+        	email=email,
+            password=password,
+        )
+        user.is_admin = True
+        user.save(using=self._db)
+        return user
 
 class User(AbstractUser):
-	pass
+	TYPE_CHOICES = (
+		('staff', 'Staff'),
+		('student', 'Student'),
+		('superadmin', 'Super Admin')
+	)
+
+	objects = CustomUserManager()
+	type_of_user = models.CharField(
+		max_length=11,
+		choices=TYPE_CHOICES,
+		blank=False,
+		null=False,
+	)
 
 # SuperAdmin
 class SuperAdmin(models.Model):
@@ -33,19 +72,9 @@ class Centre(models.Model):
 
 # Admins and Students
 class Profile(models.Model):
-	TYPE_CHOICES = (
-		('staff', 'Staff'),
-		('student', 'Student'),
-	)
 	user = models.OneToOneField(
 		User, 
 		on_delete=models.CASCADE,
-		blank=False,
-		null=False,
-	)
-	type_of_user = models.CharField(
-		max_length=11,
-		choices=TYPE_CHOICES,
 		blank=False,
 		null=False,
 	)

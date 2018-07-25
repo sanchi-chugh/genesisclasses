@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Nav from './components/Nav';
 import NavDrawer from './components/NavDrawer';
 import { loggedIn } from './auth';
+import LoginScreen from "./pages/LoginScreen";
 
 const drawerWidth = 240;
 const theme = createMuiTheme({
@@ -87,6 +88,12 @@ class App extends React.Component {
                     return isLoggedIn ?
                             <Home {...props} /> :
                             <Redirect to={"/login/"} />
+                  }
+                } />
+                <Route path={'/login/'} exact render={(props) => {
+                    return !isLoggedIn ?
+                            <LoginScreen {...props} /> :
+                            <Redirect to={"/home/"} />
                   }
                 } />
               </Switch>

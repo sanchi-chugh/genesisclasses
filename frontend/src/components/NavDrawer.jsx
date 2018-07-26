@@ -45,6 +45,7 @@ class NavDrawer extends Component {
           </div>        
         <Divider />
         <List component="nav">
+          {this.props.user? this.props.user.type : ''}
           <ListItem button onClick={() => this.goToPath('/home/')}>
             <ListItemText primary="Home"/>
           </ListItem>

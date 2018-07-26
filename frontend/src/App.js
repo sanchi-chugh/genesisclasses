@@ -3,6 +3,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import grey from '@material-ui/core/colors/grey';
+import axios from 'axios';
 import Home from './pages/Home';
 import Nav from './components/Nav';
 import NavDrawer from './components/NavDrawer';
@@ -56,12 +57,26 @@ class App extends React.Component {
     super(props);
     this.state = {
       drawerOpen: false,
+      user: null,
     }
+    this.getUser = this.getUser.bind(this);
   }
 
   drawerToggle() {
-    console.log("called");
     this.setState({ drawerOpen: !this.state.drawerOpen });
+  }
+
+  componentWillMount() {
+    if (loggedIn())
+      this.getUser();
+  }
+
+  getUser(callBack) {
+    axios.get('/api-auth/user/',{
+      headers: {Authorization: `Token ${localStorage.token}`}
+    }).then((res) => {
+      this.setState({ user: res.data.profile }, callBack);
+    });
   }
 
   render() {
@@ -74,10 +89,14 @@ class App extends React.Component {
             {
               isLoggedIn ? (
                 <div>
-                  <Nav handleDrawerToggle={() => this.drawerToggle()} />
+                  <Nav
+                    handleDrawerToggle={() => this.drawerToggle()}
+                    user={this.state.user}
+                  />
                   <NavDrawer
                     drawerOpen={this.state.drawerOpen}
                     handleDrawerToggle={() => this.drawerToggle()}
+                    user={this.state.user}
                   />
                 </div>
               ) : ''
@@ -86,13 +105,13 @@ class App extends React.Component {
               <Switch>
                 <Route path={'/home/'} exact render={(props) => {
                     return isLoggedIn ?
-                            <Home {...props} /> :
+                            <Home {...props} user={this.state.user}/> :
                             <Redirect to={"/login/"} />
                   }
                 } />
                 <Route path={'/login/'} exact render={(props) => {
                     return !isLoggedIn ?
-                            <LoginScreen {...props} /> :
+                            <LoginScreen {...props} getUser={this.getUser} /> :
                             <Redirect to={"/home/"} />
                   }
                 } />

@@ -1,21 +1,21 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import { login } from '../auth';
 
 const styles = theme => ({
   container: {
     width: '100%',
-    maxWidth : '450px',
+    maxWidth : '400px',
     marginLeft: 'auto',
     marginRight: 'auto',
+    marginTop: '50px',
+    marginBottom: '50px',
   },
   textField: {
     marginLeft: theme.spacing.unit,
@@ -23,20 +23,14 @@ const styles = theme => ({
     width: '80%',
   },
   card: {
-      minWidth: 275,
-    },
-    bullet: {
-      display: 'inline-block',
-      margin: '0 2px',
-      transform: 'scale(0.8)',
-    },
-    title: {
-      marginBottom: 16,
-      fontSize: 14,
-    },
-    pos: {
-      marginBottom: 12,
-    },
+    minWidth: '230px',
+    paddingTop: '30px',
+    paddingBottom: '50px',
+  },
+  button: {
+    width: '80%',
+    marginTop: '20px',
+  },
 });
 
 class LoginScreen extends React.Component {
@@ -44,72 +38,103 @@ class LoginScreen extends React.Component {
     super();
     this.state = {
         username : '',
-        password : ''
+        password : '',
+        error: false,
+        busy: false,
     }
   }
 
-setUsername(event){
-  this.setState({
-    username : event.target.value
-});
-}
+  setUsername(event){
+    this.setState({
+      username : event.target.value,
+      error: false,
+    });
+  }
 
-setPassword(event){
-  this.setState({
-    password : event.target.value
-});
-}
+  setPassword(event){
+    this.setState({
+      password : event.target.value,
+      error: false,
+    });
+  }
 
-userLogin(event){
+  userLogin(event){
     event.preventDefault();
-    console.log(this.state.username);
-    console.log(this.state.password);
-    console.log("FOrm submitted");
-    login(this.state.username, this.state.password);
-}
+    this.setState({ busy: true });
+    login(this.state.username, this.state.password, (isLoggedIn, res) => {
+      if (isLoggedIn)
+        this.props.getUser(() => this.props.history.push("/home/"));
+      else {
+        this.setState({ error: true, busy : false });
+      }
+    });
+  }
 
   render() {
-  const { classes } = this.props;
- return(
-<div className={classes.container} >
-   <Card className={classes.card}>
+    const { classes } = this.props;
+    return(
+      <div className={classes.container} >
+        <LinearProgress
+          style={
+            this.state.busy ? 
+              {visibility: 'visible'} :
+              {visibility: 'hidden'}
+            }
+          color="primary"
+        />
+        <Card className={classes.card}>
           <CardContent>
-<center>
-  <Typography variant="headline" component="h2">
-Login
-            </Typography>
-<form noValidate autoComplete="off">
-   <TextField
-             id="required"
-             label="Username"
-             defaultValue = ""
-             className={classes.textField}
-             margin="normal"
-             onChange = {(event) => this.setUsername(event)}
-           />
- <br />
-  <TextField
-           id="password-input"
-           label="Password"
-           className={classes.textField}
-           defaultValue = ""
-           type="password"
-           margin="normal"
-          onChange = {(event) => this.setPassword(event)}
-         />
-<br /> <br />
-         <Button variant="contained" color="primary" className={classes.button} onClick={(event) => this.userLogin(event)}>
-                 Login
-               </Button>
-  <p>Forgot Password?</p>
-</form>
-</center>
-
-</CardContent>
-</Card>
-</div>
-);
-}
+            <center>
+              <Typography variant="headline" component="h2">
+                Login
+              </Typography>
+              <Typography style={
+                this.state.error ? 
+                  {visibility: 'visible'} :
+                  {visibility: 'hidden'}
+                }
+              >
+                Invalid Credentials
+              </Typography>
+              <form noValidate autoComplete="off">
+                <TextField
+                  id="required"
+                  label="Username"
+                  defaultValue = ""
+                  className={classes.textField}
+                  margin="normal"
+                  onChange = {(event) => this.setUsername(event)}
+                  error={this.state.error}
+                />
+                <br />
+                <TextField
+                  id="password-input"
+                  label="Password"
+                  className={classes.textField}
+                  defaultValue = ""
+                  type="password"
+                  margin="normal"
+                  error={this.state.error}
+                  onChange = {(event) => this.setPassword(event)}
+                />
+                <br /> <br />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  className={classes.button}
+                  onClick={(event) => this.userLogin(event)}
+                  disabled={this.state.busy}
+                >
+                  Login
+                </Button>
+                <p>Forgot Password?</p>
+              </form>
+            </center>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 }
 
 export default withStyles(styles, { withTheme : true })(LoginScreen);

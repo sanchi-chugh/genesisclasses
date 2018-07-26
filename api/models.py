@@ -36,7 +36,10 @@ class User(AbstractUser):
         ('student', 'Student'),
         ('superadmin', 'Super Admin')
     )
+<<<<<<< HEAD
 
+=======
+>>>>>>> Improve login page
     objects = CustomUserManager()
     type_of_user = models.CharField(
         max_length=11,

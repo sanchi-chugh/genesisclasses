@@ -42,7 +42,7 @@ const styles = theme => ({
 class LoginScreen extends React.Component {
   constructor(props){
     super();
-    this.setState = {
+    this.state = {
         username : '',
         password : ''
     }
@@ -53,6 +53,7 @@ setUsername(event){
     username : event.target.value
 });
 }
+
 setPassword(event){
   this.setState({
     password : event.target.value
@@ -61,6 +62,9 @@ setPassword(event){
 
 userLogin(event){
     event.preventDefault();
+    console.log(this.state.username);
+    console.log(this.state.password);
+    console.log("FOrm submitted");
     login(this.state.username, this.state.password);
 }
 

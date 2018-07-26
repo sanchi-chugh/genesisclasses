@@ -25,6 +25,8 @@ class CustomUserManager(UserManager):
             password=password,
         )
         user.is_admin = True
+        user.is_staff = True
+        user.is_superuser = True
         user.save(using=self._db)
         return user
 
@@ -73,7 +75,7 @@ class Centre(models.Model):
 # Admins and Students
 class Profile(models.Model):
 	user = models.OneToOneField(
-		User, 
+		User,
 		on_delete=models.CASCADE,
 		blank=False,
 		null=False,

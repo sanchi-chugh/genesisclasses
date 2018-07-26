@@ -79,6 +79,10 @@ class App extends React.Component {
     });
   }
 
+  logout(callBack) {
+    this.setState({ user: null }, callBack);
+  }
+
   render() {
     const { classes } = this.props;
     const isLoggedIn = loggedIn();
@@ -97,6 +101,7 @@ class App extends React.Component {
                     drawerOpen={this.state.drawerOpen}
                     handleDrawerToggle={() => this.drawerToggle()}
                     user={this.state.user}
+                    logout={this.logout.bind(this)}
                   />
                 </div>
               ) : ''

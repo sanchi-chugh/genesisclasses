@@ -1,5 +1,5 @@
 from django.contrib import admin
-from api.models import Profile, User, SuperAdmin, Centre
+from api.models import User, Student, Staff, SuperAdmin, Centre
 from django import forms
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -81,9 +81,10 @@ class UserAdmin(BaseUserAdmin):
 admin.site.register(User, UserAdmin)
 admin.site.register(SuperAdmin)
 admin.site.register(Centre)
-admin.site.register(Profile)
 admin.site.register(Course)
 admin.site.register(Test)
 admin.site.register(Section)
 admin.site.register(TestQuestion)
 admin.site.register(Option)
+admin.site.register(Staff)
+admin.site.register(Student)

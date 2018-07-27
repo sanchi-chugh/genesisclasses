@@ -1,5 +1,6 @@
 from django.urls import path
+from api.views import CompleteProfileView
 
 urlpatterns = [
-    #path('auth', include('rest_auth.urls')),
+    path('complete-profile/<int:pk>/', CompleteProfileView.as_view()),
 ]

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
+import { Redirect } from 'react-router-dom';
 
 const styles = theme => ({
 });
@@ -8,13 +8,14 @@ const styles = theme => ({
 class Home extends Component {
   // const { classes } = props;
   render() {
-    return (
-      <div>
-        <Grid container spacing={24}>
-          {this.props.user ? this.props.user.type : 'NULL'}
-        </Grid>
-      </div>
-    );  
+    if (this.props.user ) {
+      const { user } = this.props;
+      if (user.type === 'student') {
+        if (!user.complete)
+          return <Redirect to="/complete-profile/" />
+      }
+    }
+    return (<div> nothing </div>)
   }  
 }
 

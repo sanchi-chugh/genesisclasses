@@ -13,6 +13,7 @@ import SendIcon from '@material-ui/icons/Send';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import StarBorder from '@material-ui/icons/StarBorder';
+import ExitToApp from '@material-ui/icons/ExitToApp';
 
 const styles = theme => ({
   root: {
@@ -70,6 +71,12 @@ class StudentMenu extends React.Component {
               </ListItem>
             </List>
           </Collapse>
+          <ListItem button onClick={this.props.logout}>
+            <ListItemIcon>
+              <ExitToApp />
+            </ListItemIcon>
+            <ListItemText inset primary="Logout" />
+          </ListItem>
         </List>
       </div>
     );

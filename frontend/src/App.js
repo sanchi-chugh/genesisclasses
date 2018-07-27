@@ -9,6 +9,7 @@ import Nav from './components/Nav';
 import NavDrawer from './components/NavDrawer';
 import { loggedIn } from './auth';
 import LoginScreen from "./pages/LoginScreen";
+import CompleteProfile from "./pages/CompleteProfile";
 
 const drawerWidth = 240;
 const theme = createMuiTheme({
@@ -74,8 +75,13 @@ class App extends React.Component {
   getUser(callBack) {
     axios.get('/api-auth/user/',{
       headers: {Authorization: `Token ${localStorage.token}`}
-    }).then((res) => {
-      this.setState({ user: res.data.profile }, callBack);
+    })
+    .then((res) => {
+      this.setState({ user: res.data.profile },
+                    () => { 
+                      if (callBack)
+                        callBack(res.data.profile) 
+                    });
     });
   }
 
@@ -85,13 +91,15 @@ class App extends React.Component {
 
   render() {
     const { classes } = this.props;
+    const { user } = this.state;
     const isLoggedIn = loggedIn();
+    const showNav = isLoggedIn && (user !== null && (user.type !== 'student' || user.complete));
     return (
       <MuiThemeProvider theme={theme}>
         <BrowserRouter>
           <div className={classes.root}>
             {
-              isLoggedIn ? (
+               showNav ? (
                 <div>
                   <Nav
                     handleDrawerToggle={() => this.drawerToggle()}
@@ -106,11 +114,20 @@ class App extends React.Component {
                 </div>
               ) : ''
             }
-            <div className={isLoggedIn ? classes.content : classes.content2}>
+            <div className={showNav ? classes.content : classes.content2}>
               <Switch>
                 <Route path={'/home/'} exact render={(props) => {
                     return isLoggedIn ?
                             <Home {...props} user={this.state.user}/> :
+                            <Redirect to={"/login/"} />
+                  }
+                } />
+                <Route path={'/complete-profile/'} exact render={(props) => {
+                    return isLoggedIn ?
+                            <CompleteProfile 
+                              {...props} 
+                              user={this.state.user}
+                            /> :
                             <Redirect to={"/login/"} />
                   }
                 } />

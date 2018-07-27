@@ -1,9 +1,14 @@
 from rest_framework import serializers
-from api.models import Profile, SuperAdmin
+from api.models import Student, Staff, SuperAdmin
 
-class ProfileSerializer(serializers.ModelSerializer):
+class StudentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Profile
+        model = Student
+        fields = '__all__'
+
+class StaffSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Staff
         fields = '__all__'
 
 class SuperAdminSerializer(serializers.ModelSerializer):

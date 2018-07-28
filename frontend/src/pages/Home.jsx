@@ -1,19 +1,22 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
+import { Redirect } from 'react-router-dom';
 
 const styles = theme => ({
 });
 
-const Home = (props) => {
-	// const { classes } = props;
-	return (
-		<div>
-			<Grid container spacing={24}>
-				
-			</Grid>
-		</div>
-	);
+class Home extends Component {
+  // const { classes } = props;
+  render() {
+    if (this.props.user ) {
+      const { user } = this.props;
+      if (user.type === 'student') {
+        if (!user.complete)
+          return <Redirect to="/complete-profile/" />
+      }
+    }
+    return (<div> nothing </div>)
+  }  
 }
 
 export default withStyles(styles, { withTheme: true })(Home);

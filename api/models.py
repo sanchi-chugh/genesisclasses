@@ -72,16 +72,15 @@ class Centre(models.Model):
         def __str__(self):
             return self.super_admin.institution_name + " (" + self.location + ")"
 
-# Admins and Students
-class Profile(models.Model):
+# Staff
+class Staff(models.Model):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         blank=False,
         null=False,
     )
-    # super_admin is used to determine the institution
-    super_admin = models.OneToOneField(
+    super_admin = models.ForeignKey(
         SuperAdmin,
         on_delete=models.CASCADE,
         blank=False,
@@ -155,3 +154,28 @@ class Option(models.Model):
     class Meta:
         def __str__(self):
             return self.title + '(' + self.test.title + ')'
+
+# Students
+class Student(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        blank=False,
+        null=False
+    )
+    complete = models.BooleanField(default=False)
+    # super_admin is used to determine the institution
+    full_name = models.CharField(max_length=50, blank=False)
+    father_name = models.CharField(max_length=50, blank=False)
+    contact_number = models.IntegerField(blank=False)
+    email = models.EmailField(blank=False)
+    image = models.ImageField(
+        upload_to = 'profileimgs/',
+        blank=False
+    )
+    super_admin = models.ForeignKey(
+        SuperAdmin,
+        on_delete=models.CASCADE,
+        blank=False,
+        null=False
+    )

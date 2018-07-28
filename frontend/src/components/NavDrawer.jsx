@@ -4,11 +4,11 @@ import { withStyles } from '@material-ui/core/styles';
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import Drawer from '@material-ui/core/Drawer';
 import Hidden from '@material-ui/core/Hidden';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Typography from '@material-ui/core/Typography';
+import SuperAdminMenu from './menus/SuperAdminMenu';
+import StaffMenu from './menus/StaffMenu';
+import StudentMenu from './menus/StudentMenu';
 
 const drawerWidth = 240;
 
@@ -32,6 +32,11 @@ class NavDrawer extends Component {
     this.props.history.push(path);
   }
 
+  logout() {
+    delete localStorage.token;
+    this.props.logout(() => this.goToPath('/login/'));
+  }
+
   render() {
     const { classes, theme } = this.props;
 
@@ -44,11 +49,15 @@ class NavDrawer extends Component {
             </Typography>
           </div>        
         <Divider />
-        <List component="nav">
-          <ListItem button onClick={() => this.goToPath('/home/')}>
-            <ListItemText primary="Home"/>
-          </ListItem>
-        </List>
+        {
+          this.props.user ? (
+            {
+              'superadmin': <SuperAdminMenu logout={this.logout.bind(this)} />,
+              'staff': <StaffMenu logout={this.logout.bind(this)} />,
+              'student': <StudentMenu logout={this.logout.bind(this)} />,
+            }[this.props.user.type]
+          ) : ''
+        }
       </div>
     );
     return (

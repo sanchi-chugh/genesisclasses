@@ -3,11 +3,13 @@ import { withStyles } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import grey from '@material-ui/core/colors/grey';
+import axios from 'axios';
 import Home from './pages/Home';
 import Nav from './components/Nav';
 import NavDrawer from './components/NavDrawer';
 import { loggedIn } from './auth';
 import LoginScreen from "./pages/LoginScreen";
+import CompleteProfile from "./pages/CompleteProfile";
 
 const drawerWidth = 240;
 const theme = createMuiTheme({
@@ -56,43 +58,82 @@ class App extends React.Component {
     super(props);
     this.state = {
       drawerOpen: false,
+      user: null,
     }
+    this.getUser = this.getUser.bind(this);
   }
 
   drawerToggle() {
-    console.log("called");
     this.setState({ drawerOpen: !this.state.drawerOpen });
+  }
+
+  componentWillMount() {
+    if (loggedIn())
+      this.getUser();
+  }
+
+  getUser(callBack) {
+    axios.get('/api-auth/user/',{
+      headers: {Authorization: `Token ${localStorage.token}`}
+    })
+    .then((res) => {
+      this.setState({ user: res.data.profile },
+                    () => { 
+                      if (callBack)
+                        callBack(res.data.profile) 
+                    });
+    });
+  }
+
+  logout(callBack) {
+    this.setState({ user: null }, callBack);
   }
 
   render() {
     const { classes } = this.props;
+    const { user } = this.state;
     const isLoggedIn = loggedIn();
+    const showNav = isLoggedIn && (user !== null && (user.type !== 'student' || user.complete));
     return (
       <MuiThemeProvider theme={theme}>
         <BrowserRouter>
           <div className={classes.root}>
             {
-              isLoggedIn ? (
+               showNav ? (
                 <div>
-                  <Nav handleDrawerToggle={() => this.drawerToggle()} />
+                  <Nav
+                    handleDrawerToggle={() => this.drawerToggle()}
+                    user={this.state.user}
+                  />
                   <NavDrawer
                     drawerOpen={this.state.drawerOpen}
                     handleDrawerToggle={() => this.drawerToggle()}
+                    user={this.state.user}
+                    logout={this.logout.bind(this)}
                   />
                 </div>
               ) : ''
             }
-            <div className={isLoggedIn ? classes.content : classes.content2}>
+            <div className={showNav ? classes.content : classes.content2}>
               <Switch>
                 <Route path={'/home/'} exact render={(props) => {
                     return isLoggedIn ?
-                            <Home {...props} /> :
+                            <Home {...props} user={this.state.user}/> :
+                            <Redirect to={"/login/"} />
+                  }
+                } />
+                <Route path={'/complete-profile/'} exact render={(props) => {
+                    return isLoggedIn ?
+                            <CompleteProfile 
+                              {...props} 
+                              user={this.state.user}
+                            /> :
                             <Redirect to={"/login/"} />
                   }
                 } />
                 <Route path={'/login/'} exact render={(props) => {
                     return !isLoggedIn ?
-                            <LoginScreen {...props} /> :
+                            <LoginScreen {...props} getUser={this.getUser} /> :
                             <Redirect to={"/home/"} />
                   }
                 } />

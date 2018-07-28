@@ -7,7 +7,5 @@ name = "pypi"
 django-rest-auth = "*"
 django-allauth = "*"
 
-[dev-packages]
-
 [requires]
 python_version = "3.6"

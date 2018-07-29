@@ -127,6 +127,7 @@ class App extends React.Component {
                             <CompleteProfile 
                               {...props} 
                               user={this.state.user}
+                              getUser={this.getUser}
                             /> :
                             <Redirect to={"/login/"} />
                   }

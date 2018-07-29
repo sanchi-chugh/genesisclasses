@@ -9,6 +9,16 @@ class CompleteProfileView(UpdateAPIView):
     def get_queryset(self, *args, **kwargs):
         return Student.objects.filter(user=self.request.user)
 
+    def put(self, request, *args, **kwargs):
+        response = super(CompleteProfileView, self).put(request,
+                                                    *args,
+                                                    **kwargs)
+        if response.status_code == 200:
+            obj = Student.objects.get(id=kwargs['pk'])
+            obj.complete = True
+            obj.save()
+        return response
+
 # To get the centres for the particular superadmin / institute that the student
 # belongs to.
 class CentreListView(ListAPIView):

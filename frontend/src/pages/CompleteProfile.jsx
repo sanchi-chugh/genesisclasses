@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import TextField from '@material-ui/core/TextField';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -10,6 +9,12 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import { Redirect } from 'react-router-dom';
+import {
+    ValidatorForm,
+    TextValidator
+  } from 'react-material-ui-form-validator';
 
 const styles = theme => ({
     textField: {
@@ -31,8 +36,9 @@ const styles = theme => ({
       maxWidth: '500px',
       marginLeft: 'auto',
       marginRight: 'auto',
-      marginTop: 'calc(5%)',
+      marginTop: 'calc(2%)',
       height: '600px',
+      minWidth: '250px',
     },
     paper: {
       padding: '40px',
@@ -47,7 +53,7 @@ const styles = theme => ({
       height: '150px',
       borderRadius: '50%',
       cursor: 'pointer',
-      margin: '20px',
+      marginTop: '20px',
       boxShadow: '0px 0px 5px 1px rgba(42, 42, 42, 1)',
     },
     imageFile: {
@@ -64,15 +70,9 @@ class CompleteProfile extends Component {
     centre: '',
     centreList: [],
     courseList: [],
-    errors: {
-      first_name: null,
-      last_name: null,
-      father_name: null,
-      centre: null,
-      course: null,
-      email: null,
-      contact_number: null,
-    }
+    centreError: false,
+    courseError: false,
+    imageError: false,
   }
  
   componentWillMount() {
@@ -89,6 +89,7 @@ class CompleteProfile extends Component {
     this.setState({
       file: URL.createObjectURL(event.target.files[0]),
       profilePic: event.target.files[0],
+      imageError: false,
     })
   }
 
@@ -98,6 +99,8 @@ class CompleteProfile extends Component {
 
   handleSubmit(event) {
     event.preventDefault();
+    if (this.state.imageError || this.state.courseError || this.state.centreError)
+      return
     let formdata = new FormData(event.target);
     formdata.append('user', this.props.user.user);
     formdata.append('super_admin', this.props.user.super_admin);
@@ -109,8 +112,8 @@ class CompleteProfile extends Component {
     this.setState({ busy: true }, () => {
       axios.put(`/api/complete-profile/${this.props.user.id}/`, formdata, config)
       .then((res) => {
-        console.log(res);
         this.setState({ busy: false });
+        this.props.getUser(() => this.props.history.push("/home/"));
       })
       .catch((err) => {
         console.log(err);
@@ -126,6 +129,7 @@ class CompleteProfile extends Component {
     if (name === 'centre') {
       this.setState({
         [name]: value,
+        centreError: false,
         courseList: (
           this.state.centreList.find(centre => {
             return centre.id === target.value
@@ -133,12 +137,32 @@ class CompleteProfile extends Component {
       });
     } else {
       this.setState({
-        [name]: value
+        [name]: value,
+        courseError: false,
       });
     }
   }
 
+  validateSelects(event) {
+    let centreError = this.state.centre === '';
+    let courseError = this.state.course === '';
+    let imageError = this.state.profilePic === null;
+    if(courseError || centreError || imageError)
+      this.setState({
+        courseError,
+        centreError,
+        imageError
+      });
+    //this.refs.form.submit();
+  }
+
+  onChangeErrorHandler = (event) => {
+    this.setState({ [event.target.name]: event.target.value, });
+  }
+
   render() {
+    if(this.props.user && this.props.user.complete)
+      return <Redirect to={"/home/"} />
     const { classes } = this.props;
     return (
       <div className={classes.container}>
@@ -154,7 +178,7 @@ class CompleteProfile extends Component {
         <Typography align="center">
           Complete your profile to continue
         </Typography>
-        <form onSubmit={this.handleSubmit.bind(this)}>
+        <ValidatorForm onSubmit={this.handleSubmit.bind(this)} ref="form">
           <center>
             <img
               src={this.state.file}
@@ -162,6 +186,16 @@ class CompleteProfile extends Component {
               alt="error"
               onClick={this.openFileDialog.bind(this)}
             />
+            {
+              this.state.imageError
+              ? (
+                  <FormHelperText
+                    style={{ color: 'red', textAlign: 'center' }}
+                  >
+                    image is required
+                  </FormHelperText>
+                ) : ''
+            }
           </center>
           <input
             type="file"
@@ -170,23 +204,35 @@ class CompleteProfile extends Component {
             ref="profilepic"
             name="image"
           />
-          <TextField
+          <TextValidator
             label={"First Name"}
             className={classes.textFieldLeftHalf}
             margin="normal"
             name="first_name"
+            value={this.state.first_name}
+            onChange={this.onChangeErrorHandler}
+            validators={['required']}
+            errorMessages={['this field is required',]}
           />
-          <TextField
+          <TextValidator
             label={"Last Name"}
             className={classes.textFieldRightHalf}
             margin="normal"
             name="last_name"
+            value={this.state.last_name}
+            onChange={this.onChangeErrorHandler}
+            validators={['required']}
+            errorMessages={['this field is required',]}
           />
-          <TextField
+          <TextValidator
             label={"Father's Name"}
             className={classes.textField}
             margin="normal"
             name="father_name"
+            value={this.state.father_name}
+            onChange={this.onChangeErrorHandler}
+            validators={['required']}
+            errorMessages={['this field is required',]}
           />
           <FormControl className={classes.textField}>
             <InputLabel htmlFor="centre">Centre</InputLabel>
@@ -198,6 +244,7 @@ class CompleteProfile extends Component {
                 name: 'centre',
                 onChange: this.handleInputChange.bind(this),
               }}
+              error={this.state.centreError}
             >
               {
                 this.state.centreList.map((centre) => 
@@ -210,6 +257,14 @@ class CompleteProfile extends Component {
                 )
               }
             </Select>
+            { 
+              this.state.centreError
+                ? (
+                    <FormHelperText style={{color: 'red'}}>
+                      this field is required
+                    </FormHelperText>
+                ) : ''
+            }
           </FormControl>
           <FormControl className={classes.textField}>
             <InputLabel htmlFor="course">Course</InputLabel>
@@ -221,6 +276,7 @@ class CompleteProfile extends Component {
                 name: 'course',
                 onChange: this.handleInputChange.bind(this),
               }}
+              error={this.state.courseError}
             >
               {
                 this.state.courseList.map((course) => 
@@ -233,18 +289,34 @@ class CompleteProfile extends Component {
                 )
               }
             </Select>
+            { 
+              this.state.courseError
+                ? (
+                    <FormHelperText style={{color: 'red'}}>
+                      this field is required
+                    </FormHelperText>
+                ) : ''
+            }
           </FormControl>
-          <TextField
+          <TextValidator
             label={"E-mail Address"}
             className={classes.textField}
             margin="normal"
             name="email"
+            value={this.state.email}
+            onChange={this.onChangeErrorHandler}
+            validators={['required', 'isEmail']}
+            errorMessages={['this field is required', 'email is invalid',]}
           />
-          <TextField
+          <TextValidator
             label={"Contact Number"}
             className={classes.textField}
             margin="normal"
             name="contact_number"
+            value={this.state.contact_number}
+            onChange={this.onChangeErrorHandler}
+            validators={['required']}
+            errorMessages={['this field is required',]}
           />
           <Button
             type="submit"
@@ -252,10 +324,11 @@ class CompleteProfile extends Component {
             color="primary"
             className={classes.button}
             disabled={this.state.busy}
+            onClick={this.validateSelects.bind(this)}
           >
             Submit
           </Button>
-        </form>
+        </ValidatorForm>
       </Paper>
       </div>
     );

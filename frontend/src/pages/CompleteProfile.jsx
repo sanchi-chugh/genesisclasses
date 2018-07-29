@@ -6,6 +6,10 @@ import Typography from '@material-ui/core/Typography';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Button from '@material-ui/core/Button';
 import axios from 'axios';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
 
 const styles = theme => ({
     textField: {
@@ -14,6 +18,13 @@ const styles = theme => ({
       marginTop: '10px',
       marginBottom: '10px',
       width: '100%',
+    },
+    textFieldLeftHalf: {
+      width: '47%',
+    },
+    textFieldRightHalf: {
+      width: '47%',
+      marginLeft: '6%',
     },
     container: {
       width: '90%',
@@ -48,17 +59,37 @@ class CompleteProfile extends Component {
   state = {
     busy: false,
     file: '/static/img/profile.png',
+    course: '',
     profilePic: null,
+    centre: '',
+    centreList: [],
+    courseList: [],
+    errors: {
+      first_name: null,
+      last_name: null,
+      father_name: null,
+      centre: null,
+      course: null,
+      email: null,
+      contact_number: null,
+    }
+  }
+ 
+  componentWillMount() {
+    axios.get('/api/centres/', {
+      headers: {
+        "Authorization": `Token ${localStorage.token}`
+      }
+    })
+    .then((res) => this.setState({ centreList: res.data }))
+    .catch((err) => console.log(err));
   }
 
-  handleChange(event) {
+  handleFileChange(event) {
     this.setState({
       file: URL.createObjectURL(event.target.files[0]),
-      fullName: null,
-      fatherName: null,
       profilePic: event.target.files[0],
     })
-    console.log(event.target.files);
   }
 
   openFileDialog(event) {
@@ -67,18 +98,16 @@ class CompleteProfile extends Component {
 
   handleSubmit(event) {
     event.preventDefault();
-    const data = {
-      "full_name": this.state.fullName,
-      "father_name": this.state.fatherName,
-      "image": this.state.profilePic,
+    let formdata = new FormData(event.target);
+    formdata.append('user', this.props.user.user);
+    formdata.append('super_admin', this.props.user.super_admin);
+    const config = {
+      headers: {
+        "Authorization": `Token ${localStorage.token}`,
+      }
     }
     this.setState({ busy: true }, () => {
-      axios.put('/api/complete-profile/2/', data, {
-        headers: {
-          "Authorization": `Token ${localStorage.token}`,
-          "content-type": "multipart/form-data;",
-        }
-      })
+      axios.put(`/api/complete-profile/${this.props.user.id}/`, formdata, config)
       .then((res) => {
         console.log(res);
         this.setState({ busy: false });
@@ -93,11 +122,22 @@ class CompleteProfile extends Component {
   handleInputChange(event) {
     const target = event.target;
     const value = target.value;
-    const name = target.id;
-    this.setState({
-      [name]: value
-    });
+    const name = target.name;
+    if (name === 'centre') {
+      this.setState({
+        [name]: value,
+        courseList: (
+          this.state.centreList.find(centre => {
+            return centre.id === target.value
+          }).course_set), 
+      });
+    } else {
+      this.setState({
+        [name]: value
+      });
+    }
   }
+
   render() {
     const { classes } = this.props;
     return (
@@ -126,23 +166,85 @@ class CompleteProfile extends Component {
           <input
             type="file"
             className={classes.imageFile}
-            onChange={this.handleChange.bind(this)}
+            onChange={this.handleFileChange.bind(this)}
             ref="profilepic"
-            id="image"
+            name="image"
           />
           <TextField
-            label={"Name"}
-            className={classes.textField}
+            label={"First Name"}
+            className={classes.textFieldLeftHalf}
             margin="normal"
-            id="fullName"
-            onChange={this.handleInputChange.bind(this)}
+            name="first_name"
+          />
+          <TextField
+            label={"Last Name"}
+            className={classes.textFieldRightHalf}
+            margin="normal"
+            name="last_name"
           />
           <TextField
             label={"Father's Name"}
             className={classes.textField}
             margin="normal"
-            id="fatherName"
-            onChange={this.handleInputChange.bind(this)}
+            name="father_name"
+          />
+          <FormControl className={classes.textField}>
+            <InputLabel htmlFor="centre">Centre</InputLabel>
+            <Select
+              value={this.state.centre}
+              label={"Centre"}
+              disabled={this.state.centreList.length === 0}
+              inputProps={{
+                name: 'centre',
+                onChange: this.handleInputChange.bind(this),
+              }}
+            >
+              {
+                this.state.centreList.map((centre) => 
+                  <MenuItem
+                    value={centre.id}
+                    key={centre.id}
+                  >
+                    {centre.location}
+                  </MenuItem>
+                )
+              }
+            </Select>
+          </FormControl>
+          <FormControl className={classes.textField}>
+            <InputLabel htmlFor="course">Course</InputLabel>
+            <Select
+              value={this.state.course}
+              label={"Course"}
+              disabled={this.state.courseList.length === 0}
+              inputProps={{
+                name: 'course',
+                onChange: this.handleInputChange.bind(this),
+              }}
+            >
+              {
+                this.state.courseList.map((course) => 
+                  <MenuItem
+                    value={course.id}
+                    key={course.id}
+                  >
+                    {course.title}
+                  </MenuItem>
+                )
+              }
+            </Select>
+          </FormControl>
+          <TextField
+            label={"E-mail Address"}
+            className={classes.textField}
+            margin="normal"
+            name="email"
+          />
+          <TextField
+            label={"Contact Number"}
+            className={classes.textField}
+            margin="normal"
+            name="contact_number"
           />
           <Button
             type="submit"

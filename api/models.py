@@ -47,7 +47,7 @@ class User(AbstractUser):
 
 # SuperAdmin - 1 for each institution
 class SuperAdmin(models.Model):
-    institution_name = models.CharField(max_length=99, blank=False, null=False)
+    institution_name = models.CharField(max_length=99, blank=False, null=True)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -55,7 +55,7 @@ class SuperAdmin(models.Model):
         null=False
     )
     def __str__(self):
-        return self.institution_name
+        return str(self.institution_name)
 
 class Centre(models.Model):
     location = models.CharField(max_length=100)
@@ -84,29 +84,29 @@ class Staff(models.Model):
         User,
         on_delete=models.CASCADE,
         blank=False,
-        null=False,
+        null=True,
     )
     name = models.CharField(max_length=50)
     super_admin = models.ForeignKey(
         SuperAdmin,
         on_delete=models.CASCADE,
         blank=False,
-        null=False
+        null=True
     )
     course = models.ForeignKey(
         Course,
         on_delete=models.CASCADE,
         blank=False,
-        null=False
+        null=True
     )
     centre = models.ForeignKey(
         Centre,
         on_delete=models.CASCADE,
         blank=False,
-        null=False
+        null=True
     )
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 # Test Model : Each test will correspond to a specific course and each test will have atleast 1 section('Section 1' by default).
 class Test(models.Model):
@@ -172,32 +172,33 @@ class Student(models.Model):
     )
     complete = models.BooleanField(default=False)
     # super_admin is used to determine the institution
-    first_name = models.CharField(max_length=50, blank=False)
-    last_name = models.CharField(max_length=50, blank=False)
-    father_name = models.CharField(max_length=50, blank=False)
-    contact_number = models.IntegerField(blank=False)
-    email = models.EmailField(blank=False)
+    first_name = models.CharField(max_length=50, blank=False, null=True)
+    last_name = models.CharField(max_length=50, blank=False, null=True)
+    father_name = models.CharField(max_length=50, blank=False, null=True)
+    contact_number = models.IntegerField(blank=False, null=True)
+    email = models.EmailField(blank=False, null=True)
     course = models.ForeignKey(
         Course,
         on_delete=models.CASCADE,
         blank=False,
-        null=False,
+        null=True
     )
     image = models.ImageField(
         upload_to = 'profileimgs/',
-        blank=False
+        blank=False,
+        null=True
     )
     super_admin = models.ForeignKey(
         SuperAdmin,
         on_delete=models.CASCADE,
         blank=False,
-        null=False
+        null=True
     )
     centre = models.ForeignKey(
         Centre,
         on_delete=models.CASCADE,
         blank=False,
-        null=False
+        null=True
     )
     def __str__(self):
-        return self.first_name + " " + self.last_name
+        return str(self.first_name)

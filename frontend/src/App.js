@@ -10,6 +10,7 @@ import NavDrawer from './components/NavDrawer';
 import { loggedIn } from './auth';
 import LoginScreen from "./pages/LoginScreen";
 import CompleteProfile from "./pages/CompleteProfile";
+import PrivateRoute from './components/PrivateRoute';
 
 const drawerWidth = 240;
 const theme = createMuiTheme({
@@ -116,22 +117,23 @@ class App extends React.Component {
             }
             <div className={showNav ? classes.content : classes.content2}>
               <Switch>
-                <Route path={'/home/'} exact render={(props) => {
-                    return isLoggedIn ?
-                            <Home {...props} user={this.state.user}/> :
-                            <Redirect to={"/login/"} />
+                <PrivateRoute
+                  authed={isLoggedIn}
+                  path='/home'
+                  Child={(props) => 
+                    <Home {...props} user={this.state.user} />}
+                />
+                <PrivateRoute
+                  authed={isLoggedIn}
+                  path="/complete-profile/"
+                  Child = {(props) =>
+                    <CompleteProfile 
+                      {...props} 
+                      user={this.state.user}
+                      getUser={this.getUser}
+                    />
                   }
-                } />
-                <Route path={'/complete-profile/'} exact render={(props) => {
-                    return isLoggedIn ?
-                            <CompleteProfile 
-                              {...props} 
-                              user={this.state.user}
-                              getUser={this.getUser}
-                            /> :
-                            <Redirect to={"/login/"} />
-                  }
-                } />
+                />
                 <Route path={'/login/'} exact render={(props) => {
                     return !isLoggedIn ?
                             <LoginScreen {...props} getUser={this.getUser} /> :

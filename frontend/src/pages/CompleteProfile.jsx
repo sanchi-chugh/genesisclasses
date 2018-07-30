@@ -10,7 +10,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router';
+
 import {
     ValidatorForm,
     TextValidator
@@ -161,8 +162,9 @@ class CompleteProfile extends Component {
   }
 
   render() {
-    if(this.props.user && this.props.user.complete)
-      return <Redirect to={"/home/"} />
+    const { user } = this.props;
+    if( user && (user.type !== 'student' || user.complete))
+      return (<Redirect to="/home/" />)
     const { classes } = this.props;
     return (
       <div className={classes.container}>

@@ -27,14 +27,12 @@ class Courses extends Component {
     }
   }
 
-componentDidMount() {
- axios.get("http://127.0.0.1:8000/api/course/").then(res => {
+
+  render() {
+    axios.get("http://127.0.0.1:8000/api/course/").then(res => {
   const data = res.data;
   this.setState({data});
  })
-}
-
-  render() {
      for(let unit of this.state.data)
      {
       console.log(unit.title);

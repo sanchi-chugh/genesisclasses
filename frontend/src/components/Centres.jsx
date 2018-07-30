@@ -22,7 +22,11 @@ class Centres extends Component {
   }
 
   componentDidMount() {
-    axios.get("/api/centres/").then(res => {
+    axios.get("/api/centres/", {
+      headers: {
+        Authorization: `Token ${localStorage.token}`
+      }
+    }).then(res => {
       const data = res.data;
       this.setState({data});
     });
@@ -47,7 +51,7 @@ class Centres extends Component {
           columns={columns}
           noDataText="No Data Available"
           filterable
-          defaultPageSize={5}
+          defaultPageSize={10}
           className="-striped -highlight"
         />
       </div>

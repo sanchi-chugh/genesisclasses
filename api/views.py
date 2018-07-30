@@ -2,6 +2,10 @@ from django.shortcuts import render
 from api.serializers import StudentSerializer, CentreSerializer, CourseSerializer
 from rest_framework.generics import UpdateAPIView, ListAPIView
 from api.models import Student, Centre, Course
+from rest_framework.views import APIView
+from api.models import Student, Centre
+from rest_framework import viewsets
+
 
 class CompleteProfileView(UpdateAPIView):
     serializer_class = StudentSerializer
@@ -54,3 +58,22 @@ class CentreListView(ListAPIView):
             super_admin = self.request.user.superadmin
         queryset = self.model.objects.filter(super_admin=super_admin)
         return queryset
+
+class CentreViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Centre.objects.all()
+    serializer_class = CentreSerializer
+
+    def get_queryset(self):
+        type_of_user = self.request.user.type_of_user
+        if type_of_user == 'student':
+            super_admin = self.request.user.student.super_admin
+        elif type_of_user == 'staff':
+            super_admin = self.request.user.staff.super_admin
+        else:
+            super_admin = self.request.user.superadmin
+        queryset = self.model.objects.filter(super_admin=super_admin)
+        return queryset
+
+class CourseViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer

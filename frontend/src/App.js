@@ -11,6 +11,9 @@ import { loggedIn } from './auth';
 import LoginScreen from "./pages/LoginScreen";
 import CompleteProfile from "./pages/CompleteProfile";
 import PrivateRoute from './components/PrivateRoute';
+import UserTabs from "./components/AddUsers";
+import Centres from "./components/Centres";
+import Courses from "./components/Courses"
 
 const drawerWidth = 240;
 const theme = createMuiTheme({
@@ -138,6 +141,18 @@ class App extends React.Component {
                     return !isLoggedIn ?
                             <LoginScreen {...props} getUser={this.getUser} /> :
                             <Redirect to={"/home/"} />
+                  } 
+                }/>
+                <Route path={'/users/add/'} exact render={(props) => {
+                    return <UserTabs {...props} />
+                  }
+                } />
+                <Route path={'/centres/'} exact render={(props) => {
+                    return <Centres {...props} />
+                  }
+                } />
+                <Route path={'/courses/'} exact render={(props) => {
+                    return <Courses {...props} />
                   }
                 } />
               </Switch>

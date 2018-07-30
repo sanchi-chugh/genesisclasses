@@ -10,9 +10,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Collapse from '@material-ui/core/Collapse';
 import AssessmentIcon from '@material-ui/icons/Assessment';
 import AssignmentIcon from '@material-ui/icons/Assignment';
+import AddIcon from '@material-ui/icons/Add';
 import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount';
 import HomeIcon from '@material-ui/icons/Home';
+import StoreIcon from '@material-ui/icons/Store';
 import SchoolIcon from '@material-ui/icons/School';
+import BookIcon from '@material-ui/icons/Book';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
@@ -86,8 +89,30 @@ class SuperAdminMenu extends React.Component {
                 </ListItemIcon>
                 <ListItemText inset primary="Students" />
               </ListItem>
+              <ListItem
+                button
+                className={classes.nested}
+                onClick={() => this.goTo('/users/add/')}
+              >
+                <ListItemIcon>
+                  <AddIcon />
+                </ListItemIcon>
+                <ListItemText inset primary="Add Users" />
+              </ListItem>
             </List>
           </Collapse>
+          <ListItem button onClick={() => this.goTo('/centres/')}>
+            <ListItemIcon>
+              <StoreIcon />
+            </ListItemIcon>
+            <ListItemText inset primary="Centres" />
+          </ListItem>
+          <ListItem button onClick={() => this.goTo('/courses/')}>
+            <ListItemIcon>
+              <BookIcon />
+            </ListItemIcon>
+            <ListItemText inset primary="Courses" />
+          </ListItem>
           <ListItem button onClick={() => this.goTo('/tests/')}>
             <ListItemIcon>
               <AssignmentIcon />

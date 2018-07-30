@@ -23,44 +23,8 @@ class CompleteProfileView(UpdateAPIView):
             obj.save()
         return response
 
-# To get the centres for the particular superadmin / institute that the student
-# belongs to.
-class CentreListView(ListAPIView):
-    model = Centre
-    serializer_class = CentreSerializer
-    paginate_by = 100
-
-    def get_queryset(self):
-        type_of_user = self.request.user.type_of_user
-        if type_of_user == 'student':
-            super_admin = self.request.user.student.super_admin
-        elif type_of_user == 'staff':
-            super_admin = self.request.user.staff.super_admin
-        else:
-            super_admin = self.request.user.superadmin
-        queryset = self.model.objects.filter(super_admin=super_admin)
-        return queryset
-
-# To get the courses for the particular superadmin / institute that the student
-# belongs to
-class CentreListView(ListAPIView):
-    model = Centre
-    serializer_class = CentreSerializer
-    paginate_by = 100
-
-    def get_queryset(self):
-        type_of_user = self.request.user.type_of_user
-        if type_of_user == 'student':
-            super_admin = self.request.user.student.super_admin
-        elif type_of_user == 'staff':
-            super_admin = self.request.user.staff.super_admin
-        else:
-            super_admin = self.request.user.superadmin
-        queryset = self.model.objects.filter(super_admin=super_admin)
-        return queryset
-
 class CentreViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Centre.objects.all()
+    model = Centre
     serializer_class = CentreSerializer
 
     def get_queryset(self):
@@ -77,3 +41,4 @@ class CentreViewSet(viewsets.ReadOnlyModelViewSet):
 class CourseViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    # TODO: override get_queryset

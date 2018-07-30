@@ -117,7 +117,6 @@ class CompleteProfile extends Component {
         this.props.getUser(() => this.props.history.push("/home/"));
       })
       .catch((err) => {
-        console.log(err);
         this.setState({ busy: false });
       });
     });

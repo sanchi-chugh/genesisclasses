@@ -16,17 +16,12 @@ class SuperAdminSerializer(serializers.ModelSerializer):
         model = SuperAdmin
         fields = '__all__'
 
-class CentreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Centre
-        fields = ('location',)
-
 class CourseSerializer(serializers.ModelSerializer):
     centres = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
-        fields = ('title', 'centres', )
+        fields = ('title', 'centres', 'id',)
 
     def get_centres(self, obj):
         return Course.objects.get(id = obj.id).centre.values('location')

@@ -13,7 +13,7 @@ class Courses extends Component {
   }
 
   textFilter(filter, row){
-    let result =parseInt( row[filter.id].toUpperCase().indexOf(filter.value.toUpperCase()), 10);
+    let result = parseInt( row[filter.id].toUpperCase().indexOf(filter.value.toUpperCase()), 10);
     if (result < 0) {
       return false;
     } else {
@@ -29,19 +29,19 @@ class Courses extends Component {
     })
     .then(res => {
       const data = res.data;
-      this.setState({data});
+      for (let unit of data) {
+        var locationArray = []
+        for(let location of unit.centres) {
+          locationArray.push(location.location);
+        }
+        unit.centres = [];
+        unit.centres = locationArray.join(", ");
+      }
+      this.setState({ data });
     });
   }
 
-  render() {  
-    for (let unit of this.state.data) {
-      var locationArray = []
-      for(let location of unit.centres) {
-        locationArray.push(location.location);
-      }
-      unit.centres = [];
-      unit.centres = locationArray.join(", ");
-    }
+  render() {
     const columns = [
       {
         Header: 'Courses',

@@ -60,7 +60,7 @@ class SuperAdmin(models.Model):
 class Centre(models.Model):
     location = models.CharField(max_length=100)
     # super_admin is used to determine the institution
-    super_admin = models.OneToOneField(
+    super_admin = models.ForeignKey(
         SuperAdmin,
         on_delete=models.CASCADE,
         blank=False,

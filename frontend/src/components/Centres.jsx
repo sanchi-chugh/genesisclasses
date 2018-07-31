@@ -2,13 +2,17 @@ import React, { Component } from 'react';
 import ReactTable from 'react-table';
 import "react-table/react-table.css";
 import axios from 'axios';
+import { withStyles } from '@material-ui/core/styles';
+
+const styles = theme => ({
+})
 
 class Centres extends Component {
   constructor() {
     super();
     this.state = {
       name: 'React',
-      data: []
+      data: [],
     };
   }
 
@@ -32,7 +36,13 @@ class Centres extends Component {
     });
   }
 
+  handleAddCentre = (event) => {
+    event.preventDefault();
+    this.setState({ busy: !this.state.busy, })
+  }
+
   render() {
+    // const { classes } = this.props;
     const columns = [
       {
         Header: 'Centres',
@@ -58,4 +68,4 @@ class Centres extends Component {
     );
   }
 }
- export default Centres;
+ export default withStyles(styles, { withTheme : true })(Centres);

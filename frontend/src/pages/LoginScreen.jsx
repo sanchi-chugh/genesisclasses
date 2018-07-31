@@ -6,6 +6,7 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import { Link } from 'react-router-dom';
 import { login } from '../auth';
 
 const styles = theme => ({
@@ -30,6 +31,9 @@ const styles = theme => ({
   button: {
     width: '80%',
     marginTop: '20px',
+  },
+  forgot: {
+    textDecoration: 'none',
   },
 });
 
@@ -130,7 +134,11 @@ class LoginScreen extends React.Component {
                 >
                   Login
                 </Button>
-                <p>Forgot Password?</p>
+                <br />
+                <br />
+                <Link className={classes.forgot} to={"/forgot-password/"}>
+                  <Typography> Forgot Password? </Typography>
+                </Link>
               </form>
             </center>
           </CardContent>

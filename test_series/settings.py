@@ -164,5 +164,12 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 #Custom user
 AUTH_USER_MODEL = 'api.User'
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('GMAIL_USERNAME', 'gmail_username')
+EMAIL_HOST_PASSWORD = os.getenv('GMAIL_PASSWORD', 'gmail_passsword')
 # Activate Django-Heroku.
 django_heroku.settings(locals())

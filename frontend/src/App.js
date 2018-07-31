@@ -9,6 +9,8 @@ import Nav from './components/Nav';
 import NavDrawer from './components/NavDrawer';
 import { loggedIn } from './auth';
 import LoginScreen from "./pages/LoginScreen";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import CompleteProfile from "./pages/CompleteProfile";
 import PrivateRoute from './components/PrivateRoute';
 import UserTabs from "./components/AddUsers";
@@ -139,22 +141,36 @@ class App extends React.Component {
                 />
                 <Route path={'/login/'} exact render={(props) => {
                     return !isLoggedIn ?
-                            <LoginScreen {...props} getUser={this.getUser} /> :
-                            <Redirect to={"/home/"} />
-                  } 
-                }/>
+                      <LoginScreen {...props} getUser={this.getUser} /> :
+                      <Redirect to={"/home/"} />
+                    } 
+                  }
+                />
+                <Route path={'/forgot-password/'} exact render={(props) => (
+                      <ForgotPassword {...props} />
+                    )
+                  }
+                />
+                <Route path={'/reset-password/:uid/:token/'} exact render={(props) => (
+                      <ResetPassword {...props} />
+                    )
+                  }
+                />
                 <Route path={'/users/add/'} exact render={(props) => {
-                    return <UserTabs {...props} />
+                      return <UserTabs {...props} />
+                    }
                   }
-                } />
+                />
                 <Route path={'/centres/'} exact render={(props) => {
-                    return <Centres {...props} />
+                      return <Centres {...props} />
+                    }
                   }
-                } />
+                />
                 <Route path={'/courses/'} exact render={(props) => {
-                    return <Courses {...props} />
+                      return <Courses {...props} />
+                    }
                   }
-                } />
+                />
               </Switch>
             </div>
           </div>

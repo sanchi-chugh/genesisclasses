@@ -22,4 +22,5 @@ def create_user_profile(sender, instance, **kwargs):
             profile[0].first_name = instance.username
     else:
         pass
-    profile[0].save()
+    if profile:
+        profile[0].save()

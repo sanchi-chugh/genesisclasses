@@ -66,9 +66,9 @@ class CompleteProfile extends Component {
   state = {
     busy: false,
     file: '/static/img/profile.png',
-    course: '',
+    course_id: '',
     profilePic: null,
-    centre: '',
+    centre_id: '',
     centreList: [],
     courseList: [],
     centreError: false,
@@ -83,6 +83,13 @@ class CompleteProfile extends Component {
       }
     })
     .then((res) => this.setState({ centreList: res.data }))
+    .catch((err) => console.log(err));
+    axios.get('/api/courses/', {
+      headers: {
+        "Authorization": `Token ${localStorage.token}`
+      }
+    })
+    .then((res) => this.setState({ courseList: res.data }))
     .catch((err) => console.log(err));
   }
 
@@ -103,7 +110,8 @@ class CompleteProfile extends Component {
     if (this.state.imageError || this.state.courseError || this.state.centreError)
       return
     let formdata = new FormData(event.target);
-    formdata.append('user', this.props.user.user);
+    console.log(this.props.user.user.id)
+    formdata.append('user_id', this.props.user.user.id);
     formdata.append('super_admin', this.props.user.super_admin);
     const config = {
       headers: {
@@ -126,14 +134,10 @@ class CompleteProfile extends Component {
     const target = event.target;
     const value = target.value;
     const name = target.name;
-    if (name === 'centre') {
+    if (name === 'centre_id') {
       this.setState({
         [name]: value,
         centreError: false,
-        courseList: (
-          this.state.centreList.find(centre => {
-            return centre.id === target.value
-          }).course_set), 
       });
     } else {
       this.setState({
@@ -236,13 +240,13 @@ class CompleteProfile extends Component {
             errorMessages={['this field is required',]}
           />
           <FormControl className={classes.textField}>
-            <InputLabel htmlFor="centre">Centre</InputLabel>
+            <InputLabel htmlFor="centre_id">Centre</InputLabel>
             <Select
-              value={this.state.centre}
+              value={this.state.centre_id}
               label={"Centre"}
               disabled={this.state.centreList.length === 0}
               inputProps={{
-                name: 'centre',
+                name: 'centre_id',
                 onChange: this.handleInputChange.bind(this),
               }}
               error={this.state.centreError}
@@ -268,13 +272,13 @@ class CompleteProfile extends Component {
             }
           </FormControl>
           <FormControl className={classes.textField}>
-            <InputLabel htmlFor="course">Course</InputLabel>
+            <InputLabel htmlFor="course_id">Course</InputLabel>
             <Select
-              value={this.state.course}
+              value={this.state.course_id}
               label={"Course"}
               disabled={this.state.courseList.length === 0}
               inputProps={{
-                name: 'course',
+                name: 'course_id',
                 onChange: this.handleInputChange.bind(this),
               }}
               error={this.state.courseError}

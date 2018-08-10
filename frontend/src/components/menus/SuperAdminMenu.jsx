@@ -20,6 +20,7 @@ import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import ExitToApp from '@material-ui/icons/ExitToApp';
+import ListIcon from '@material-ui/icons/List';
 
 const styles = theme => ({
   root: {
@@ -34,7 +35,8 @@ const styles = theme => ({
 
 class SuperAdminMenu extends React.Component {
   state = { 
-    users: false,  
+    users: false,
+    tests: false,
   };
 
   handleClick = (item) => {
@@ -113,12 +115,37 @@ class SuperAdminMenu extends React.Component {
             </ListItemIcon>
             <ListItemText inset primary="Courses" />
           </ListItem>
-          <ListItem button onClick={() => this.goTo('/tests/')}>
+          <ListItem button onClick={() => this.handleClick('tests')}>
             <ListItemIcon>
               <AssignmentIcon />
             </ListItemIcon>
             <ListItemText inset primary="Tests" />
+            {this.state.tests ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
+          <Collapse in={this.state.tests} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              <ListItem
+                button
+                className={classes.nested}
+                onClick={() => this.goTo('/tests/list/')}
+              >
+                <ListItemIcon>
+                  <ListIcon />
+                </ListItemIcon>
+                <ListItemText inset primary="All Tests" />
+              </ListItem>
+              <ListItem
+                button
+                className={classes.nested}
+                onClick={() => this.goTo('/tests/add/')}
+              >
+                <ListItemIcon>
+                  <AddIcon />
+                </ListItemIcon>
+                <ListItemText inset primary="Add Test" />
+              </ListItem>
+            </List>
+          </Collapse>
           <ListItem button onClick={() => this.goTo('/results/')}>
             <ListItemIcon>
               <AssessmentIcon />

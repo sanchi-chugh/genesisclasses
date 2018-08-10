@@ -29,14 +29,7 @@ class Courses extends Component {
     })
     .then(res => {
       const data = res.data;
-      for (let unit of data) {
-        var locationArray = []
-        for(let location of unit.centres) {
-          locationArray.push(location.location);
-        }
-        unit.centres = [];
-        unit.centres = locationArray.join(", ");
-      }
+      console.log(data);
       this.setState({ data });
     });
   }
@@ -52,19 +45,10 @@ class Courses extends Component {
               {return this.textFilter(filter,row)}
           }
         ]
-      },
-      {
-        Header: 'Centres',
-        columns:[
-          {
-            accessor: 'centres',
-            filterMethod: (filter,row) => {return this.textFilter(filter,row)}
-          }
-        ]
       }
     ]
     return (
-      <div>
+      <div style={{margin: '20px'}}>
         <ReactTable
           data={this.state.data}
           columns={columns}

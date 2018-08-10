@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
+import datetime
 
 class CustomUserManager(UserManager):
     def create_user(self, username, email, password=None):
@@ -72,11 +73,15 @@ class Centre(models.Model):
 # Course Model : Different Institutes may have different courses.
 class Course(models.Model):
     title = models.CharField(max_length = 100)
-    centre = models.ManyToManyField(Centre)
+    super_admin = models.ForeignKey(
+        SuperAdmin,
+        on_delete=models.CASCADE,
+        blank=False,
+        null=False
+    )
 
     def __str__(self):
-        centre = Centre.objects.get(id = self.id)
-        return self.title + ' - ' + str(centre)
+        return self.title + ' - ' + str(self.super_admin)
 
 # Staff
 class Staff(models.Model):
@@ -115,8 +120,15 @@ class Test(models.Model):
         Course,
         on_delete = models.CASCADE,
         related_name = "tests"
-        )
+    )
     description = models.TextField(blank=True)
+    duration = models.DurationField(blank=False, null=False, default=datetime.timedelta(hours=3))
+    super_admin = models.ForeignKey(
+        SuperAdmin,
+        on_delete=models.CASCADE,
+        blank=False,
+        null=True
+    )
     # TODO: total marks will be calculated dynamically based on marks of each question.
     # TODO: total duration will be calculated dynamically based on duration of each section.
 
@@ -130,37 +142,35 @@ class Section(models.Model):
         Test,
         on_delete = models.CASCADE,
         related_name = 'sections')
-    duration = models.FloatField(null = True, blank = True)
 
     def __str__(self):
         return self.title + '(' + self.test.title + ')'
 
 
 #Test Question Model : Each Question will have maximum 6 options with +ve & -ve marks along with a correct response and explanation(optional).
-class TestQuestion(models.Model):
+class Question(models.Model):
     section = models.ForeignKey(
         Section,
         on_delete = models.CASCADE,
-        related_name = 'sections')
-    question = models.TextField( null = True, blank = True)
+        related_name = 'questions')
+    text = models.TextField( null = True, blank = True)
     explanation = models.TextField( blank = True, null = True)
-    correctAnswer = models.TextField( null = True, blank = True)
     marksPostive = models.FloatField(default = 4.0)
     marksNegative = models.FloatField(default = 1.0)
 
     def __str__(self):
-        return self.question + '(' + self.section.title + ')'
+        return self.text + '(' + self.section.title + ')'
 
 class Option(models.Model):
-    title = models.TextField()
-    test = models.ForeignKey(
-        Test,
+    text = models.TextField()
+    correct = models.BooleanField(default=False)
+    question = models.ForeignKey(
+        Question,
         on_delete = models.CASCADE,
-        related_name = "options"
-        )
+        related_name = 'options')
 
     def __str__(self):
-        return self.title + '(' + self.test.title + ')'
+        return self.text + '(' + str(self.question) + ')'
 
 # Students
 class Student(models.Model):

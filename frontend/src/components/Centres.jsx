@@ -55,7 +55,7 @@ class Centres extends Component {
       }
     ]
     return (
-      <div>
+      <div style={{margin: '20px'}}>
         <ReactTable
           data={this.state.data}
           columns={columns}

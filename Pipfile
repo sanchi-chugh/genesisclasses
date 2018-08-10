@@ -4,9 +4,16 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+python-docx = "*"
+django = "*"
+django-heroku = "*"
+django-webpack-loader = "*"
+django-rest-framework = "*"
 django-rest-auth = "*"
 django-allauth = "*"
 pillow = "*"
+
+[dev-packages]
 
 [requires]
 python_version = "3.6"

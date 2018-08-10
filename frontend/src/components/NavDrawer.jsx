@@ -33,7 +33,6 @@ class NavDrawer extends Component {
   }
 
   logout() {
-    delete localStorage.token;
     this.props.logout(() => this.goToPath('/login/'));
   }
 

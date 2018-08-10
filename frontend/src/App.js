@@ -7,7 +7,6 @@ import axios from 'axios';
 import Home from './pages/Home';
 import Nav from './components/Nav';
 import NavDrawer from './components/NavDrawer';
-import { loggedIn } from './auth';
 import LoginScreen from "./pages/LoginScreen";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -15,7 +14,17 @@ import CompleteProfile from "./pages/CompleteProfile";
 import PrivateRoute from './components/PrivateRoute';
 import UserTabs from "./components/AddUsers";
 import Centres from "./components/Centres";
-import Courses from "./components/Courses"
+import Courses from "./components/Courses";
+import AddTest from "./pages/AddTest";
+import FromDoc from "./components/FromDoc";
+import AddTestManually from "./components/AddTestManually";
+import Error404 from './pages/Error404';
+import EditTest from './pages/EditTest';
+import StaffUsers from './pages/StaffUsers';
+import StudentUsers from './pages/StudentUsers';
+import TestList from './pages/TestList';
+
+import './App.css';
 
 const drawerWidth = 240;
 const theme = createMuiTheme({
@@ -45,9 +54,8 @@ const styles = theme => ({
   },
   content: {
     flexGrow: 1,
-    marginTop: 55,
+    marginTop: 62,
     backgroundColor: theme.palette.background.default,
-    padding: theme.spacing.unit * 3,
     overflow: 'scroll',
   },
   content2: {
@@ -57,6 +65,9 @@ const styles = theme => ({
     padding: theme.spacing.unit * 3,
     overflow: 'scroll',
   },
+  loader: {
+
+  },
 });
 
 class App extends React.Component {
@@ -65,6 +76,7 @@ class App extends React.Component {
     this.state = {
       drawerOpen: false,
       user: null,
+      busy: true,
     }
     this.getUser = this.getUser.bind(this);
   }
@@ -74,8 +86,7 @@ class App extends React.Component {
   }
 
   componentWillMount() {
-    if (loggedIn())
-      this.getUser();
+    this.setState({ busy: true }, () => this.getUser());
   }
 
   getUser(callBack) {
@@ -83,23 +94,35 @@ class App extends React.Component {
       headers: {Authorization: `Token ${localStorage.token}`}
     })
     .then((res) => {
-      this.setState({ user: res.data.profile },
+      this.setState({ user: res.data.profile, busy: false },
                     () => { 
                       if (callBack)
                         callBack(res.data.profile) 
                     });
+    })
+    .catch((err) => {
+      delete localStorage.token;
+      this.setState({ busy: false });
     });
   }
 
   logout(callBack) {
+    delete localStorage.token;
     this.setState({ user: null }, callBack);
   }
 
   render() {
     const { classes } = this.props;
     const { user } = this.state;
-    const isLoggedIn = loggedIn();
-    const showNav = isLoggedIn && (user !== null && (user.type !== 'student' || user.complete));
+    const isLoggedIn = this.state.user !== null;
+    const showNav = (user !== null && (user.type !== 'student' || user.complete));
+
+    if (this.state.user === null && this.state.busy) {
+      return (
+        <center><div className="loader"></div></center>
+      );
+    }
+
     return (
       <MuiThemeProvider theme={theme}>
         <BrowserRouter>
@@ -139,34 +162,104 @@ class App extends React.Component {
                     />
                   }
                 />
-                <Route path={'/login/'} exact render={(props) => {
+                <PrivateRoute
+                  authed={isLoggedIn}
+                  path="/tests/edit/:id/"
+                  Child = {(props) =>
+                    <EditTest
+                      {...props}
+                      user={this.state.user}
+                    />
+                  }
+                />
+                <PrivateRoute
+                  authed={isLoggedIn}
+                  path="/tests/add/from-doc/"
+                  Child = {(props) =>
+                    <FromDoc
+                      {...props} 
+                      user={this.state.user}
+                    />
+                  }
+                />
+                <PrivateRoute
+                  authed={isLoggedIn}
+                  path="/tests/add/manual/"
+                  Child = {(props) =>
+                    <AddTestManually
+                      {...props} 
+                      user={this.state.user}
+                    />
+                  }
+                />
+                <PrivateRoute
+                  authed={isLoggedIn}
+                  path="/tests/add/"
+                  Child = {(props) =>
+                    <AddTest
+                      {...props} 
+                      user={this.state.user}
+                    />
+                  }
+                />
+                <PrivateRoute
+                  authed={isLoggedIn}
+                  path="/users/staff/"
+                  Child = {(props) =>
+                    <StaffUsers
+                      {...props} 
+                      user={this.state.user}
+                    />
+                  }
+                />
+                <PrivateRoute
+                  authed={isLoggedIn}
+                  path="/users/students/"
+                  Child = {(props) =>
+                    <StudentUsers
+                      {...props} 
+                      user={this.state.user}
+                    />
+                  }
+                />
+                <PrivateRoute
+                  authed={isLoggedIn}
+                  path="/tests/list/"
+                  Child = {(props) =>
+                    <TestList
+                      {...props} 
+                      user={this.state.user}
+                    />
+                  }
+                />
+                <Route path={'/login/'} exact strict render={(props) => {
                     return !isLoggedIn ?
                       <LoginScreen {...props} getUser={this.getUser} /> :
                       <Redirect to={"/home/"} />
                     } 
                   }
                 />
-                <Route path={'/forgot-password/'} exact render={(props) => (
+                <Route path={'/forgot-password/'} exact strict render={(props) => (
                       <ForgotPassword {...props} />
                     )
                   }
                 />
-                <Route path={'/reset-password/:uid/:token/'} exact render={(props) => (
+                <Route path={'/reset-password/:uid/:token/'} exact strict render={(props) => (
                       <ResetPassword {...props} />
                     )
                   }
                 />
-                <Route path={'/users/add/'} exact render={(props) => {
+                <Route path={'/users/add/'} exact strict render={(props) => {
                       return <UserTabs {...props} />
                     }
                   }
                 />
-                <Route path={'/centres/'} exact render={(props) => {
+                <Route path={'/centres/'} exact strict render={(props) => {
                       return <Centres {...props} />
                     }
                   }
                 />
-                <Route path={'/courses/'} exact render={(props) => {
+                <Route path={'/courses/'} exact strict render={(props) => {
                       return <Courses {...props} />
                     }
                   }

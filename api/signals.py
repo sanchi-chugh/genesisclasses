@@ -3,8 +3,6 @@ from django.dispatch import receiver
 
 from api.models import SuperAdmin, Staff, Student, User
 
-print("klsdjfkljskdlfjklsdjfklsdjf")
-
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, **kwargs):
     profile = None

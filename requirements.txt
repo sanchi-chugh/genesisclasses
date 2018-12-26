@@ -7,3 +7,4 @@ django-allauth==0.38.0
 django-webpack-loader==0.6.0
 python-docx==0.8.7
 pillow==5.3.0
+psycopg2-binary==2.7.6.1

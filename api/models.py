@@ -93,7 +93,6 @@ class Staff(models.Model):
     course = models.ManyToManyField(
         Course,
         blank=True,
-        null=True,
     )
     centre = models.ForeignKey(
         Centre,
@@ -181,7 +180,7 @@ class Unit(models.Model):
 class Test(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    startTime = models.DateTimeField(default = timezone.now())
+    startTime = models.DateTimeField(default = timezone.now)
     duration = models.DurationField(blank=False, null=False, default=datetime.timedelta(hours=3))
     instructions = models.TextField(blank=True, null=True)
     totalMarks = models.FloatField(default=0.0, blank=True)

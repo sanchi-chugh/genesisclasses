@@ -4,12 +4,14 @@ from rest_framework.generics import UpdateAPIView, ListAPIView, CreateAPIView
 from api.models import Student, Centre, Course, User
 from rest_framework.views import APIView
 from api.models import Student, Centre, Test, Question, Section, Option
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from api.utils import parser
 from datetime import datetime
 from rest_framework.response import Response
 from django.core.mail import send_mail
-#from django.shortcuts import get_object_or_404
+from .permissions import *
+from rest_framework.decorators import api_view, permission_classes
+from django.shortcuts import get_object_or_404
 import json
 import uuid
 
@@ -40,14 +42,61 @@ class CompleteProfileView(UpdateAPIView):
             obj.save()
         return response
 
+# Shows list of centres (permitted to a superadmin only)
 class CentreViewSet(viewsets.ReadOnlyModelViewSet):
     model = Centre
     serializer_class = CentreSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
         queryset = self.model.objects.filter(super_admin=super_admin)
         return queryset
+
+# Adds a centre for the requested superadmin
+class AddCentreViewSet(CreateAPIView):
+    model = Centre
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        Centre.objects.create(location=request.data['location'], super_admin=super_admin)
+        return Response({"status": "successful"})
+
+# Update centre for the required superadmin
+class EditCentreViewSet(UpdateAPIView):
+    model = Centre
+    serializer_class = CentreSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    # This is required so that django knows from where to get the obj
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        queryset = self.model.objects.filter(super_admin=super_admin)
+        return queryset
+
+    def put(self, request, *args, **kwargs):
+        self.partial_update(request, *args, **kwargs)
+        return Response({ "status": "successful" })
+
+# Delete centre under a particular admin
+@api_view(['DELETE'])
+@permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
+def deleteCentre(request, pk):
+    centreObj = get_object_or_404(Centre, pk=pk)
+    transfer_centre = request.data.get('centre')
+    if transfer_centre:
+        # If Staff and students have to be shifted to another centre
+        # staffObj = Staff.objects.filter(centre=centreObj)
+        transfer_centre = get_object_or_404(Centre, pk=int(transfer_centre))
+        studentObjs = Student.objects.filter(centre=centreObj)
+        for studentObj in studentObjs:
+            studentObj.centre = transfer_centre
+            studentObj.save()
+
+    centreObj.delete()
+    return Response({'status': 'successful'})
+
 
 class CourseViewSet(viewsets.ReadOnlyModelViewSet):
     model = Course
@@ -175,7 +224,7 @@ class AddBulkStudentsView(APIView):
 
 class AddSectionView(APIView):
     def post(self, request, *args, **kwargs):
-        Section.objects.create(test_id=request.data['test'], title=request.data['title']);
+        Section.objects.create(test_id=request.data['test'], title=request.data['title'])
         return Response({ "status": "successful" })
 
 class TestListView(ListAPIView):

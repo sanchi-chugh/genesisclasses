@@ -1,7 +1,13 @@
 from django.urls import path
+from django.conf.urls import include
 from api.views import *
 
 urlpatterns = [
+    path('centres/', CentreViewSet.as_view({'get': 'list'})),
+    path('centres/add/', AddCentreViewSet.as_view()),
+    path('centres/edit/<int:pk>/', EditCentreViewSet.as_view()),
+    path('centres/delete/<int:pk>/', deleteCentre),
+
     path('sections/add/', AddSectionView.as_view()),
     path('students/add/', AddBulkStudentsView.as_view()),
     path('staff/add/', AddStaffView.as_view()),
@@ -16,6 +22,8 @@ urlpatterns = [
     path('tests/add/manual/', AddTestManualView.as_view()),
     path('tests/add/from-doc/', TestFromDocView.as_view()),
     path('complete-profile/<int:pk>/', CompleteProfileView.as_view()),
-    path('centres/', CentreViewSet.as_view({'get' : 'list'})),
     path('courses/', CourseViewSet.as_view({'get' : 'list'})),
+
+    # This is for browsable api login/logout
+    path('api-auth/', include('rest_framework.urls')),
 ]

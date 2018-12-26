@@ -19,7 +19,7 @@ class CourseSerializer(serializers.ModelSerializer):
 class CentreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Centre
-        fields = '__all__'
+        exclude = ['super_admin']
 
 class StaffSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

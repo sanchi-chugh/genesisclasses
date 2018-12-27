@@ -3,10 +3,18 @@ from django.conf.urls import include
 from api.views import *
 
 urlpatterns = [
+    # -------------------SUPER ADMIN ENDPOINTS--------------------
+    # Endpoints for centres
     path('centres/', CentreViewSet.as_view({'get': 'list'})),
     path('centres/add/', AddCentreViewSet.as_view()),
     path('centres/edit/<int:pk>/', EditCentreViewSet.as_view()),
     path('centres/delete/<int:pk>/', deleteCentre),
+
+    # Endpoints for courses
+    path('courses/', CourseViewSet.as_view({'get': 'list'})),
+    path('courses/add/', AddCourseViewSet.as_view()),
+    path('courses/edit/<int:pk>/', EditCourseViewSet.as_view()),
+    path('courses/delete/<int:pk>/', deleteCourse),
 
     path('sections/add/', AddSectionView.as_view()),
     path('students/add/', AddBulkStudentsView.as_view()),

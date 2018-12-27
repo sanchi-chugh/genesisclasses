@@ -42,6 +42,7 @@ class CompleteProfileView(UpdateAPIView):
             obj.save()
         return response
 
+# -------------------SUPER ADMIN VIEWS-------------------------
 # Shows list of centres (permitted to a superadmin only)
 class CentreViewSet(viewsets.ReadOnlyModelViewSet):
     model = Centre
@@ -87,8 +88,12 @@ def deleteCentre(request, pk):
     transfer_centre = request.data.get('centre')
     if transfer_centre:
         # If Staff and students have to be shifted to another centre
-        # staffObj = Staff.objects.filter(centre=centreObj)
+        # Gives 404 if transfer_centre does not exist
         transfer_centre = get_object_or_404(Centre, pk=int(transfer_centre))
+        staffObjs = Staff.objects.filter(centre=centreObj)
+        for staffObj in staffObjs:
+            staffObj.centre = transfer_centre
+            staffObj.save()
         studentObjs = Student.objects.filter(centre=centreObj)
         for studentObj in studentObjs:
             studentObj.centre = transfer_centre
@@ -97,15 +102,49 @@ def deleteCentre(request, pk):
     centreObj.delete()
     return Response({'status': 'successful'})
 
-
+# Shows list of courses under a superadmin
 class CourseViewSet(viewsets.ReadOnlyModelViewSet):
     model = Course
     serializer_class = CourseSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
         queryset = self.model.objects.filter(super_admin=super_admin)
         return queryset
+
+# Adds a course for the requested superadmin
+class AddCourseViewSet(CreateAPIView):
+    model = Course
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        self.model.objects.create(title=request.data['title'], super_admin=super_admin)
+        return Response({"status": "successful"})
+
+# Update course for the requested superadmin
+class EditCourseViewSet(UpdateAPIView):
+    model = Course
+    serializer_class = CourseSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        queryset = self.model.objects.filter(super_admin=super_admin)
+        return queryset
+
+    def put(self, request, *args, **kwargs):
+        self.partial_update(request, *args, **kwargs)
+        return Response({ "status": "successful" })
+
+# Delete course under a particular admin
+@api_view(['DELETE'])
+@permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
+def deleteCourse(request, pk):
+    courseObj = get_object_or_404(Course, pk=pk)
+    courseObj.delete()
+    return Response({'status': 'successful'})
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

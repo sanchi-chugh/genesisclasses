@@ -87,8 +87,11 @@ def deleteCentre(request, pk):
     transfer_centre = request.data.get('centre')
     if transfer_centre:
         # If Staff and students have to be shifted to another centre
-        # staffObj = Staff.objects.filter(centre=centreObj)
         transfer_centre = get_object_or_404(Centre, pk=int(transfer_centre))
+        staffObjs = Staff.objects.filter(centre=centreObj)
+        for staffObj in staffObjs:
+            staffObj.centre = transfer_centre
+            staffObj.save()
         studentObjs = Student.objects.filter(centre=centreObj)
         for studentObj in studentObjs:
             studentObj.centre = transfer_centre

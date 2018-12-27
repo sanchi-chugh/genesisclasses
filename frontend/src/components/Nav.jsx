@@ -34,7 +34,7 @@ class Nav extends Component {
             onClick={() => this.props.handleDrawerToggle()}
             className={classes.navIconHide}
           >
-          <MenuIcon />
+            <MenuIcon />
           </IconButton>
           <Typography variant="title" color="inherit" noWrap>
             Test Series

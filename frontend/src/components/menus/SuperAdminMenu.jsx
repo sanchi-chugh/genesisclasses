@@ -34,10 +34,9 @@ const styles = theme => ({
 });
 
 class SuperAdminMenu extends React.Component {
-  state = {
+  state = { 
     users: false,
     tests: false,
-    centres: false
   };
 
   handleClick = (item) => {
@@ -104,37 +103,12 @@ class SuperAdminMenu extends React.Component {
               </ListItem>
             </List>
           </Collapse>
-          <ListItem button onClick={() => this.handleClick('centres')}>
+          <ListItem button onClick={() => this.goTo('/centres/')}>
             <ListItemIcon>
               <StoreIcon />
             </ListItemIcon>
             <ListItemText inset primary="Centres" />
-            {this.state.centres ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
-          <Collapse in={this.state.centres} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              <ListItem
-                button
-                className={classes.nested}
-                onClick={() => this.goTo('/centres/')}
-              >
-                <ListItemIcon>
-                  <StoreIcon />
-                </ListItemIcon>
-                <ListItemText inset primary="All Centres" />
-              </ListItem>
-              <ListItem
-                button
-                className={classes.nested}
-                onClick={() => this.goTo('/centres/add/')}
-              >
-                <ListItemIcon>
-                  <AddIcon />
-                </ListItemIcon>
-                <ListItemText inset primary="Add Centres" />
-              </ListItem>
-            </List>
-          </Collapse>
           <ListItem button onClick={() => this.goTo('/courses/')}>
             <ListItemIcon>
               <BookIcon />

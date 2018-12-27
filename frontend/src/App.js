@@ -13,6 +13,8 @@ import ResetPassword from "./pages/ResetPassword";
 import CompleteProfile from "./pages/CompleteProfile";
 import PrivateRoute from './components/PrivateRoute';
 import UserTabs from "./components/AddUsers";
+import AddCentres from "./components/AddCentres";
+import EditCentre from "./components/EditCentre";
 import Centres from "./components/Centres";
 import Courses from "./components/Courses";
 import AddTest from "./pages/AddTest";
@@ -95,9 +97,9 @@ class App extends React.Component {
     })
     .then((res) => {
       this.setState({ user: res.data.profile, busy: false },
-                    () => { 
+                    () => {
                       if (callBack)
-                        callBack(res.data.profile) 
+                        callBack(res.data.profile)
                     });
     })
     .catch((err) => {
@@ -122,7 +124,6 @@ class App extends React.Component {
         <center><div className="loader"></div></center>
       );
     }
-
     return (
       <MuiThemeProvider theme={theme}>
         <BrowserRouter>
@@ -148,15 +149,15 @@ class App extends React.Component {
                 <PrivateRoute
                   authed={isLoggedIn}
                   path='/home'
-                  Child={(props) => 
+                  Child={(props) =>
                     <Home {...props} user={this.state.user} />}
                 />
                 <PrivateRoute
                   authed={isLoggedIn}
                   path="/complete-profile/"
                   Child = {(props) =>
-                    <CompleteProfile 
-                      {...props} 
+                    <CompleteProfile
+                      {...props}
                       user={this.state.user}
                       getUser={this.getUser}
                     />
@@ -177,7 +178,7 @@ class App extends React.Component {
                   path="/tests/add/from-doc/"
                   Child = {(props) =>
                     <FromDoc
-                      {...props} 
+                      {...props}
                       user={this.state.user}
                     />
                   }
@@ -187,7 +188,7 @@ class App extends React.Component {
                   path="/tests/add/manual/"
                   Child = {(props) =>
                     <AddTestManually
-                      {...props} 
+                      {...props}
                       user={this.state.user}
                     />
                   }
@@ -197,7 +198,7 @@ class App extends React.Component {
                   path="/tests/add/"
                   Child = {(props) =>
                     <AddTest
-                      {...props} 
+                      {...props}
                       user={this.state.user}
                     />
                   }
@@ -207,7 +208,7 @@ class App extends React.Component {
                   path="/users/staff/"
                   Child = {(props) =>
                     <StaffUsers
-                      {...props} 
+                      {...props}
                       user={this.state.user}
                     />
                   }
@@ -217,7 +218,7 @@ class App extends React.Component {
                   path="/users/students/"
                   Child = {(props) =>
                     <StudentUsers
-                      {...props} 
+                      {...props}
                       user={this.state.user}
                     />
                   }
@@ -227,7 +228,7 @@ class App extends React.Component {
                   path="/tests/list/"
                   Child = {(props) =>
                     <TestList
-                      {...props} 
+                      {...props}
                       user={this.state.user}
                     />
                   }
@@ -236,7 +237,7 @@ class App extends React.Component {
                     return !isLoggedIn ?
                       <LoginScreen {...props} getUser={this.getUser} /> :
                       <Redirect to={"/home/"} />
-                    } 
+                    }
                   }
                 />
                 <Route path={'/forgot-password/'} exact strict render={(props) => (
@@ -256,6 +257,16 @@ class App extends React.Component {
                 />
                 <Route path={'/centres/'} exact strict render={(props) => {
                       return <Centres {...props} />
+                    }
+                  }
+                />
+                <Route path={'/centres/add/'} exact strict render={(props) => {
+                      return <AddCentres {...props} />
+                    }
+                  }
+                />
+                <Route path={'/centres/edit/'} exact strict render={(props) => {
+                      return <EditCentre {...props} />
                     }
                   }
                 />

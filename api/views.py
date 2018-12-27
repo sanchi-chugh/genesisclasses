@@ -61,7 +61,13 @@ class AddCentreViewSet(CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         super_admin = get_super_admin(self.request.user)
-        Centre.objects.create(location=request.data['location'], super_admin=super_admin)
+        location = request.data['location']
+        # Do not form another centre obj with already existing location
+        centreObjs = Centre.objects.filter(location=location, super_admin=super_admin)
+        if(len(centreObjs) != 0):
+            return Response({
+                "status": "error", "message": "Centre with the same location already exists"})
+        Centre.objects.create(location=location, super_admin=super_admin)
         return Response({"status": "successful"})
 
 # Update centre for the required superadmin
@@ -120,7 +126,13 @@ class AddCourseViewSet(CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         super_admin = get_super_admin(self.request.user)
-        self.model.objects.create(title=request.data['title'], super_admin=super_admin)
+        title = request.data['title']
+        # Do not form another course obj with already existing title
+        courseObjs = self.model.objects.filter(title=title, super_admin=super_admin)
+        if(len(courseObjs) != 0):
+            return Response({
+                "status": "error", "message": "Course with the same title already exists"})
+        self.model.objects.create(title=title, super_admin=super_admin)
         return Response({"status": "successful"})
 
 # Update course for the requested superadmin

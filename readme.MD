@@ -4,21 +4,24 @@
 1. Create a virtual environment (python 3).  
 2. Activate the virtual env and run requirements file. 
    - source virtualEnvName/bin/activate 
-   - pip install -r requirements.txt   
-3. Install nodejs and npm on system.  
+   - pip install -r requirements.txt 
+3. Set up local postgresql/mysql database
+   - https://www.digitalocean.com/community/tutorials/how-to-use-postgresql-with-your-django-application-on-ubuntu-14-04
+4. Migrate database and Start django server on another tab (with virtual env activated)  
+   - python manage.py migrate
+   - python manage.py runserver
+5. Install nodejs and npm on system.  
    - sudo apt-get update  
    - sudo apt-get install nodejs  
-   - sudo apt-get install npm  
-4. Install webpack
-   - npm install webpack
-5. Install react-pdf renderer
-   - npm install @react-pdf/renderer
-6. Start npm server in directory frontend
+   - sudo apt-get install npm 
+6. Install webpack in frontend directory
    - cd frontend
+   - npm install webpack
+7. Install react-pdf renderer in frontend directory
+   - npm install @react-pdf/renderer
+8. Start npm server
    - npm start
-7. Start django server on another tab (with virtual env activated)  
-   - python manage.py runserver
-8. App will start running on localhost:8000 (not localhost:3000).
+9. App will start running on localhost:8000 (not localhost:3000).
 
 ### Login and Initial setup
 1. Create superuser

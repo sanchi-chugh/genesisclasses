@@ -15,6 +15,7 @@ import PrivateRoute from './components/PrivateRoute';
 import UserTabs from "./components/AddUsers";
 import AddCentres from "./components/AddCentres";
 import EditCentre from "./components/EditCentre";
+import DeleteCentre from './components/DeleteCentre';
 import Centres from "./components/Centres";
 import Courses from "./components/Courses";
 import AddTest from "./pages/AddTest";
@@ -267,6 +268,11 @@ class App extends React.Component {
                 />
                 <Route path={'/centres/edit/'} exact strict render={(props) => {
                       return <EditCentre {...props} />
+                    }
+                  }
+                />
+                <Route path={'/centres/delete/'} exact strict render={(props) => {
+                      return <DeleteCentre {...props} />
                     }
                   }
                 />

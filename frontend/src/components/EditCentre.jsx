@@ -37,39 +37,61 @@ class AddCentres extends Component {
     centreUpdated: false,
   };
 
+  componentWillMount(){
+    axios.get('/api/courses/', {
+      headers: {
+        "Authorization": `Token ${localStorage.token}`
+      }
+    })
+    .then((res) => this.setState({ courseList: res.data }))
+    .catch((err) => console.log(err));
+    axios.get('/api/centres/', {
+      headers: {
+        "Authorization": `Token ${localStorage.token}`
+      }
+    })
+    .then((res) => {
+      const location = res.data.find((item) => item.id == this.props.location.state.pk )
+      this.setState({
+        location : location.location,
+      })
+    })
+    .catch((err) => console.log(err));
+  }
+
   handleInputChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   }
 
-  handleCentreSubmit = (event) => {
+  handleCentreUpdate = (event) => {
     event.persist();
     this.setState({ addingCentre: true }, () => {
       const data = new FormData(event.target)
-      axios.post('/api/centres/add/', data, {
+      axios.put(`/api/centres/edit/${this.props.location.state.pk}/`, data, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => this.setState({ addingCentre: false, centreAdded:true }))
-      .catch((err) => this.setState({ addingCentre: false }, () => console.log(err)))
+      .then((res) => this.setState({ updatingCentre: false, centreUpdated:true }))
+      .catch((err) => this.setState({ updatingCentre: false }, () => console.log(err)))
     });
   }
 
   render() {
     const { classes } = this.props;
-    if (this.state.centreAdded) {
+    if (this.state.centreUpdated) {
       return (
         <div className={classes.container}>
           <center>
-            Centre Added successfully !!
+            Centre Updated successfully !!
             <br/  >
             <Button
               variant="contained"
               color="primary"
-              onClick={() => this.setState({ centreAdded: false, location:''})}
+              onClick={() => this.props.history.goBack()}
               className={classes.button}
             >
-              ADD ANOTHER
+              GO BACK
             </Button>
           </center>
         </div>
@@ -78,7 +100,7 @@ class AddCentres extends Component {
     return (
             <div className={classes.root}>
               <center>
-                <ValidatorForm onSubmit={this.handleCentreSubmit}>
+                <ValidatorForm onSubmit={this.handleCentreUpdate}>
                   <TextValidator
                     label={"Location"}
                     margin="normal"
@@ -100,9 +122,9 @@ class AddCentres extends Component {
                     variant="contained"
                     color="primary"
                     className={classes.textField2}
-                    disabled={this.state.addingCentre}
+                    disabled={this.state.updatingCentre}
                   >
-                  ADD CENTRE
+                  UPDATE CENTRE
                   </Button>
                 </ValidatorForm>
               </center>

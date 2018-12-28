@@ -70,13 +70,21 @@ class Centres extends Component {
     });
   }
 
-  handleAddCentre = (event) => {
-  }
   handleEdit = (pk) => {
-    console.log(pk)
+    this.props.history.push({
+             pathname:"/centres/edit/",
+             state:{
+                 pk:pk,
+              }
+            });
   }
   handleDelete = (pk) => {
-    console.log(pk)
+    this.props.history.push({
+             pathname:"/centres/delete/",
+             state:{
+                 pk:pk,
+              }
+            });
   }
 
   render() {

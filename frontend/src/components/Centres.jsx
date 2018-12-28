@@ -120,6 +120,7 @@ class Centres extends Component {
         ]
       }
     ]
+    
     return (
       <div style={{margin: '20px'}}>
         <ReactTable

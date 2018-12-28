@@ -30,61 +30,46 @@ const styles = {
   }
 };
 
-class EditCentre extends Component {
+class AddCourses extends Component {
   state = {
-    location: '',
-    updatingCentre: false,
-    centreUpdated: false,
+    title: '',
+    addingCourses: false,
+    courseAdded: false,
   };
-
-  componentWillMount(){
-    axios.get('/api/centres/', {
-      headers: {
-        "Authorization": `Token ${localStorage.token}`
-      }
-    })
-    .then((res) => {
-      const location = res.data.find((item) => item.id == this.props.location.state.pk )
-      this.setState({
-        location : location.location,
-      })
-    })
-    .catch((err) => console.log(err));
-  }
 
   handleInputChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   }
 
-  handleCentreUpdate = (event) => {
+  handleCoursesSubmit = (event) => {
     event.persist();
-    this.setState({ addingCentre: true }, () => {
+    this.setState({ addingCourses: true }, () => {
       const data = new FormData(event.target)
-      axios.put(`/api/centres/edit/${this.props.location.state.pk}/`, data, {
+      axios.post('/api/courses/add/', data, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => this.setState({ updatingCentre: false, centreUpdated:true }))
-      .catch((err) => this.setState({ updatingCentre: false }, () => console.log(err)))
+      .then((res) => this.setState({ addingCourses: false, courseAdded:true }))
+      .catch((err) => this.setState({ addingCourses: false }, () => console.log(err)))
     });
   }
 
   render() {
     const { classes } = this.props;
-    if (this.state.centreUpdated) {
+    if (this.state.courseAdded) {
       return (
         <div className={classes.container}>
           <center>
-            Centre Updated Successfully !!
-            <br/  >
+            Course Added successfully !!
+            <br/>
             <Button
               variant="contained"
               color="primary"
-              onClick={() => this.props.history.goBack()}
+              onClick={() => this.setState({ courseAdded: false, title:''})}
               className={classes.button}
             >
-              GO BACK
+              ADD ANOTHER
             </Button>
           </center>
         </div>
@@ -93,20 +78,20 @@ class EditCentre extends Component {
     return (
             <div className={classes.root}>
               <center>
-                <ValidatorForm onSubmit={this.handleCentreUpdate}>
+                <ValidatorForm onSubmit={this.handleCoursesSubmit}>
                   <TextValidator
-                    label={"Location"}
+                    label={"Course"}
                     margin="normal"
-                    name="location"
+                    name="title"
                     className={classes.textField2}
-                    value={this.state.location}
+                    value={this.state.title}
                     onChange={this.handleInputChange}
                     validators={['required']}
                     errorMessages={['this field is required']}
                   />
                   <br />
                   {
-                    this.state.addingCentre &&
+                    this.state.addingCourses &&
                     <LinearProgress className={classes.textField2} />
                   }
                   <br/><br/>
@@ -115,9 +100,9 @@ class EditCentre extends Component {
                     variant="contained"
                     color="primary"
                     className={classes.textField2}
-                    disabled={this.state.updatingCentre}
+                    disabled={this.state.addingCourses}
                   >
-                  UPDATE CENTRE
+                  ADD COURSE
                   </Button>
                 </ValidatorForm>
               </center>
@@ -126,4 +111,4 @@ class EditCentre extends Component {
   }
 }
 
-export default withStyles(styles)(EditCentre);
+export default withStyles(styles)(AddCourses);

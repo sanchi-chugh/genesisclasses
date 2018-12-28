@@ -16,6 +16,9 @@ import UserTabs from "./components/AddUsers";
 import AddCentres from "./components/AddCentres";
 import EditCentre from "./components/EditCentre";
 import DeleteCentre from './components/DeleteCentre';
+import AddCourses from "./components/AddCourses";
+import EditCourses from "./components/EditCourses";
+import DeleteCourses from './components/DeleteCourses';
 import Centres from "./components/Centres";
 import Courses from "./components/Courses";
 import AddTest from "./pages/AddTest";
@@ -278,6 +281,21 @@ class App extends React.Component {
                 />
                 <Route path={'/courses/'} exact strict render={(props) => {
                       return <Courses {...props} />
+                    }
+                  }
+                />
+                <Route path={'/courses/add/'} exact strict render={(props) => {
+                      return <AddCourses {...props} />
+                    }
+                  }
+                />
+                <Route path={'/courses/edit/'} exact strict render={(props) => {
+                      return <EditCourses {...props} />
+                    }
+                  }
+                />
+                <Route path={'/courses/delete/'} exact strict render={(props) => {
+                      return <DeleteCourses {...props} />
                     }
                   }
                 />

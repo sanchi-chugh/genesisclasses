@@ -30,23 +30,23 @@ const styles = {
   }
 };
 
-class EditCentre extends Component {
+class AddCourses extends Component {
   state = {
-    location: '',
-    updatingCentre: false,
-    centreUpdated: false,
+    title: '',
+    updatingCourse: false,
+    courseUpdated: false,
   };
 
   componentWillMount(){
-    axios.get('/api/centres/', {
+    axios.get('/api/courses/', {
       headers: {
         "Authorization": `Token ${localStorage.token}`
       }
     })
     .then((res) => {
-      const location = res.data.find((item) => item.id == this.props.location.state.pk )
+      const title = res.data.find((item) => item.id == this.props.location.state.pk )
       this.setState({
-        location : location.location,
+        title : title.title,
       })
     })
     .catch((err) => console.log(err));
@@ -56,27 +56,27 @@ class EditCentre extends Component {
     this.setState({ [event.target.name]: event.target.value });
   }
 
-  handleCentreUpdate = (event) => {
+  handleCourseUpdate = (event) => {
     event.persist();
-    this.setState({ addingCentre: true }, () => {
+    this.setState({ addingCourse: true }, () => {
       const data = new FormData(event.target)
-      axios.put(`/api/centres/edit/${this.props.location.state.pk}/`, data, {
+      axios.put(`/api/courses/edit/${this.props.location.state.pk}/`, data, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => this.setState({ updatingCentre: false, centreUpdated:true }))
-      .catch((err) => this.setState({ updatingCentre: false }, () => console.log(err)))
+      .then((res) => this.setState({ updatingCourse: false, courseUpdated:true }))
+      .catch((err) => this.setState({ updatingCourse: false }, () => console.log(err)))
     });
   }
 
   render() {
     const { classes } = this.props;
-    if (this.state.centreUpdated) {
+    if (this.state.courseUpdated) {
       return (
         <div className={classes.container}>
           <center>
-            Centre Updated Successfully !!
+            Course Updated Successfully !!
             <br/  >
             <Button
               variant="contained"
@@ -93,20 +93,20 @@ class EditCentre extends Component {
     return (
             <div className={classes.root}>
               <center>
-                <ValidatorForm onSubmit={this.handleCentreUpdate}>
+                <ValidatorForm onSubmit={this.handleCourseUpdate}>
                   <TextValidator
-                    label={"Location"}
+                    label={"Title"}
                     margin="normal"
-                    name="location"
+                    name="title"
                     className={classes.textField2}
-                    value={this.state.location}
+                    value={this.state.title}
                     onChange={this.handleInputChange}
                     validators={['required']}
                     errorMessages={['this field is required']}
                   />
                   <br />
                   {
-                    this.state.addingCentre &&
+                    this.state.addingCourse &&
                     <LinearProgress className={classes.textField2} />
                   }
                   <br/><br/>
@@ -115,7 +115,7 @@ class EditCentre extends Component {
                     variant="contained"
                     color="primary"
                     className={classes.textField2}
-                    disabled={this.state.updatingCentre}
+                    disabled={this.state.updatingCourse}
                   >
                   UPDATE CENTRE
                   </Button>
@@ -126,4 +126,4 @@ class EditCentre extends Component {
   }
 }
 
-export default withStyles(styles)(EditCentre);
+export default withStyles(styles)(AddCourses);

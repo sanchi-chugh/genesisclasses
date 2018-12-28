@@ -37,7 +37,8 @@ class SuperAdminMenu extends React.Component {
   state = {
     users: false,
     tests: false,
-    centres: false
+    centres: false,
+    courses: false
   };
 
   handleClick = (item) => {
@@ -135,12 +136,37 @@ class SuperAdminMenu extends React.Component {
               </ListItem>
             </List>
           </Collapse>
-          <ListItem button onClick={() => this.goTo('/courses/')}>
+          <ListItem button onClick={() => this.handleClick('courses')}>
             <ListItemIcon>
               <BookIcon />
             </ListItemIcon>
             <ListItemText inset primary="Courses" />
+            {this.state.courses ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
+          <Collapse in={this.state.courses} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              <ListItem
+                button
+                className={classes.nested}
+                onClick={() => this.goTo('/courses/')}
+              >
+                <ListItemIcon>
+                  <BookIcon />
+                </ListItemIcon>
+                <ListItemText inset primary="All Courses" />
+              </ListItem>
+              <ListItem
+                button
+                className={classes.nested}
+                onClick={() => this.goTo('/courses/add/')}
+              >
+                <ListItemIcon>
+                  <AddIcon />
+                </ListItemIcon>
+                <ListItemText inset primary="Add Courses" />
+              </ListItem>
+            </List>
+          </Collapse>
           <ListItem button onClick={() => this.handleClick('tests')}>
             <ListItemIcon>
               <AssignmentIcon />

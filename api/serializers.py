@@ -51,6 +51,12 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = '__all__'
 
+class SubjectSerializer(serializers.ModelSerializer):
+    course = CourseSerializer(many=True, read_only=True)
+    class Meta:
+        model = Subject
+        exclude = ['super_admin']
+
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option

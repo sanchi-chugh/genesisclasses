@@ -220,7 +220,7 @@ class Test(models.Model):
             return self.title + ' (' + self.unit.title + ')'
         elif self.subject:
             return self.title + ' (' + self.subject.title + ')'
-        return self.title + ' (' + self.category + ')'
+        return self.title + ' (' + self.category.title + ')'
 
 # Section Model : Each test will have one or more section
 # section will contain questions.

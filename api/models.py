@@ -1,7 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.utils import timezone
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (
+    MaxValueValidator,
+    MinValueValidator,
+    FileExtensionValidator,
+)
 import datetime
 
 class CustomUserManager(UserManager):
@@ -125,9 +129,10 @@ class Student(models.Model):
     contact_number = models.BigIntegerField(blank=False, null=True)
     course = models.ManyToManyField(Course)
     image = models.ImageField(
-        upload_to = 'profileimgs/',
         blank=False,
         null=True,
+        upload_to = 'profileimgs/',
+        validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])],
     )
     centre = models.ForeignKey(
         Centre,
@@ -141,7 +146,12 @@ class Student(models.Model):
 class Category(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=False)
-    image = models.ImageField(blank=True, null=True, upload_to='imgs/')
+    image = models.ImageField(
+        blank=True,
+        null=True,
+        upload_to='imgs/',
+        validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])],
+    )
     super_admin = models.ForeignKey(
         SuperAdmin,
         on_delete=models.CASCADE,
@@ -154,7 +164,12 @@ class Category(models.Model):
 class Subject(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=False)
-    image = models.ImageField(blank=True, null=True, upload_to='imgs/')
+    image = models.ImageField(
+        blank=True,
+        null=True,
+        upload_to='imgs/',
+        validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])],
+    )
     course = models.ManyToManyField(Course)
     super_admin = models.ForeignKey(
         SuperAdmin,
@@ -167,7 +182,12 @@ class Subject(models.Model):
 class Unit(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=False)
-    image = models.ImageField(blank=True, null=True, upload_to='imgs/')
+    image = models.ImageField(
+        blank=True,
+        null=True,
+        upload_to='imgs/',
+        validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])],
+    )
     subject = models.ForeignKey(
         Subject,
         on_delete=models.CASCADE,
@@ -180,7 +200,13 @@ class Unit(models.Model):
 class Test(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
+    # In case of upcoming test, start time and end time is compulsory
     startTime = models.DateTimeField(default = timezone.now)
+    endtime = models.DateTimeField(blank=True, null=True)
+    typeOfTest = models.CharField(
+        max_length = 8,
+        choices = (('upcoming', 'upcoming'), ('practice', 'practice')),
+    )
     duration = models.DurationField(blank=False, null=False, default=datetime.timedelta(hours=3))
     instructions = models.TextField(blank=True, null=True)
     totalMarks = models.FloatField(default=0.0, blank=True)
@@ -214,7 +240,7 @@ class Test(models.Model):
             return self.title + ' (' + self.unit.title + ')'
         elif self.subject:
             return self.title + ' (' + self.subject.title + ')'
-        return self.title + ' (' + self.category + ')'
+        return self.title + ' (' + self.category.title + ')'
 
 # Section Model : Each test will have one or more section
 # section will contain questions.

@@ -16,6 +16,12 @@ urlpatterns = [
     path('courses/edit/<int:pk>/', EditCourseViewSet.as_view()),
     path('courses/delete/<int:pk>/', deleteCourse),
 
+    # Endpoints for subjects
+    path('subjects/', SubjectViewSet.as_view({'get': 'list'})),
+    path('subjects/add/', AddSubjectViewSet.as_view()),
+    path('subjects/edit/<int:pk>/', EditSubjectViewSet.as_view()),
+    path('subjects/delete/<int:pk>/', deleteSubject),
+
     path('sections/add/', AddSectionView.as_view()),
     path('students/add/', AddBulkStudentsView.as_view()),
     path('staff/add/', AddStaffView.as_view()),

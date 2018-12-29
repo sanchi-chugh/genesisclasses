@@ -84,6 +84,17 @@ class EditCentreViewSet(UpdateAPIView):
         return queryset
 
     def put(self, request, *args, **kwargs):
+        location = request.data['location']
+        pk = kwargs['pk']
+
+        # Do not form another centre obj with already existing location
+        centre = get_object_or_404(Centre, pk=int(pk))
+        super_admin = get_super_admin(self.request.user)
+        centreObjs = self.model.objects.filter(location=location, super_admin=super_admin)
+        if len(centreObjs) != 0 and centre not in centreObjs:
+            return Response({
+                "status": "error", "message": "Centre with the same location already exists"})
+
         self.partial_update(request, *args, **kwargs)
         return Response({ "status": "successful" })
 
@@ -148,6 +159,17 @@ class EditCourseViewSet(UpdateAPIView):
         return queryset
 
     def put(self, request, *args, **kwargs):
+        title = request.data['title']
+        pk = kwargs['pk']
+
+        # Do not form another course obj with already existing title
+        course = get_object_or_404(Course, pk=int(pk))
+        super_admin = get_super_admin(self.request.user)
+        courseObjs = self.model.objects.filter(title=title, super_admin=super_admin)
+        if len(courseObjs) != 0 and course not in courseObjs:
+            return Response({
+                "status": "error", "message": "Course with the same title already exists"})
+
         self.partial_update(request, *args, **kwargs)
         return Response({ "status": "successful" })
 
@@ -183,7 +205,11 @@ class AddSubjectViewSet(CreateAPIView):
         courses = data['course'].split(',')
         title = data['title']
         for course in courses:
-            subjectObjs = self.model.objects.filter(title=title, course=course)
+            subjectObjs = self.model.objects.filter(
+                title=title,
+                course=course,
+                super_admin=super_admin,
+                )
             if len(subjectObjs) != 0:
                 return Response({"status": "error",
                     "message": "Subject with the same title in the same course(s) already exists"})
@@ -230,13 +256,18 @@ class EditSubjectViewSet(UpdateAPIView):
     def put(self, request, *args, **kwargs):
         subject_id = kwargs['pk']
         subject = get_object_or_404(Subject, pk=subject_id)
+        super_admin = get_super_admin(self.request.user)
         data = request.data
 
         # Do not add subject of the same title, in the same course
         courses = data['course'].split(',')
         title = data['title']
         for course in courses:
-            subjectObjs = self.model.objects.filter(title=title, course=course)
+            subjectObjs = self.model.objects.filter(
+                title=title,
+                course=course,
+                super_admin=super_admin,
+                )
             if len(subjectObjs) != 0 and subject not in subjectObjs:
                 return Response({"status": "error",
                     "message": "Subject with the same title in the same course(s) already exists"})

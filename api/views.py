@@ -78,7 +78,14 @@ class AddCentreViewSet(CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         super_admin = get_super_admin(self.request.user)
+
+        # Search for missing fields
+        check_pass, result = fields_check(['location'], request.data)
+        if not check_pass:
+            return result
+
         location = request.data['location']
+
         # Do not form another centre obj with already existing location
         centreObjs = Centre.objects.filter(location=location, super_admin=super_admin)
         if(len(centreObjs) != 0):
@@ -100,8 +107,14 @@ class EditCentreViewSet(UpdateAPIView):
         return queryset
 
     def put(self, request, *args, **kwargs):
-        location = request.data['location']
         pk = kwargs['pk']
+
+        # Search for missing fields
+        check_pass, result = fields_check(['location'], request.data)
+        if not check_pass:
+            return result
+
+        location = request.data['location']
 
         # Do not form another centre obj with already existing location
         centre = get_object_or_404(Centre, pk=int(pk))
@@ -154,7 +167,14 @@ class AddCourseViewSet(CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         super_admin = get_super_admin(self.request.user)
+
+        # Search for missing fields
+        check_pass, result = fields_check(['title'], request.data)
+        if not check_pass:
+            return result
+        
         title = request.data['title']
+
         # Do not form another course obj with already existing title
         courseObjs = self.model.objects.filter(title=title, super_admin=super_admin)
         if(len(courseObjs) != 0):
@@ -175,8 +195,14 @@ class EditCourseViewSet(UpdateAPIView):
         return queryset
 
     def put(self, request, *args, **kwargs):
-        title = request.data['title']
         pk = kwargs['pk']
+
+        # Search for missing fields
+        check_pass, result = fields_check(['title'], request.data)
+        if not check_pass:
+            return result
+        
+        title = request.data['title']
 
         # Do not form another course obj with already existing title
         course = get_object_or_404(Course, pk=int(pk))
@@ -216,6 +242,11 @@ class AddSubjectViewSet(CreateAPIView):
     def post(self, request, *args, **kwargs):
         super_admin = get_super_admin(self.request.user)
         data = request.data
+
+        # Search for missing fields
+        check_pass, result = fields_check(['course', 'title'], request.data)
+        if not check_pass:
+            return result
 
         # Do not add subject of the same title, in the same course
         courses = data['course'].split(',')
@@ -274,6 +305,11 @@ class EditSubjectViewSet(UpdateAPIView):
         subject = get_object_or_404(Subject, pk=subject_id)
         super_admin = get_super_admin(self.request.user)
         data = request.data
+
+        # Search for missing fields
+        check_pass, result = fields_check(['course', 'title'], request.data)
+        if not check_pass:
+            return result
 
         # Do not add subject of the same title, in the same course
         courses = data['course'].split(',')

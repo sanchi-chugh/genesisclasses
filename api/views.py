@@ -12,6 +12,8 @@ from django.core.mail import send_mail
 from .permissions import *
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
+from rest_framework.status import HTTP_400_BAD_REQUEST
+from .paginators import *
 import json
 import uuid
 import os
@@ -25,6 +27,20 @@ def get_super_admin(user):
     else:
         super_admin = user.superadmin
     return super_admin
+
+# Helper func to give error response if compulsory fields are missing
+def fields_check(fields_arr, data):
+    missing_fields = []
+    for field in fields_arr:
+        if field not in data:
+            missing_fields.append(field)
+
+    # Return True if check passes
+    if len(missing_fields) == 0:
+        return (True, '')
+    return (False, Response({
+        "status": "error", "message": "Some fields are missing. Please provide \"" + '", "'.join(missing_fields) + "\""}, 
+        status=HTTP_400_BAD_REQUEST))
 
 class CompleteProfileView(UpdateAPIView):
     serializer_class = StudentSerializer
@@ -52,7 +68,7 @@ class CentreViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
-        queryset = self.model.objects.filter(super_admin=super_admin)
+        queryset = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
         return queryset
 
 # Adds a centre for the requested superadmin
@@ -62,7 +78,14 @@ class AddCentreViewSet(CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         super_admin = get_super_admin(self.request.user)
+
+        # Search for missing fields
+        check_pass, result = fields_check(['location'], request.data)
+        if not check_pass:
+            return result
+
         location = request.data['location']
+
         # Do not form another centre obj with already existing location
         centreObjs = Centre.objects.filter(location=location, super_admin=super_admin)
         if(len(centreObjs) != 0):
@@ -84,8 +107,14 @@ class EditCentreViewSet(UpdateAPIView):
         return queryset
 
     def put(self, request, *args, **kwargs):
-        location = request.data['location']
         pk = kwargs['pk']
+
+        # Search for missing fields
+        check_pass, result = fields_check(['location'], request.data)
+        if not check_pass:
+            return result
+
+        location = request.data['location']
 
         # Do not form another centre obj with already existing location
         centre = get_object_or_404(Centre, pk=int(pk))
@@ -128,7 +157,7 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
-        queryset = self.model.objects.filter(super_admin=super_admin)
+        queryset = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
         return queryset
 
 # Adds a course for the requested superadmin
@@ -138,7 +167,14 @@ class AddCourseViewSet(CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         super_admin = get_super_admin(self.request.user)
+
+        # Search for missing fields
+        check_pass, result = fields_check(['title'], request.data)
+        if not check_pass:
+            return result
+        
         title = request.data['title']
+
         # Do not form another course obj with already existing title
         courseObjs = self.model.objects.filter(title=title, super_admin=super_admin)
         if(len(courseObjs) != 0):
@@ -159,8 +195,14 @@ class EditCourseViewSet(UpdateAPIView):
         return queryset
 
     def put(self, request, *args, **kwargs):
-        title = request.data['title']
         pk = kwargs['pk']
+
+        # Search for missing fields
+        check_pass, result = fields_check(['title'], request.data)
+        if not check_pass:
+            return result
+        
+        title = request.data['title']
 
         # Do not form another course obj with already existing title
         course = get_object_or_404(Course, pk=int(pk))
@@ -189,7 +231,7 @@ class SubjectViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
-        queryset = self.model.objects.filter(super_admin=super_admin)
+        queryset = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
         return queryset
 
 # Adds a subject for the requested superadmin
@@ -200,6 +242,11 @@ class AddSubjectViewSet(CreateAPIView):
     def post(self, request, *args, **kwargs):
         super_admin = get_super_admin(self.request.user)
         data = request.data
+
+        # Search for missing fields
+        check_pass, result = fields_check(['course', 'title'], request.data)
+        if not check_pass:
+            return result
 
         # Do not add subject of the same title, in the same course
         courses = data['course'].split(',')
@@ -259,6 +306,11 @@ class EditSubjectViewSet(UpdateAPIView):
         super_admin = get_super_admin(self.request.user)
         data = request.data
 
+        # Search for missing fields
+        check_pass, result = fields_check(['course', 'title'], request.data)
+        if not check_pass:
+            return result
+
         # Do not add subject of the same title, in the same course
         courses = data['course'].split(',')
         title = data['title']
@@ -315,6 +367,140 @@ def deleteSubject(request, pk):
             testObj.save()
 
     subjectObj.delete()
+    return Response({'status': 'successful'})
+
+# Shows list of units under a superadmin
+class UnitViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Unit
+    serializer_class = UnitSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        subjects = Subject.objects.filter(super_admin=super_admin)
+        units = Unit.objects.filter(subject__in=subjects).order_by('-pk')
+        return units
+
+# Shows list of units of a particular subject
+class SubjectWiseUnitViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Unit
+    serializer_class = SubjectWiseUnitSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        subjects = Subject.objects.filter(super_admin=super_admin)
+        return subjects
+
+# Adds a unit for the requested superadmin
+class AddUnitViewSet(CreateAPIView):
+    model = Unit
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        data = request.data
+
+        # Search for missing fields
+        check_pass, result = fields_check(['subject', 'title'], data)
+        if not check_pass:
+            return result
+
+        title = data['title']
+        subj_id = data['subject']
+
+        # Raise 404 if subject does not exist
+        subject = get_object_or_404(Subject, super_admin=super_admin, pk=int(subj_id))
+
+        # Do not form another unit with already existing title in the same subject
+        unitObjs = self.model.objects.filter(title=title, subject=subject)
+        if len(unitObjs) != 0:
+            return Response({
+                "status": "error", "message": "Unit with the same title in the same subject already exists"})
+
+        # Image and description are optional
+        image = None
+        if 'image' in data:
+            image = data['image']
+        description = None
+        if 'description' in data:
+            description = data['description']
+        self.model.objects.create(
+            title=title,
+            description=description,
+            image=image,
+            subject=subject,
+            )
+        return Response({'status': 'successful'})
+
+# Edit a unit for the requested superadmin
+class EditUnitViewSet(UpdateAPIView):
+    model = Unit
+    serializer_class = UnitSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        subjects = Subject.objects.filter(super_admin=super_admin)
+        units = Unit.objects.filter(subject__in=subjects)
+        return units
+
+    def put(self, request, *args, **kwargs):
+        unit_id = kwargs['pk']
+        unit = get_object_or_404(Unit, pk=unit_id)
+        super_admin = get_super_admin(self.request.user)
+        data = request.data
+
+        # Search for missing fields
+        check_pass, result = fields_check(['subject', 'title'], data)
+        if not check_pass:
+            return result
+
+        title = data['title']
+        subj_id = data['subject']
+
+        # Raise 404 if subject does not exist
+        subject = get_object_or_404(Subject, super_admin=super_admin, pk=int(subj_id))
+
+        # Do not form another unit with already existing title in the same subject
+        unitObjs = self.model.objects.filter(title=title, subject=subject)
+        if len(unitObjs) != 0 and unit not in unitObjs:
+            return Response({
+                "status": "error", "message": "Unit with the same title in the same subject already exists"})
+
+        # Remove previous image from system
+        if unit.image:
+            os.remove(unit.image.file.name)
+            unit.image = None
+            unit.save()
+
+        # Update subject
+        unit.subject = subject
+        unit.save()
+
+        # Update rest of the data
+        self.partial_update(request, *args, **kwargs)
+
+        return Response({'status': 'successful'})
+
+# Delete unit of a particular subject
+@api_view(['DELETE'])
+@permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
+def deleteUnit(request, pk):
+    unitObj = get_object_or_404(Unit, pk=pk)
+    transfer_unit = request.data.get('unit')
+    if transfer_unit:
+        # If tests have to be shifted to another unit
+        # **needed in case of unit wise tests only**
+        transfer_unit = get_object_or_404(Unit, pk=int(transfer_unit))
+        testObjs = Test.objects.filter(unit=unitObj)
+        for testObj in testObjs:
+            testObj.unit = transfer_unit
+            testObj.save()
+
+    unitObj.delete()
     return Response({'status': 'successful'})
 
 class TestFromDocView(APIView):

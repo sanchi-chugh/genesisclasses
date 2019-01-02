@@ -191,6 +191,7 @@ class Unit(models.Model):
     subject = models.ForeignKey(
         Subject,
         on_delete=models.CASCADE,
+        related_name='units',
     )
     def __str__(self):
         return self.title + ' (' + self.subject.title + ')'

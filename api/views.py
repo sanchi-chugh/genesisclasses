@@ -68,7 +68,7 @@ class CentreViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
-        queryset = self.model.objects.filter(super_admin=super_admin)
+        queryset = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
         return queryset
 
 # Adds a centre for the requested superadmin
@@ -144,7 +144,7 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
-        queryset = self.model.objects.filter(super_admin=super_admin)
+        queryset = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
         return queryset
 
 # Adds a course for the requested superadmin
@@ -205,7 +205,7 @@ class SubjectViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
-        queryset = self.model.objects.filter(super_admin=super_admin)
+        queryset = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
         return queryset
 
 # Adds a subject for the requested superadmin
@@ -343,7 +343,7 @@ class UnitViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
         subjects = Subject.objects.filter(super_admin=super_admin)
-        units = Unit.objects.filter(subject__in=subjects)
+        units = Unit.objects.filter(subject__in=subjects).order_by('-pk')
         return units
 
 # Adds a unit for the requested superadmin

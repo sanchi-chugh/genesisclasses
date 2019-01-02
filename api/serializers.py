@@ -57,6 +57,12 @@ class SubjectSerializer(serializers.ModelSerializer):
         model = Subject
         exclude = ['super_admin']
 
+class UnitSerializer(serializers.ModelSerializer):
+    subject = SubjectSerializer(read_only=True)
+    class Meta:
+        model = Unit
+        exclude = []
+
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option

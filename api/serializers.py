@@ -55,13 +55,29 @@ class SubjectSerializer(serializers.ModelSerializer):
     course = CourseSerializer(many=True, read_only=True)
     class Meta:
         model = Subject
-        exclude = ['super_admin']
+        fields = ['title', 'id', 'course']
 
 class UnitSerializer(serializers.ModelSerializer):
     subject = SubjectSerializer(read_only=True)
     class Meta:
         model = Unit
         exclude = []
+
+class UnitSerializerExcludingSubject(serializers.ModelSerializer):
+    class Meta:
+        model = Unit
+        exclude = ['subject']
+
+class SubjectWiseUnitSerializer(serializers.ModelSerializer):
+    units = UnitSerializerExcludingSubject(many=True, read_only=True)
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+        )
+    class Meta:
+        model = Subject
+        fields = ['title', 'id', 'units', 'course']
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:

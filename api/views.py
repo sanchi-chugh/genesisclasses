@@ -382,6 +382,18 @@ class UnitViewSet(viewsets.ReadOnlyModelViewSet):
         units = Unit.objects.filter(subject__in=subjects).order_by('-pk')
         return units
 
+# Shows list of units of a particular subject
+class SubjectWiseUnitViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Unit
+    serializer_class = SubjectWiseUnitSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        subjects = Subject.objects.filter(super_admin=super_admin)
+        return subjects
+
 # Adds a unit for the requested superadmin
 class AddUnitViewSet(CreateAPIView):
     model = Unit

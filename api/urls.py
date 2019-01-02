@@ -24,6 +24,7 @@ urlpatterns = [
 
     # Endpoints for units
     path('units/', UnitViewSet.as_view({'get': 'list'})),
+    path('subjectWiseUnits/', SubjectWiseUnitViewSet.as_view({'get': 'list'})),
     path('units/add/', AddUnitViewSet.as_view()),
     path('units/edit/<int:pk>/', EditUnitViewSet.as_view()),
     path('units/delete/<int:pk>/', deleteUnit),

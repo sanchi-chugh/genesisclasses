@@ -13,6 +13,7 @@ from .permissions import *
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
 from rest_framework.status import HTTP_400_BAD_REQUEST
+from .paginators import *
 import json
 import uuid
 import os
@@ -337,6 +338,7 @@ class UnitViewSet(viewsets.ReadOnlyModelViewSet):
     model = Unit
     serializer_class = UnitSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)

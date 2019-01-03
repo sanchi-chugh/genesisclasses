@@ -29,6 +29,12 @@ urlpatterns = [
     path('units/edit/<int:pk>/', EditUnitViewSet.as_view()),
     path('units/delete/<int:pk>/', deleteUnit),
 
+    # Endpoints for test categories
+    path('testCategories/', TestCategoryViewSet.as_view({'get': 'list'})),
+    path('testCategories/add/', AddTestCategoryViewSet.as_view()),
+    path('testCategories/edit/<int:pk>/', EditTestCategoryViewSet.as_view()),
+    path('testCategories/delete/<int:pk>/', deleteTestCategory),
+
     path('sections/add/', AddSectionView.as_view()),
     path('students/add/', AddBulkStudentsView.as_view()),
     path('staff/add/', AddStaffView.as_view()),

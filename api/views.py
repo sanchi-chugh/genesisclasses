@@ -503,6 +503,114 @@ def deleteUnit(request, pk):
     unitObj.delete()
     return Response({'status': 'successful'})
 
+# Shows list of test categories under a superadmin
+class TestCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Category
+    serializer_class = TestCategorySerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        queryset = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
+        return queryset
+
+# Adds a test category for the requested superadmin
+class AddTestCategoryViewSet(CreateAPIView):
+    model = Category
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        data = request.data
+
+        # Search for missing fields
+        check_pass, result = fields_check(['title'], request.data)
+        if not check_pass:
+            return result
+        
+        title = data['title']
+
+        # Do not form another test category with same title
+        categoryObjs = self.model.objects.filter(title=title, super_admin=super_admin)
+        if(len(categoryObjs) != 0):
+            return Response({
+                "status": "error", "message": "Test Category with the same title already exists"})
+        
+        # Image and description are optional
+        image = None
+        if 'image' in data:
+            image = data['image']
+        description = None
+        if 'description' in data:
+            description = data['description']
+        self.model.objects.create(
+            title=title,
+            super_admin=super_admin,
+            image=image,
+            description=description,
+            )
+
+        return Response({"status": "successful"})
+
+# Edits a test category for the requested superadmin
+class EditTestCategoryViewSet(UpdateAPIView):
+    model = Category
+    serializer_class = TestCategorySerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        queryset = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
+        return queryset
+
+    def put(self, request, *args, **kwargs):
+        category_id = kwargs['pk']
+        category = get_object_or_404(Category, pk=category_id)
+        super_admin = get_super_admin(self.request.user)
+        data = request.data
+
+        # Search for missing fields
+        check_pass, result = fields_check(['title'], data)
+        if not check_pass:
+            return result
+
+        title = data['title']
+
+        # Do not form another test category with same title
+        categoryObjs = self.model.objects.filter(title=title, super_admin=super_admin)
+        if(len(categoryObjs) != 0 and category not in categoryObjs):
+            return Response({
+                "status": "error", "message": "Test Category with the same title already exists"})
+
+        # Remove previous image from system
+        if category.image:
+            os.remove(category.image.file.name)
+            category.image = None
+            category.save()
+
+        # Update rest of the data
+        self.partial_update(request, *args, **kwargs)
+
+        return Response({'status': 'successful'})
+
+# Delete test category of the requested super admin
+@api_view(['DELETE'])
+@permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
+def deleteTestCategory(request, pk):
+    categoryObj = get_object_or_404(Category, pk=pk)
+    transfer_category = request.data.get('category')
+    if transfer_category:
+        # If tests have to be shifted to another category
+        # otherwise tests belonging to this category will be deleted
+        transfer_category = get_object_or_404(Category, pk=int(transfer_category))
+        testObjs = Test.objects.filter(category=transfer_category)
+        for testObj in testObjs:
+            testObj.category = transfer_category
+            testObj.save()
+
+    categoryObj.delete()
+    return Response({'status': 'successful'})
+
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):
 

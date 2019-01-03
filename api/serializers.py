@@ -79,6 +79,11 @@ class SubjectWiseUnitSerializer(serializers.ModelSerializer):
         model = Subject
         fields = ['title', 'id', 'units', 'course']
 
+class TestCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        exclude = ['super_admin']
+
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option

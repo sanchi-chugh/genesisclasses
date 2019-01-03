@@ -142,7 +142,7 @@ class Student(models.Model):
     def __str__(self):
         return str(self.first_name)
 
-# Categories : Each test will belong to a category OR a unit and a category both
+# Categories : Each test will belong to a category OR a subj, unit and a category
 class Category(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=False)

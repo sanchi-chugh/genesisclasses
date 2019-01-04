@@ -3,9 +3,6 @@ import LoginScreen from "../views/LoginScreen/LoginScreen";
 
 var appRoutes = [
     { 
-        path: "/login/", name: "login", component: LoginScreen
-    },
-    { 
         path: "/", name: "index", component: Dashboard
     },
     { 

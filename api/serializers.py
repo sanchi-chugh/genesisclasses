@@ -21,6 +21,25 @@ class CentreSerializer(serializers.ModelSerializer):
         model = Centre
         exclude = ['super_admin']
 
+class StudentUserSerializer(serializers.ModelSerializer):
+    centre = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='location',
+    )
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    dateOfBirth = serializers.DateField(format='%b %d, %Y')
+    email = serializers.SerializerMethodField()
+    class Meta:
+        model = Student
+        exclude = ['user', 'complete']
+
+    def get_email(self, obj):
+        return obj.user.email
+
 class StaffSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     course = CourseSerializer(read_only=True)
@@ -36,6 +55,7 @@ class StaffSerializer(serializers.ModelSerializer):
         model = Staff
         fields = '__all__'
 
+# Currently being used in complete profile view
 class StudentSerializer(serializers.ModelSerializer):
     course = CourseSerializer(read_only=True)
     centre = CentreSerializer(read_only=True)
@@ -78,6 +98,11 @@ class SubjectWiseUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
         fields = ['title', 'id', 'units', 'course']
+
+class TestCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        exclude = ['super_admin']
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:

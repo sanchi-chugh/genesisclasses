@@ -60,6 +60,196 @@ class CompleteProfileView(UpdateAPIView):
         return response
 
 # -------------------SUPER ADMIN VIEWS-------------------------
+# Shows list of students (permitted to a superadmin only)
+class StudentUserViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Student
+    serializer_class = StudentUserSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        centreObjs = Centre.objects.filter(super_admin=super_admin)
+        students = self.model.objects.filter(centre__in=centreObjs).order_by('-pk')
+        return students
+
+# Adds a student for the requested superadmin
+class AddStudentUserViewSet(CreateAPIView):
+    model = Student
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        data = request.data
+
+        # Search for missing fields
+        check_pass, result = fields_check([
+            'first_name', 'last_name', 'contact_number', 
+            'email', 'centre', 'course'], data)
+        if not check_pass:
+            return result
+
+        email = data['email']
+
+        # Do not form another student with the same email id
+        userObjs = User.objects.filter(email=email, type_of_user='student')
+        if(len(userObjs) != 0):
+            return Response({
+                "status": "error", "message": "A student with the same email id already exists."})
+
+        centre = get_object_or_404(Centre, pk=int(data['centre']), super_admin=super_admin)
+
+        # Make course array for student access
+        courses = data['course'].split(',')
+        courses_arr = []
+        for course_id in courses:
+            try:
+                course = Course.objects.get(pk=int(course_id))
+                courses_arr.append(course)
+            except Course.DoesNotExist:
+                pass
+        # Return if student can't access any course
+        if len(courses_arr) == 0:
+            return Response({
+                "status": "error", "message": "Please provide at least one valid course"})
+
+        # Get unique username
+        last_student = Student.objects.all().order_by('-pk')[0]
+        new_pk = last_student.pk + 1
+        username = 'Student' + str(new_pk)
+
+        # Make user for authentication
+        # (correspoding student is automatically created)
+        user = User.objects.create(
+            email=email,
+            type_of_user='student',
+            username=username,
+        )
+        
+        # Add info to corresponding student obj
+        student, _ = self.model.objects.get_or_create(user=user)
+        student.first_name=data['first_name']
+        student.last_name=data['last_name']
+        student.contact_number=int(data['contact_number'])
+        student.centre=centre
+        student.course.set(courses_arr)
+        student.save()
+        
+        # Add rest of the values
+        student.father_name = None
+        if 'father_name' in data:
+            student.father_name = data['father_name']
+        
+        student.address = None
+        if 'address' in data:
+            student.address = data['address']
+        
+        student.city = None
+        if 'city' in data:
+            student.city = data['city']
+
+        student.state = None
+        if 'state' in data:
+            student.state = data['state']
+
+        student.pinCode = None
+        if 'pinCode' in data:
+            student.pinCode = data['pinCode']
+
+        student.gender = None
+        if 'gender' in data:
+            student.gender = data['gender']
+
+        student.dateOfBirth = None
+        if 'dateOfBirth' in data:
+            student.dateOfBirth = data['dateOfBirth']
+
+        student.image = None
+        if 'image' in data:
+            student.image = data['image']
+        
+        student.save()
+
+        return Response({"status": "successful"})
+
+# Edit a student belonging to a centre of the respective super admin
+class EditStudentUserViewSet(UpdateAPIView):
+    model = Student
+    serializer_class = StudentUserSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        centreObjs = Centre.objects.filter(super_admin=super_admin)
+        students = self.model.objects.filter(centre__in=centreObjs).order_by('-pk')
+        return students
+
+    def put(self, request, *args, **kwargs):
+        studentID = kwargs['pk']
+        studentObj = Student.objects.get(pk=studentID)
+        studentUserObj = User.objects.get(pk=studentObj.user.id)
+        super_admin = get_super_admin(self.request.user)
+        data = request.data
+
+        # Search for missing fields
+        check_pass, result = fields_check([
+            'first_name', 'last_name', 'contact_number', 
+            'email', 'centre', 'course'], data)
+        if not check_pass:
+            return result
+
+        email = data['email']
+
+        # Do not form another student with the same email id
+        if email != studentUserObj.email:
+            userObjs = User.objects.filter(email=email, type_of_user='student')
+            if len(userObjs) != 0:
+                return Response({
+                    "status": "error", "message": "A student with the same email id already exists."})
+            studentUserObj.email = email
+            studentUserObj.save()
+
+        centre = get_object_or_404(Centre, pk=int(data['centre']), super_admin=super_admin)
+
+        # Make course array for student access
+        courses = data['course'].split(',')
+        courses_arr = []
+        for course_id in courses:
+            try:
+                course = Course.objects.get(pk=int(course_id))
+                courses_arr.append(course)
+            except Course.DoesNotExist:
+                pass
+        # Return if student can't access any course
+        if len(courses_arr) == 0:
+            return Response({
+                "status": "error", "message": "Please provide at least one valid course"})
+        studentObj.course.set(courses_arr)
+        studentObj.save()
+
+        # Update centre of the user
+        if studentObj.centre != centre:
+            studentObj.centre = centre
+            studentObj.save()
+
+        # Remove previous image from system
+        if studentObj.image:
+            os.remove(studentObj.image.file.name)
+            studentObj.image = None
+            studentObj.save()
+
+        self.partial_update(request, *args, **kwargs)
+
+        return Response({'status': 'successful'})
+
+# Delete a student
+@api_view(['DELETE'])
+@permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
+def DeleteStudentUser(request, pk):
+    studentObj = get_object_or_404(Student, pk=pk)
+    studentObj.delete()
+    return Response({'status': 'successful'})
+
 # Shows list of centres (permitted to a superadmin only)
 class CentreViewSet(viewsets.ReadOnlyModelViewSet):
     model = Centre
@@ -503,6 +693,114 @@ def deleteUnit(request, pk):
     unitObj.delete()
     return Response({'status': 'successful'})
 
+# Shows list of test categories under a superadmin
+class TestCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Category
+    serializer_class = TestCategorySerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        queryset = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
+        return queryset
+
+# Adds a test category for the requested superadmin
+class AddTestCategoryViewSet(CreateAPIView):
+    model = Category
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        data = request.data
+
+        # Search for missing fields
+        check_pass, result = fields_check(['title'], request.data)
+        if not check_pass:
+            return result
+        
+        title = data['title']
+
+        # Do not form another test category with same title
+        categoryObjs = self.model.objects.filter(title=title, super_admin=super_admin)
+        if(len(categoryObjs) != 0):
+            return Response({
+                "status": "error", "message": "Test Category with the same title already exists"})
+        
+        # Image and description are optional
+        image = None
+        if 'image' in data:
+            image = data['image']
+        description = None
+        if 'description' in data:
+            description = data['description']
+        self.model.objects.create(
+            title=title,
+            super_admin=super_admin,
+            image=image,
+            description=description,
+            )
+
+        return Response({"status": "successful"})
+
+# Edits a test category for the requested superadmin
+class EditTestCategoryViewSet(UpdateAPIView):
+    model = Category
+    serializer_class = TestCategorySerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        queryset = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
+        return queryset
+
+    def put(self, request, *args, **kwargs):
+        category_id = kwargs['pk']
+        category = get_object_or_404(Category, pk=category_id)
+        super_admin = get_super_admin(self.request.user)
+        data = request.data
+
+        # Search for missing fields
+        check_pass, result = fields_check(['title'], data)
+        if not check_pass:
+            return result
+
+        title = data['title']
+
+        # Do not form another test category with same title
+        categoryObjs = self.model.objects.filter(title=title, super_admin=super_admin)
+        if(len(categoryObjs) != 0 and category not in categoryObjs):
+            return Response({
+                "status": "error", "message": "Test Category with the same title already exists"})
+
+        # Remove previous image from system
+        if category.image:
+            os.remove(category.image.file.name)
+            category.image = None
+            category.save()
+
+        # Update rest of the data
+        self.partial_update(request, *args, **kwargs)
+
+        return Response({'status': 'successful'})
+
+# Delete test category of the requested super admin
+@api_view(['DELETE'])
+@permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
+def deleteTestCategory(request, pk):
+    categoryObj = get_object_or_404(Category, pk=pk)
+    transfer_category = request.data.get('category')
+    if transfer_category:
+        # If tests have to be shifted to another category
+        # otherwise tests belonging to this category will be deleted
+        transfer_category = get_object_or_404(Category, pk=int(transfer_category))
+        testObjs = Test.objects.filter(category=transfer_category)
+        for testObj in testObjs:
+            testObj.category = transfer_category
+            testObj.save()
+
+    categoryObj.delete()
+    return Response({'status': 'successful'})
+
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):
 
@@ -585,10 +883,6 @@ class UpdateOptionView(UpdateAPIView):
 class GetStaffUsersView(ListAPIView):
     serializer_class = StaffSerializer
     queryset = Staff.objects.all()
-
-class GetStudentUsersView(ListAPIView):
-    serializer_class = StudentSerializer
-    queryset = Student.objects.select_related('user', 'course', 'centre').all()
 
 class AddBulkStudentsView(APIView):
     def post(self, request, *args, **kwargs):

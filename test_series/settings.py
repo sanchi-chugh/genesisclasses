@@ -178,7 +178,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('GMAIL_USERNAME', 'gmail_username')
-EMAIL_HOST_PASSWORD = os.getenv('GMAIL_PASSWORD', 'gmail_passsword')
+EMAIL_HOST_USER = 'noreplygenesisclasses'
+EMAIL_HOST_PASSWORD = 'GenesisClasses123!@#'
 # Activate Django-Heroku.
 django_heroku.settings(locals())

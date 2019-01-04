@@ -14,6 +14,13 @@ urlpatterns = [
     path('api-auth/logout/', logout),
     path('api-auth/', include('rest_auth.urls')),
     path('api/', include('api.urls')),
+]
+
+# Add browsable static files
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Add template base urls to django port
+urlpatterns += [
     url(r'^', TemplateView.as_view(template_name="index.html")),
     path('', RedirectView.as_view(url='/home/')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]

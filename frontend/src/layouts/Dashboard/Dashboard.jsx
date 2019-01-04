@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Route, Switch, Redirect } from "react-router-dom";
+import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
 import NotificationSystem from "react-notification-system";
 
 import Header from "../../components/Header/Header";
@@ -106,6 +106,7 @@ class Dashboard extends Component {
         <Sidebar {...this.props} />
         <div id="main-panel" className="main-panel" ref="mainPanel">
           <Header {...this.props} />
+          <BrowserRouter>
           <Switch>
             {dashboardRoutes.map((prop, key) => {
               if (prop.name === "Notifications")
@@ -128,6 +129,7 @@ class Dashboard extends Component {
               );
             })}
           </Switch>
+          </BrowserRouter>
           <Footer />
         </div>
       </div>

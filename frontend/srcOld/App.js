@@ -24,7 +24,6 @@ import Courses from "./components/Courses";
 import AddTest from "./pages/AddTest";
 import FromDoc from "./components/FromDoc";
 import AddTestManually from "./components/AddTestManually";
-import Error404 from './pages/Error404';
 import EditTest from './pages/EditTest';
 import StaffUsers from './pages/StaffUsers';
 import StudentUsers from './pages/StudentUsers';
@@ -106,10 +105,10 @@ class App extends React.Component {
                         callBack(res.data.profile)
                     });
     })
-    .catch((err) => {
-      delete localStorage.token;
-      this.setState({ busy: false });
-    });
+    .catch(() => {
+        delete localStorage.token;
+        this.setState({ busy: false });
+      });
   }
 
   logout(callBack) {

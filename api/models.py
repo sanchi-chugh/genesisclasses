@@ -116,22 +116,24 @@ class Student(models.Model):
     complete = models.BooleanField(default=False)   #Profile complete or not
     first_name = models.CharField(max_length=50, blank=False, null=True)
     last_name = models.CharField(max_length=50, blank=False, null=True)
-    father_name = models.CharField(max_length=50, blank=False, null=True)
-    address = models.CharField(max_length=100, blank=False, null=True)
-    city = models.CharField(max_length=100, blank=False, null=True)
-    state = models.CharField(max_length=100, blank=False, null=True)
-    pinCode = models.BigIntegerField(blank=False, null=True)
+    father_name = models.CharField(max_length=50, blank=True, null=True)
+    address = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    pinCode = models.BigIntegerField(blank=True, null=True)
     gender = models.CharField(
-        max_length = 7,
+        blank=True,
+        null=True,
+        max_length=7,
         choices = (('male', 'male'), ('female', 'female')),
     )
-    dateOfBirth = models.DateField(blank=False, null=True)
+    dateOfBirth = models.DateField(blank=True, null=True)
     contact_number = models.BigIntegerField(blank=False, null=True)
     course = models.ManyToManyField(Course)
     image = models.ImageField(
-        blank=False,
+        blank=True,
         null=True,
-        upload_to = 'profileimgs/',
+        upload_to='profileimgs/',
         validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])],
     )
     centre = models.ForeignKey(

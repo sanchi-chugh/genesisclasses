@@ -22,6 +22,7 @@ class App extends React.Component {
   }
 
   getUser(callBack) {
+    console.log('fetch user')
     axios.get('/api-auth/user/',{
       headers: {Authorization: `Token ${localStorage.token}`}
     })
@@ -56,7 +57,7 @@ class App extends React.Component {
         return(
             <BrowserRouter>
                 <Switch>
-                   <Route to={'/login/'} component={LoginScreen} />
+                    <Route to={'/login/'} render={(props) => <LoginScreen {...props} getUser={this.getUser} /> } />
                 </Switch>
             </BrowserRouter>
         );

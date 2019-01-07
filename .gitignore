@@ -3,6 +3,5 @@ venv
 staticfiles
 .env
 *.sqlite3
-assets
 webpack-stats.*
 media

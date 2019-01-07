@@ -29,11 +29,23 @@ urlpatterns = [
     path('units/edit/<int:pk>/', EditUnitViewSet.as_view()),
     path('units/delete/<int:pk>/', deleteUnit),
 
-    path('sections/add/', AddSectionView.as_view()),
+    # Endpoints for test categories
+    path('testCategories/', TestCategoryViewSet.as_view({'get': 'list'})),
+    path('testCategories/add/', AddTestCategoryViewSet.as_view()),
+    path('testCategories/edit/<int:pk>/', EditTestCategoryViewSet.as_view()),
+    path('testCategories/delete/<int:pk>/', deleteTestCategory),
+
+    # Endpoints for students
+    path('users/students/', StudentUserViewSet.as_view({'get': 'list'})),
+    path('users/students/add/', AddStudentUserViewSet.as_view()),
+    path('users/students/edit/<int:pk>/', EditStudentUserViewSet.as_view()),
+    path('users/students/delete/<int:pk>/', DeleteStudentUser),
+
     path('students/add/', AddBulkStudentsView.as_view()),
+
+    path('sections/add/', AddSectionView.as_view()),
     path('staff/add/', AddStaffView.as_view()),
     path('users/staff/', GetStaffUsersView.as_view()),
-    path('users/students/', GetStudentUsersView.as_view()),
     path('tests/list/', TestListView.as_view()),
     path('tests/<int:pk>/', TestDetailsView.as_view()),
     path('tests/update/<int:pk>/', UpdateTestView.as_view()),

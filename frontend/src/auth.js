@@ -28,6 +28,7 @@ export const getToken = (username, pass, cb) => {
         "username": username,
         "password": pass
     }).then((res) => {
+        console.log(res);
         cb({
             authenticated: true,
             token: res.data.key,

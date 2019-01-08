@@ -6,6 +6,7 @@ import Icons from "../views/Icons/Icons";
 import Maps from "../views/Maps/Maps";
 import Notifications from "../views/Notifications/Notifications";
 import Upgrade from "../views/Upgrade/Upgrade";
+import Centres from "../views/Centres/Centres";
 
 const dashboardRoutes = [
   {
@@ -13,6 +14,12 @@ const dashboardRoutes = [
     name: "Dashboard",
     icon: "pe-7s-graph",
     component: Dashboard
+  },
+  {
+    path: "/centre",
+    name: "Centres",
+    icon: "pe-7s-culture",
+    component: Centres
   },
   {
     path: "/user",

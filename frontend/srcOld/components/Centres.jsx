@@ -65,7 +65,6 @@ class Centres extends Component {
       }
     }).then(res => {
       const data = res.data;
-      console.log(data);
       this.setState({data});
     });
   }

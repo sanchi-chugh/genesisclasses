@@ -42,6 +42,7 @@ urlpatterns = [
     path('users/students/delete/<int:pk>/', DeleteStudentUser),
     
     # Endpoints for bulk students
+    path('users/students/bulk/', BulkStudentsViewSet.as_view({'get': 'list'})),
     path('users/students/bulk/create/', AddBulkStudentsViewSet.as_view()),
 
     path('sections/add/', AddSectionView.as_view()),

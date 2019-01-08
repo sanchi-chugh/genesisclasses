@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from api.models import *
+from django.utils.timezone import localtime
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,6 +40,21 @@ class StudentUserSerializer(serializers.ModelSerializer):
 
     def get_email(self, obj):
         return obj.user.email
+
+class BulkStudentsSerializer(serializers.ModelSerializer):
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    centre = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='location',
+    )
+    creationDateTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    class Meta:
+        model = BulkStudentsCSV
+        exclude = []
 
 class StaffSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

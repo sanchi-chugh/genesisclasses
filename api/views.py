@@ -250,6 +250,18 @@ def DeleteStudentUser(request, pk):
     studentObj.delete()
     return Response({'status': 'successful'})
 
+class BulkStudentsViewSet(viewsets.ReadOnlyModelViewSet):
+    model = BulkStudentsCSV
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
+    serializer_class = BulkStudentsSerializer
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        centres = Centre.objects.filter(super_admin=super_admin)
+        queryset = self.model.objects.filter(centre__in=centres).order_by('-pk')
+        return queryset
+
 # Add bulk students and save the list in a csv
 class AddBulkStudentsViewSet(CreateAPIView):
     model = BulkStudentsCSV
@@ -322,7 +334,7 @@ class AddBulkStudentsViewSet(CreateAPIView):
         csvFile.close()
 
         # Make BulkStudentsCSV model object and save csv to it
-        bulkCSVObj = self.model.objects.create(csv_file=filename, centre=centre, number=n)
+        bulkCSVObj = self.model.objects.create(csv_file='studentCSVs/' + filename, centre=centre, number=n)
         bulkCSVObj.course.set(courses_arr)
         bulkCSVObj.save()
         return Response({"status": "successful"})

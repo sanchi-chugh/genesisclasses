@@ -13,6 +13,8 @@ from .permissions import *
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
 from rest_framework.status import HTTP_400_BAD_REQUEST
+from django.core.validators import validate_email
+from django.core.validators import ValidationError
 from .paginators import *
 import json
 import uuid
@@ -91,6 +93,24 @@ class AddStudentUserViewSet(CreateAPIView):
 
         email = data['email']
 
+        # Validate email id
+        try:
+            validate_email(email)
+        except ValidationError:
+            return Response({
+                "status": "error", "message": "Provided email id is invalid."})
+
+        # Validate contact number
+        valid_contact = True
+        try:
+            contact_number = int(data['contact_number'])
+        except ValueError:
+            valid_contact = False
+
+        if len(data['contact_number']) != 10 or not valid_contact:
+            return Response({
+                "status": "error", "message": "Provided contact number is invalid. Only 10 digits are allowed."})
+
         # Do not form another student with the same email id
         userObjs = User.objects.filter(email=email, type_of_user='student')
         if(len(userObjs) != 0):
@@ -135,7 +155,7 @@ class AddStudentUserViewSet(CreateAPIView):
         student, _ = self.model.objects.get_or_create(user=user)
         student.first_name=data['first_name']
         student.last_name=data['last_name']
-        student.contact_number=int(data['contact_number'])
+        student.contact_number=contact_number
         student.centre=centre
         student.course.set(courses_arr)
         student.save()
@@ -204,6 +224,24 @@ class EditStudentUserViewSet(UpdateAPIView):
             return result
 
         email = data['email']
+
+        # Validate email id
+        try:
+            validate_email(email)
+        except ValidationError:
+            return Response({
+                "status": "error", "message": "Provided email id is invalid."})
+
+        # Validate contact number
+        valid_contact = True
+        try:
+            _ = int(data['contact_number'])
+        except ValueError:
+            valid_contact = False
+
+        if len(data['contact_number']) != 10 or not valid_contact:
+            return Response({
+                "status": "error", "message": "Provided contact number is invalid. Only 10 digits are allowed."})
 
         # Do not form another student with the same email id
         if email != studentUserObj.email:

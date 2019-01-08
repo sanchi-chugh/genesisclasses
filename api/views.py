@@ -76,7 +76,7 @@ class StudentUserViewSet(viewsets.ReadOnlyModelViewSet):
         return students
 
 # Adds a student for the requested superadmin
-class AddStudentUserViewSet(CreateAPIView):
+class AddStudentUserView(CreateAPIView):
     model = Student
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
@@ -198,7 +198,7 @@ class AddStudentUserViewSet(CreateAPIView):
         return Response({"status": "successful"})
 
 # Edit a student belonging to a centre of the respective super admin
-class EditStudentUserViewSet(UpdateAPIView):
+class EditStudentUserView(UpdateAPIView):
     model = Student
     serializer_class = StudentUserSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -306,7 +306,7 @@ class BulkStudentsViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 # Add bulk students and save the list in a csv
-class AddBulkStudentsViewSet(CreateAPIView):
+class AddBulkStudentsView(CreateAPIView):
     model = BulkStudentsCSV
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
@@ -472,7 +472,7 @@ class CentreViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 # Adds a centre for the requested superadmin
-class AddCentreViewSet(CreateAPIView):
+class AddCentreView(CreateAPIView):
     model = Centre
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
@@ -495,7 +495,7 @@ class AddCentreViewSet(CreateAPIView):
         return Response({"status": "successful"})
 
 # Update centre for the required superadmin
-class EditCentreViewSet(UpdateAPIView):
+class EditCentreView(UpdateAPIView):
     model = Centre
     serializer_class = CentreSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -561,7 +561,7 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 # Adds a course for the requested superadmin
-class AddCourseViewSet(CreateAPIView):
+class AddCourseView(CreateAPIView):
     model = Course
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
@@ -584,7 +584,7 @@ class AddCourseViewSet(CreateAPIView):
         return Response({"status": "successful"})
 
 # Update course for the requested superadmin
-class EditCourseViewSet(UpdateAPIView):
+class EditCourseView(UpdateAPIView):
     model = Course
     serializer_class = CourseSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -635,7 +635,7 @@ class SubjectViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 # Adds a subject for the requested superadmin
-class AddSubjectViewSet(CreateAPIView):
+class AddSubjectView(CreateAPIView):
     model = Subject
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
@@ -690,7 +690,7 @@ class AddSubjectViewSet(CreateAPIView):
         return Response({"status": "successful"})
 
 # Update subject for the requested superadmin
-class EditSubjectViewSet(UpdateAPIView):
+class EditSubjectView(UpdateAPIView):
     model = Subject
     serializer_class = SubjectSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -795,7 +795,7 @@ class SubjectWiseUnitViewSet(viewsets.ReadOnlyModelViewSet):
         return subjects
 
 # Adds a unit for the requested superadmin
-class AddUnitViewSet(CreateAPIView):
+class AddUnitView(CreateAPIView):
     model = Unit
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
@@ -836,7 +836,7 @@ class AddUnitViewSet(CreateAPIView):
         return Response({'status': 'successful'})
 
 # Edit a unit for the requested superadmin
-class EditUnitViewSet(UpdateAPIView):
+class EditUnitView(UpdateAPIView):
     model = Unit
     serializer_class = UnitSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -915,7 +915,7 @@ class TestCategoryViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 # Adds a test category for the requested superadmin
-class AddTestCategoryViewSet(CreateAPIView):
+class AddTestCategoryView(CreateAPIView):
     model = Category
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
@@ -953,7 +953,7 @@ class AddTestCategoryViewSet(CreateAPIView):
         return Response({"status": "successful"})
 
 # Edits a test category for the requested superadmin
-class EditTestCategoryViewSet(UpdateAPIView):
+class EditTestCategoryView(UpdateAPIView):
     model = Category
     serializer_class = TestCategorySerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )

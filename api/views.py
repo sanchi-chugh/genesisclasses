@@ -118,6 +118,11 @@ class AddStudentUserViewSet(CreateAPIView):
         new_pk = last_student.pk + 1
         username = 'Student' + str(new_pk)
 
+        # Change username if another user of the same username already exists
+        existing_usernames = [user['username'] for user in User.objects.values('username')]
+        while username in existing_usernames:
+            username = uuid.uuid4().hex[:8]
+
         # Make user for authentication
         # (correspoding student is automatically created)
         user = User.objects.create(

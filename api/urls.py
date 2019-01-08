@@ -45,6 +45,10 @@ urlpatterns = [
     path('users/students/bulk/', BulkStudentsViewSet.as_view({'get': 'list'})),
     path('users/students/bulk/create/', AddBulkStudentsViewSet.as_view()),
 
+    # Endpoint for downloading csv with data of all students 
+    # (under a particular superadmin)
+    path('getStudentData/', DownloadStudentDataView.as_view()),
+
     path('sections/add/', AddSectionView.as_view()),
     path('staff/add/', AddStaffView.as_view()),
     path('users/staff/', GetStaffUsersView.as_view()),
@@ -57,7 +61,6 @@ urlpatterns = [
     path('tests/add/manual/', AddTestManualView.as_view()),
     path('tests/add/from-doc/', TestFromDocView.as_view()),
     path('complete-profile/<int:pk>/', CompleteProfileView.as_view()),
-    path('courses/', CourseViewSet.as_view({'get' : 'list'})),
 
     # This is for browsable api login/logout
     path('api-auth/', include('rest_framework.urls')),

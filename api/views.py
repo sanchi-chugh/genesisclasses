@@ -382,6 +382,84 @@ class AddBulkStudentsViewSet(CreateAPIView):
         bulkCSVObj.save()
         return Response({"status": "successful"})
 
+# Generate csv containing all student data
+class DownloadStudentDataView(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+
+        # Make directory having all csv of student data of an admin
+        directory = 'media/allStudentCSV/'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        path = directory + 'student_data.csv'
+        csvFile = open(path, 'w')
+        csvFile.write('Name,Contact Number,email,Centre,Courses Enrolled,Gender,Date of Birth,\
+            Father\'s Name,Address,City,State,Pin Code\n')
+
+        centres = Centre.objects.filter(super_admin=super_admin)
+        students = Student.objects.filter(centre__in=centres)
+        for student in students:
+            name = ''
+            if student.first_name:
+                name += student.first_name
+            if student.last_name:
+                name +=  ' ' + student.last_name
+
+            contact_number = ''
+            if student.contact_number:
+                contact_number = str(student.contact_number)
+
+            email = student.user.email
+            centre = student.centre.location
+            
+            courses_arr = []
+            courses = student.course.all()
+            for course in courses:
+                courses_arr.append(course.title)
+            courses = ' | '.join(courses_arr)
+
+            gender = ''
+            if student.gender:
+                gender = student.gender
+            
+            dateOfBirth = ''
+            if student.dateOfBirth:
+                dateOfBirth = datetime.datetime.strptime(str(student.dateOfBirth), '%Y-%m-%d').strftime('%b %d %Y')
+            
+            father_name = ''
+            if student.father_name:
+                father_name = student.father_name
+            
+            address = ''
+            if student.address:
+                address = student.address
+            
+            city = ''
+            if student.city:
+                city = student.city
+            
+            state = ''
+            if student.state:
+                state = student.state
+            
+            pinCode = ''
+            if student.pinCode:
+                pinCode = str(student.pinCode)
+
+            csvFile.write(
+                name.replace(',', '|') + ',' + contact_number.replace(',', '|') + ',' + email.replace(',', '|') +
+                ',' + centre.replace(',', '|')  + ',' + courses.replace(',', '|')  + ',' + gender.replace(',', '|') +
+                ',' + dateOfBirth.replace(',', '|')  + ',' + father_name.replace(',', '|')  + ',' + address.replace(',', '|') +
+                ',' + city.replace(',', '|')  + ',' +  state.replace(',', '|')  + ',' + pinCode.replace(',', '|') + '\n'
+            )
+
+        csvFile.close()
+        absolute_path = 'http://localhost:8000/' + path
+        return Response({'status': 'successful', 'csvFile': absolute_path})
+
 # Shows list of centres (permitted to a superadmin only)
 class CentreViewSet(viewsets.ReadOnlyModelViewSet):
     model = Centre

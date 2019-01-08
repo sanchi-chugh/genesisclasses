@@ -144,6 +144,23 @@ class Student(models.Model):
     def __str__(self):
         return str(self.first_name)
 
+class BulkStudentsCSV(models.Model):
+    csv_file = models.FileField(
+        upload_to='studentCSVs/',
+        validators=[FileExtensionValidator(['csv'])],
+    )
+    # Number of students created
+    number = models.IntegerField()
+    creationDateTime = models.DateTimeField(default=timezone.now)
+    centre = models.ForeignKey(
+        Centre,
+        on_delete=models.CASCADE,
+    )
+    course = models.ManyToManyField(Course)
+
+    def __str__(self):
+        return 'Created for ' + self.centre.location + ' at ' + str(self.creationDateTime)
+
 # Categories : Each test will belong to a category OR a subj, unit and a category
 class Category(models.Model):
     title = models.CharField(max_length=100)

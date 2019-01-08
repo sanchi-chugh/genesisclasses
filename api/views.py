@@ -250,6 +250,83 @@ def DeleteStudentUser(request, pk):
     studentObj.delete()
     return Response({'status': 'successful'})
 
+# Add bulk students and save the list in a csv
+class AddBulkStudentsViewSet(CreateAPIView):
+    model = BulkStudentsCSV
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        n = int(data['number'])  # Number of students
+        centre = Centre.objects.get(pk=int(data['centre']))  # Centre
+
+        # Make courses array
+        courses = data['course'].split(',')
+        courses_arr = []
+        for course_id in courses:
+            try:
+                course = Course.objects.get(pk=int(course_id))
+                courses_arr.append(course)
+            except Course.DoesNotExist:
+                pass
+        # Return if no course access is granted
+        if len(courses_arr) == 0:
+            return Response({
+                "status": "error", "message": "Please provide at least one valid course"})
+
+        # Make studentCSVs directory if it does not exist
+        directory = 'media/studentCSVs/'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # Create a unique filename
+        filename = str(uuid.uuid4()) + '.csv'
+        csvFile = open('media/studentCSVs/' + filename, 'w')
+        csvFile.write('Username,Password\n')
+
+        # Create bulk students
+        count = 0
+        existing = [user['username'] for user in User.objects.values('username')]
+        last_st = Student.objects.all().order_by('-pk')[0]
+        last_pk = last_st.pk
+        cur_pk = last_pk + 1
+
+        while count < n:
+            username = 'Student' + str(cur_pk)
+            cur_pk += 1
+            password = uuid.uuid4().hex[:8].lower()
+
+            if username in existing:
+                # Provide random username if username 
+                # of the form Student<pk> already exists
+                username = uuid.uuid4().hex[:8]
+                while username in existing:
+                    username = uuid.uuid4().hex[:8]
+
+            existing.append(username)
+
+            # Create user of type student
+            user = User.objects.create(username=username, type_of_user="student")
+            user.set_password(password)
+
+            # Set corresponding student courses and centres
+            studentObj = Student.objects.get(user=user)
+            studentObj.centre = centre
+            studentObj.course.set(courses_arr)
+            studentObj.save()
+
+            # Add username and password to csv file
+            csvFile.write(username + ',' + password + '\n')
+            count += 1
+
+        csvFile.close()
+
+        # Make BulkStudentsCSV model object and save csv to it
+        bulkCSVObj = self.model.objects.create(csv_file=filename, centre=centre, number=n)
+        bulkCSVObj.course.set(courses_arr)
+        bulkCSVObj.save()
+        return Response({"status": "successful"})
+
 # Shows list of centres (permitted to a superadmin only)
 class CentreViewSet(viewsets.ReadOnlyModelViewSet):
     model = Centre
@@ -883,34 +960,6 @@ class UpdateOptionView(UpdateAPIView):
 class GetStaffUsersView(ListAPIView):
     serializer_class = StaffSerializer
     queryset = Staff.objects.all()
-
-class AddBulkStudentsView(APIView):
-    def post(self, request, *args, **kwargs):
-        n = int(request.data['no_of_students'])
-        count = 0
-        users = []
-        passwords = []
-        students = []
-        existing = [x['username'] for x in User.objects.values('username')]
-        while (count < n):
-            username = "GE" + uuid.uuid4().hex[:5].upper()
-            password = uuid.uuid4().hex[:8].lower()
-            if username not in existing:
-                existing.append(username)
-                user = User(username=username, type_of_user="student")
-                user.set_password(password)
-                users.append(user)
-                passwords.append(password)
-                # create user here
-                count += 1
-        User.objects.bulk_create(users)
-        for user in users:
-            students.append(Student(user=user, super_admin=get_super_admin(request.user)))
-        Student.objects.bulk_create(students)
-        return Response({
-            "detail": "successfull",
-            "users": [(users[i].username, passwords[i]) for i in range(n)]
-        })
 
 class AddSectionView(APIView):
     def post(self, request, *args, **kwargs):

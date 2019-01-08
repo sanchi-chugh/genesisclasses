@@ -40,8 +40,9 @@ urlpatterns = [
     path('users/students/add/', AddStudentUserViewSet.as_view()),
     path('users/students/edit/<int:pk>/', EditStudentUserViewSet.as_view()),
     path('users/students/delete/<int:pk>/', DeleteStudentUser),
-
-    path('students/add/', AddBulkStudentsView.as_view()),
+    
+    # Endpoints for bulk students
+    path('users/students/bulk/create/', AddBulkStudentsViewSet.as_view()),
 
     path('sections/add/', AddSectionView.as_view()),
     path('staff/add/', AddStaffView.as_view()),

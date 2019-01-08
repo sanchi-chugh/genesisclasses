@@ -13,6 +13,8 @@ from .permissions import *
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
 from rest_framework.status import HTTP_400_BAD_REQUEST
+from django.core.validators import validate_email
+from django.core.validators import ValidationError
 from .paginators import *
 import json
 import uuid
@@ -74,7 +76,7 @@ class StudentUserViewSet(viewsets.ReadOnlyModelViewSet):
         return students
 
 # Adds a student for the requested superadmin
-class AddStudentUserViewSet(CreateAPIView):
+class AddStudentUserView(CreateAPIView):
     model = Student
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
@@ -90,6 +92,24 @@ class AddStudentUserViewSet(CreateAPIView):
             return result
 
         email = data['email']
+
+        # Validate email id
+        try:
+            validate_email(email)
+        except ValidationError:
+            return Response({
+                "status": "error", "message": "Provided email id is invalid."})
+
+        # Validate contact number
+        valid_contact = True
+        try:
+            contact_number = int(data['contact_number'])
+        except ValueError:
+            valid_contact = False
+
+        if len(data['contact_number']) != 10 or not valid_contact:
+            return Response({
+                "status": "error", "message": "Provided contact number is invalid. Only 10 digits are allowed."})
 
         # Do not form another student with the same email id
         userObjs = User.objects.filter(email=email, type_of_user='student')
@@ -118,6 +138,11 @@ class AddStudentUserViewSet(CreateAPIView):
         new_pk = last_student.pk + 1
         username = 'Student' + str(new_pk)
 
+        # Change username if another user of the same username already exists
+        existing_usernames = [user['username'] for user in User.objects.values('username')]
+        while username in existing_usernames:
+            username = uuid.uuid4().hex[:8]
+
         # Make user for authentication
         # (correspoding student is automatically created)
         user = User.objects.create(
@@ -130,7 +155,7 @@ class AddStudentUserViewSet(CreateAPIView):
         student, _ = self.model.objects.get_or_create(user=user)
         student.first_name=data['first_name']
         student.last_name=data['last_name']
-        student.contact_number=int(data['contact_number'])
+        student.contact_number=contact_number
         student.centre=centre
         student.course.set(courses_arr)
         student.save()
@@ -173,7 +198,7 @@ class AddStudentUserViewSet(CreateAPIView):
         return Response({"status": "successful"})
 
 # Edit a student belonging to a centre of the respective super admin
-class EditStudentUserViewSet(UpdateAPIView):
+class EditStudentUserView(UpdateAPIView):
     model = Student
     serializer_class = StudentUserSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -199,6 +224,24 @@ class EditStudentUserViewSet(UpdateAPIView):
             return result
 
         email = data['email']
+
+        # Validate email id
+        try:
+            validate_email(email)
+        except ValidationError:
+            return Response({
+                "status": "error", "message": "Provided email id is invalid."})
+
+        # Validate contact number
+        valid_contact = True
+        try:
+            _ = int(data['contact_number'])
+        except ValueError:
+            valid_contact = False
+
+        if len(data['contact_number']) != 10 or not valid_contact:
+            return Response({
+                "status": "error", "message": "Provided contact number is invalid. Only 10 digits are allowed."})
 
         # Do not form another student with the same email id
         if email != studentUserObj.email:
@@ -250,6 +293,173 @@ def DeleteStudentUser(request, pk):
     studentObj.delete()
     return Response({'status': 'successful'})
 
+class BulkStudentsViewSet(viewsets.ReadOnlyModelViewSet):
+    model = BulkStudentsCSV
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
+    serializer_class = BulkStudentsSerializer
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        centres = Centre.objects.filter(super_admin=super_admin)
+        queryset = self.model.objects.filter(centre__in=centres).order_by('-pk')
+        return queryset
+
+# Add bulk students and save the list in a csv
+class AddBulkStudentsView(CreateAPIView):
+    model = BulkStudentsCSV
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        n = int(data['number'])  # Number of students
+        centre = Centre.objects.get(pk=int(data['centre']))  # Centre
+
+        # Make courses array
+        courses = data['course'].split(',')
+        courses_arr = []
+        for course_id in courses:
+            try:
+                course = Course.objects.get(pk=int(course_id))
+                courses_arr.append(course)
+            except Course.DoesNotExist:
+                pass
+        # Return if no course access is granted
+        if len(courses_arr) == 0:
+            return Response({
+                "status": "error", "message": "Please provide at least one valid course"})
+
+        # Make studentCSVs directory if it does not exist
+        directory = 'media/studentCSVs/'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # Create a unique filename
+        filename = str(uuid.uuid4()) + '.csv'
+        csvFile = open('media/studentCSVs/' + filename, 'w')
+        csvFile.write('Username,Password\n')
+
+        # Create bulk students
+        count = 0
+        existing = [user['username'] for user in User.objects.values('username')]
+        last_st = Student.objects.all().order_by('-pk')[0]
+        last_pk = last_st.pk
+        cur_pk = last_pk + 1
+
+        while count < n:
+            username = 'Student' + str(cur_pk)
+            cur_pk += 1
+            password = uuid.uuid4().hex[:8].lower()
+
+            if username in existing:
+                # Provide random username if username 
+                # of the form Student<pk> already exists
+                username = uuid.uuid4().hex[:8]
+                while username in existing:
+                    username = uuid.uuid4().hex[:8]
+
+            existing.append(username)
+
+            # Create user of type student
+            user = User.objects.create(username=username, type_of_user="student")
+            user.set_password(password)
+
+            # Set corresponding student courses and centres
+            studentObj = Student.objects.get(user=user)
+            studentObj.centre = centre
+            studentObj.course.set(courses_arr)
+            studentObj.save()
+
+            # Add username and password to csv file
+            csvFile.write(username + ',' + password + '\n')
+            count += 1
+
+        csvFile.close()
+
+        # Make BulkStudentsCSV model object and save csv to it
+        bulkCSVObj = self.model.objects.create(csv_file='studentCSVs/' + filename, centre=centre, number=n)
+        bulkCSVObj.course.set(courses_arr)
+        bulkCSVObj.save()
+        return Response({"status": "successful"})
+
+# Generate csv containing all student data
+class DownloadStudentDataView(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+
+        # Make directory having all csv of student data of an admin
+        directory = 'media/allStudentCSV/'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        path = directory + 'student_data.csv'
+        csvFile = open(path, 'w')
+        csvFile.write('Name,Contact Number,email,Centre,Courses Enrolled,Gender,Date of Birth,\
+            Father\'s Name,Address,City,State,Pin Code\n')
+
+        centres = Centre.objects.filter(super_admin=super_admin)
+        students = Student.objects.filter(centre__in=centres)
+        for student in students:
+            name = ''
+            if student.first_name:
+                name += student.first_name
+            if student.last_name:
+                name +=  ' ' + student.last_name
+
+            contact_number = ''
+            if student.contact_number:
+                contact_number = str(student.contact_number)
+
+            email = student.user.email
+            centre = student.centre.location
+            
+            courses_arr = []
+            courses = student.course.all()
+            for course in courses:
+                courses_arr.append(course.title)
+            courses = ' | '.join(courses_arr)
+
+            gender = ''
+            if student.gender:
+                gender = student.gender
+            
+            dateOfBirth = ''
+            if student.dateOfBirth:
+                dateOfBirth = datetime.datetime.strptime(str(student.dateOfBirth), '%Y-%m-%d').strftime('%b %d %Y')
+            
+            father_name = ''
+            if student.father_name:
+                father_name = student.father_name
+            
+            address = ''
+            if student.address:
+                address = student.address
+            
+            city = ''
+            if student.city:
+                city = student.city
+            
+            state = ''
+            if student.state:
+                state = student.state
+            
+            pinCode = ''
+            if student.pinCode:
+                pinCode = str(student.pinCode)
+
+            csvFile.write(
+                name.replace(',', '|') + ',' + contact_number.replace(',', '|') + ',' + email.replace(',', '|') +
+                ',' + centre.replace(',', '|')  + ',' + courses.replace(',', '|')  + ',' + gender.replace(',', '|') +
+                ',' + dateOfBirth.replace(',', '|')  + ',' + father_name.replace(',', '|')  + ',' + address.replace(',', '|') +
+                ',' + city.replace(',', '|')  + ',' +  state.replace(',', '|')  + ',' + pinCode.replace(',', '|') + '\n'
+            )
+
+        csvFile.close()
+        absolute_path = 'http://localhost:8000/' + path
+        return Response({'status': 'successful', 'csvFile': absolute_path})
+
 # Shows list of centres (permitted to a superadmin only)
 class CentreViewSet(viewsets.ReadOnlyModelViewSet):
     model = Centre
@@ -262,7 +472,7 @@ class CentreViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 # Adds a centre for the requested superadmin
-class AddCentreViewSet(CreateAPIView):
+class AddCentreView(CreateAPIView):
     model = Centre
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
@@ -285,7 +495,7 @@ class AddCentreViewSet(CreateAPIView):
         return Response({"status": "successful"})
 
 # Update centre for the required superadmin
-class EditCentreViewSet(UpdateAPIView):
+class EditCentreView(UpdateAPIView):
     model = Centre
     serializer_class = CentreSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -351,7 +561,7 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 # Adds a course for the requested superadmin
-class AddCourseViewSet(CreateAPIView):
+class AddCourseView(CreateAPIView):
     model = Course
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
@@ -374,7 +584,7 @@ class AddCourseViewSet(CreateAPIView):
         return Response({"status": "successful"})
 
 # Update course for the requested superadmin
-class EditCourseViewSet(UpdateAPIView):
+class EditCourseView(UpdateAPIView):
     model = Course
     serializer_class = CourseSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -425,7 +635,7 @@ class SubjectViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 # Adds a subject for the requested superadmin
-class AddSubjectViewSet(CreateAPIView):
+class AddSubjectView(CreateAPIView):
     model = Subject
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
@@ -480,7 +690,7 @@ class AddSubjectViewSet(CreateAPIView):
         return Response({"status": "successful"})
 
 # Update subject for the requested superadmin
-class EditSubjectViewSet(UpdateAPIView):
+class EditSubjectView(UpdateAPIView):
     model = Subject
     serializer_class = SubjectSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -585,7 +795,7 @@ class SubjectWiseUnitViewSet(viewsets.ReadOnlyModelViewSet):
         return subjects
 
 # Adds a unit for the requested superadmin
-class AddUnitViewSet(CreateAPIView):
+class AddUnitView(CreateAPIView):
     model = Unit
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
@@ -626,7 +836,7 @@ class AddUnitViewSet(CreateAPIView):
         return Response({'status': 'successful'})
 
 # Edit a unit for the requested superadmin
-class EditUnitViewSet(UpdateAPIView):
+class EditUnitView(UpdateAPIView):
     model = Unit
     serializer_class = UnitSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -705,7 +915,7 @@ class TestCategoryViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 # Adds a test category for the requested superadmin
-class AddTestCategoryViewSet(CreateAPIView):
+class AddTestCategoryView(CreateAPIView):
     model = Category
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
@@ -743,7 +953,7 @@ class AddTestCategoryViewSet(CreateAPIView):
         return Response({"status": "successful"})
 
 # Edits a test category for the requested superadmin
-class EditTestCategoryViewSet(UpdateAPIView):
+class EditTestCategoryView(UpdateAPIView):
     model = Category
     serializer_class = TestCategorySerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -883,34 +1093,6 @@ class UpdateOptionView(UpdateAPIView):
 class GetStaffUsersView(ListAPIView):
     serializer_class = StaffSerializer
     queryset = Staff.objects.all()
-
-class AddBulkStudentsView(APIView):
-    def post(self, request, *args, **kwargs):
-        n = int(request.data['no_of_students'])
-        count = 0
-        users = []
-        passwords = []
-        students = []
-        existing = [x['username'] for x in User.objects.values('username')]
-        while (count < n):
-            username = "GE" + uuid.uuid4().hex[:5].upper()
-            password = uuid.uuid4().hex[:8].lower()
-            if username not in existing:
-                existing.append(username)
-                user = User(username=username, type_of_user="student")
-                user.set_password(password)
-                users.append(user)
-                passwords.append(password)
-                # create user here
-                count += 1
-        User.objects.bulk_create(users)
-        for user in users:
-            students.append(Student(user=user, super_admin=get_super_admin(request.user)))
-        Student.objects.bulk_create(students)
-        return Response({
-            "detail": "successfull",
-            "users": [(users[i].username, passwords[i]) for i in range(n)]
-        })
 
 class AddSectionView(APIView):
     def post(self, request, *args, **kwargs):

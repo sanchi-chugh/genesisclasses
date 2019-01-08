@@ -5,4 +5,3 @@ staticfiles
 *.sqlite3
 assets
 webpack-stats.*
-media

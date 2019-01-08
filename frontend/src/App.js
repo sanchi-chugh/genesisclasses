@@ -41,7 +41,7 @@ class App extends React.Component {
 
   logout(callBack) {
     delete localStorage.token;
-    this.setState({ user: null }, callBack);
+    this.setState({ user: null , isLoggedIn:false  }, callBack);
   }
 
   render() {
@@ -53,21 +53,18 @@ class App extends React.Component {
         <center><div className="loader"></div></center>
       );
     }
-    if(!isLoggedIn){
-        return(
-            <BrowserRouter>
-                <Switch>
-                    <Route to={'/login/'} render={(props) => <LoginScreen {...props} getUser={this.getUser} /> } />
-                </Switch>
-            </BrowserRouter>
-        );
-    }
+    
     return (
         <BrowserRouter>
             <Switch>
-            {appRoutes.map((prop, key) => {
-                return <Route path={prop.path} component={prop.component} key={key} />;
-            })}
+            { !isLoggedIn 
+              ? 
+                <Route path={'/'} render={(props) => <LoginScreen {...props} getUser={this.getUser} /> } /> 
+              :
+                appRoutes.map((prop, key) => {
+                  return <Route path={prop.path} render={(props) => <prop.component {...props} logout={this.logout.bind(this)} /> } key={key} />;
+              })
+            }
             </Switch>
         </BrowserRouter>
     );

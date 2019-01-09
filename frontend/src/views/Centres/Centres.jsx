@@ -26,6 +26,11 @@ class Centres extends Component {
     });
   }
 
+  update(){
+    this.setState({
+      data :this.state.data
+    })
+  }
   render() {
     return (
       <div className="content">
@@ -37,7 +42,7 @@ class Centres extends Component {
                 ctTableFullWidth
                 ctTableResponsive
                 content={
-                  <Tables data={this.state.data}/>
+                  <Tables data={this.state.data} update={this.update.bind(this)}/>
                 }
               />
             </Col>

@@ -65,7 +65,7 @@ class LoginScreen extends React.Component {
   userLogin(event){
     this.setState({ busy: true });
     login(this.state.username, this.state.password, (isLoggedIn, res) => {
-      console.log(this.props.getUser)
+      console.log(isLoggedIn)
       if (isLoggedIn){
         this.props.getUser((user) => {
           console.log("user", user);

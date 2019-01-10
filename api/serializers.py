@@ -2,6 +2,33 @@ from rest_framework import serializers
 from api.models import *
 from django.utils.timezone import localtime
 
+# -----------Nested Helper Serializers-----------
+class NestedCentreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Centre
+        fields = ('id', 'location')
+
+class NestedCourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ('id', 'title')
+
+class NestedCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('id', 'title')
+    
+class NestedSubjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = ('id', 'title')
+
+class NestedUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Unit
+        fields = ('id', 'title')
+
+# ------------------------------------------------
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -23,15 +50,8 @@ class CentreSerializer(serializers.ModelSerializer):
         exclude = ['super_admin']
 
 class StudentUserSerializer(serializers.ModelSerializer):
-    centre = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='location',
-    )
-    course = serializers.SlugRelatedField(
-        many=True,
-        read_only=True,
-        slug_field='title',
-    )
+    centre = NestedCentreSerializer()
+    course = NestedCourseSerializer(many=True)
     dateOfBirth = serializers.DateField(format='%b %d, %Y')
     email = serializers.SerializerMethodField()
     class Meta:
@@ -119,6 +139,18 @@ class TestCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         exclude = ['super_admin']
+
+# To be used for displaying list of all tests to superadmin
+class TestInfoSerializer(serializers.ModelSerializer):
+    startTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    endtime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    category = NestedCategorySerializer()
+    subject = NestedSubjectSerializer()
+    unit = NestedUnitSerializer()
+    course = NestedCourseSerializer(many=True)
+    class Meta:
+        model = Test
+        exclude = []
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:

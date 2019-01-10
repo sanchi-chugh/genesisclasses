@@ -249,6 +249,10 @@ class Test(models.Model):
         blank=True,
         null=True,
     )
+    # This will define access of student to that test
+    # Test is accessible only if test is within one of 
+    # the courses for which student is enrolled
+    course = models.ManyToManyField(Course)
 
     def save(self, *args, **kwargs):
         if self.unit and not self.subject:

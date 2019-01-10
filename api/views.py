@@ -1011,6 +1011,19 @@ def deleteTestCategory(request, pk):
     categoryObj.delete()
     return Response({'status': 'successful'})
 
+# View list of all tests under a superadmin
+class TestInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Test
+    serializer_class = TestInfoSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        categories = Category.objects.filter(super_admin=super_admin)
+        tests = self.model.objects.filter(category__in=categories).order_by('-pk')
+        return tests
+
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):
 

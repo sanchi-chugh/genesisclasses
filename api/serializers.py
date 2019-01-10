@@ -43,6 +43,12 @@ class SubjectChoiceSerializer(serializers.ModelSerializer):
         title = obj.title + ' (' + courses + ')'
         return title
 
+# Gives choices of units
+class UnitChoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Unit
+        fields = ('id', 'title')
+
 # -----------------------------------------------------
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

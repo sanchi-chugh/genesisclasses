@@ -795,7 +795,7 @@ class UnitViewSet(viewsets.ReadOnlyModelViewSet):
         units = Unit.objects.filter(subject__in=subjects).order_by('-pk')
         return units
 
-# Shows list of units of a particular subject
+# Shows list of units filtered by subjects
 class SubjectWiseUnitViewSet(viewsets.ReadOnlyModelViewSet):
     model = Unit
     serializer_class = SubjectWiseUnitSerializer
@@ -805,6 +805,34 @@ class SubjectWiseUnitViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
         subjects = Subject.objects.filter(super_admin=super_admin)
+        return subjects
+
+# Shows list of all units belonging to a particular subject
+class SubjectSpecificUnitViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Unit
+    serializer_class = UnitChoiceSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    
+    def get_queryset(self):
+        subject_id = self.kwargs['pk']
+        return self.model.objects.filter(subject=subject_id).order_by('title')
+
+# Shows list of all subjects belonging to any of the comma separated courses
+class CoursesFilteredSubjectViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Subject
+    serializer_class = SubjectChoiceSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    
+    def get_queryset(self):
+        courses = self.kwargs['courses'].split(',')
+        courses_arr = []
+        for course_id in courses:
+            try:
+                course = Course.objects.get(pk=int(course_id))
+                courses_arr.append(course)
+            except Course.DoesNotExist:
+                pass
+        subjects = self.model.objects.filter(course__in=courses_arr).distinct()
         return subjects
 
 # Adds a unit for the requested superadmin
@@ -1074,28 +1102,31 @@ class AddTestInfoView(CreateAPIView):
                 "status": "error", "message": "Please provide at least one valid course"})
         
         # Optional fields
-        subject = None
+        subjectObj = None
         if 'subject' in data:
-            subject = data['subject']
-            subjectObj = get_object_or_404(Subject, pk=int(subject))
-        unit = None
+            subjectObj = get_object_or_404(Subject, pk=int(data['subject']))
+        unitObj = None
         if 'unit' in data:
-            unit = data['unit']
-            unitObj = get_object_or_404(Unit, pk=int(unit))
+            unitObj = get_object_or_404(Unit, pk=int(data['unit']))
 
         # Both subject and unit are compulsory for adding test
-        if (subject and not unit) or (not subject and unit):
+        if (subjectObj and not unitObj) or (not subjectObj and unitObj):
             return Response({
                 "status": "error",
-                "message": "Error in adding test to unit wise test. \
-                    Please provide both \"unit\" and \"subject\"."})
+                "message": "Error in adding test to unit wise test. "
+                    "Please provide both \"unit\" and \"subject\"."})
 
         # Entered unit must belong to the entered subject
-        if subject:
+        if subjectObj:
             unit_arr = subjectObj.units.all()
             if unitObj not in unit_arr:
                 return Response({
                     "status": "error", "message": "Specified unit does not belong to the specified subject."})
+            # Add remaining courses of the subject to courses_arr
+            subj_courses = subjectObj.course.all()
+            for course in subj_courses:
+                if course not in courses_arr:
+                    courses_arr.append(course)
 
         # Make categories array
         categories = data['category'].split(',')
@@ -1107,16 +1138,9 @@ class AddTestInfoView(CreateAPIView):
             except Category.DoesNotExist:
                 pass
         # Return if test does not belong to any category (not even unit wise category)
-        if len(categories_arr) == 0 and not unit and not subject:
+        if len(categories_arr) == 0 and not unitObj and not subjectObj:
             return Response({
-                "status": "error", "message": "Please provide at least one valid category"})
-
-        # Add remaining courses of the subject to courses_arr
-        subjectObj = get_object_or_404(Subject, pk=int(subject))
-        subj_courses = subjectObj.course.all()
-        for course in subj_courses:
-            if course not in courses_arr:
-                courses_arr.append(course)
+                "status": "error", "message": "Please provide at least one valid category."})
 
         endTime = None
         if 'endTime' in data:
@@ -1124,6 +1148,13 @@ class AddTestInfoView(CreateAPIView):
         startTime = timezone.now()
         if 'startTime' in data:
             startTime = data['startTime']
+
+        # Return error if end time is less than start time
+        if endTime and startTime:
+            if endTime <= str(startTime):
+                return Response({
+                    "status": "error",
+                    "message": "End Time must be greater than start time (and current time)."})
 
         testObj = self.model.objects.create(
             super_admin=super_admin,

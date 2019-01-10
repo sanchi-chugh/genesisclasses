@@ -18,12 +18,14 @@ urlpatterns = [
 
     # Endpoints for subjects
     path('subjects/', SubjectViewSet.as_view({'get': 'list'})),
+    path('subjects/<str:courses>/', CoursesFilteredSubjectViewSet.as_view({'get': 'list'})),
     path('subjects/add/', AddSubjectView.as_view()),
     path('subjects/edit/<int:pk>/', EditSubjectView.as_view()),
     path('subjects/delete/<int:pk>/', deleteSubject),
 
     # Endpoints for units
     path('units/', UnitViewSet.as_view({'get': 'list'})),
+    path('units/<int:pk>/', SubjectSpecificUnitViewSet.as_view({'get': 'list'})),
     path('subjectWiseUnits/', SubjectWiseUnitViewSet.as_view({'get': 'list'})),
     path('units/add/', AddUnitView.as_view()),
     path('units/edit/<int:pk>/', EditUnitView.as_view()),

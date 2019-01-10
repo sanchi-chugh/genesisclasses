@@ -2,6 +2,54 @@ from rest_framework import serializers
 from api.models import *
 from django.utils.timezone import localtime
 
+# -----------Nested Helper Serializers-----------
+class NestedCentreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Centre
+        fields = ('id', 'location')
+
+class NestedCourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ('id', 'title')
+
+class NestedCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('id', 'title')
+    
+class NestedSubjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = ('id', 'title')
+
+class NestedUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Unit
+        fields = ('id', 'title')
+
+# ------------Serializers for Choices-----------------
+# Gives choices of subjects along with the names of courses
+class SubjectChoiceSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField()
+    class Meta:
+        model = Subject
+        fields = ('id', 'title')
+
+    def get_title(self, obj):
+        courses = obj.course.all()
+        course_names = [course.title for course in courses]
+        courses = ' + '.join(course_names)
+        title = obj.title + ' (' + courses + ')'
+        return title
+
+# Gives choices of units
+class UnitChoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Unit
+        fields = ('id', 'title')
+
+# -----------------------------------------------------
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -23,15 +71,8 @@ class CentreSerializer(serializers.ModelSerializer):
         exclude = ['super_admin']
 
 class StudentUserSerializer(serializers.ModelSerializer):
-    centre = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='location',
-    )
-    course = serializers.SlugRelatedField(
-        many=True,
-        read_only=True,
-        slug_field='title',
-    )
+    centre = NestedCentreSerializer()
+    course = NestedCourseSerializer(many=True)
     dateOfBirth = serializers.DateField(format='%b %d, %Y')
     email = serializers.SerializerMethodField()
     class Meta:
@@ -94,10 +135,15 @@ class SubjectSerializer(serializers.ModelSerializer):
         fields = ['title', 'id', 'course']
 
 class UnitSerializer(serializers.ModelSerializer):
-    subject = SubjectSerializer(read_only=True)
+    subject = NestedSubjectSerializer()
+    course = serializers.SerializerMethodField()
     class Meta:
         model = Unit
         exclude = []
+
+    def get_course(self, obj):
+        courses = obj.subject.course.all()
+        return [course.title for course in courses]
 
 class UnitSerializerExcludingSubject(serializers.ModelSerializer):
     class Meta:
@@ -118,6 +164,18 @@ class SubjectWiseUnitSerializer(serializers.ModelSerializer):
 class TestCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
+        exclude = ['super_admin']
+
+# To be used for displaying list of all tests to superadmin
+class TestInfoSerializer(serializers.ModelSerializer):
+    startTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    endtime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    category = NestedCategorySerializer(many=True)
+    subject = NestedSubjectSerializer()
+    unit = NestedUnitSerializer()
+    course = NestedCourseSerializer(many=True)
+    class Meta:
+        model = Test
         exclude = ['super_admin']
 
 class OptionSerializer(serializers.ModelSerializer):

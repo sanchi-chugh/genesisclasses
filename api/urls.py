@@ -35,6 +35,10 @@ urlpatterns = [
     path('testCategories/edit/<int:pk>/', EditTestCategoryView.as_view()),
     path('testCategories/delete/<int:pk>/', deleteTestCategory),
 
+    # Endpoints for tests
+    path('tests/', TestInfoViewSet.as_view({'get': 'list'})),
+    path('tests/add/', AddTestInfoView.as_view()),
+
     # Endpoints for students
     path('users/students/', StudentUserViewSet.as_view({'get': 'list'})),
     path('users/students/add/', AddStudentUserView.as_view()),
@@ -61,6 +65,14 @@ urlpatterns = [
     path('tests/add/manual/', AddTestManualView.as_view()),
     path('tests/add/from-doc/', TestFromDocView.as_view()),
     path('complete-profile/<int:pk>/', CompleteProfileView.as_view()),
+
+    # Additional urls for choice fields in UI
+    # Lists all subjects - subject_name (course_title_1 + course_title_2 + ...)
+    path('subjectChoice/', SubjectChoiceView.as_view({'get': 'list'})),
+    # Lists all units belonging to a specific subject
+    path('units/<int:pk>/', SubjectSpecificUnitViewSet.as_view({'get': 'list'})),
+    # Lists all subjects belonging to comma separated string of courses
+    path('subjects/<str:courses>/', CoursesFilteredSubjectViewSet.as_view({'get': 'list'})),
 
     # This is for browsable api login/logout
     path('api-auth/', include('rest_framework.urls')),

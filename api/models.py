@@ -220,7 +220,6 @@ class Unit(models.Model):
 class Test(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    # In case of upcoming test, start time and end time is compulsory
     startTime = models.DateTimeField(default = timezone.now)
     endtime = models.DateTimeField(blank=True, null=True)
     typeOfTest = models.CharField(
@@ -231,10 +230,9 @@ class Test(models.Model):
     instructions = models.TextField(blank=True, null=True)
     totalMarks = models.FloatField(default=0.0, blank=True)
     totalQuestions = models.IntegerField(default=0, blank=True)
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.CASCADE,
-    )
+    # If unit, subject are defined then test will automatically be included
+    # in unit wise category + categories added in many to many field
+    category = models.ManyToManyField(Category)
     # If test belongs to a particular subject
     subject = models.ForeignKey(
         Subject,
@@ -249,6 +247,14 @@ class Test(models.Model):
         blank=True,
         null=True,
     )
+    # This will define access of student to that test
+    # Test is accessible only if test is within one of 
+    # the courses for which student is enrolled
+    course = models.ManyToManyField(Course)
+    super_admin = models.ForeignKey(
+        SuperAdmin,
+        on_delete=models.CASCADE,
+    )
 
     def save(self, *args, **kwargs):
         if self.unit and not self.subject:
@@ -260,7 +266,7 @@ class Test(models.Model):
             return self.title + ' (' + self.unit.title + ')'
         elif self.subject:
             return self.title + ' (' + self.subject.title + ')'
-        return self.title + ' (' + self.category.title + ')'
+        return self.title + ' (' + self.super_admin.institution_name + ')'
 
 # Section Model : Each test will have one or more section
 # section will contain questions.

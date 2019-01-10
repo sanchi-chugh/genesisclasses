@@ -61,6 +61,19 @@ class CompleteProfileView(UpdateAPIView):
             obj.save()
         return response
 
+# -------------------VIEWS FOR CHOICEs-------------------------
+# Shows all subjects of superadmin in the format
+# subject_name (course_title_1 + course_title_2 + ...)
+class SubjectChoiceView(viewsets.ReadOnlyModelViewSet):
+    model = Subject
+    serializer_class = SubjectChoiceSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        return self.model.objects.filter(super_admin=super_admin).order_by('title')
+
 # -------------------SUPER ADMIN VIEWS-------------------------
 # Shows list of students (permitted to a superadmin only)
 class StudentUserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -782,7 +795,7 @@ class UnitViewSet(viewsets.ReadOnlyModelViewSet):
         units = Unit.objects.filter(subject__in=subjects).order_by('-pk')
         return units
 
-# Shows list of units of a particular subject
+# Shows list of units filtered by subjects
 class SubjectWiseUnitViewSet(viewsets.ReadOnlyModelViewSet):
     model = Unit
     serializer_class = SubjectWiseUnitSerializer
@@ -792,6 +805,34 @@ class SubjectWiseUnitViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
         subjects = Subject.objects.filter(super_admin=super_admin)
+        return subjects
+
+# Shows list of all units belonging to a particular subject
+class SubjectSpecificUnitViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Unit
+    serializer_class = UnitChoiceSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    
+    def get_queryset(self):
+        subject_id = self.kwargs['pk']
+        return self.model.objects.filter(subject=subject_id).order_by('title')
+
+# Shows list of all subjects belonging to any of the comma separated courses
+class CoursesFilteredSubjectViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Subject
+    serializer_class = SubjectChoiceSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    
+    def get_queryset(self):
+        courses = self.kwargs['courses'].split(',')
+        courses_arr = []
+        for course_id in courses:
+            try:
+                course = Course.objects.get(pk=int(course_id))
+                courses_arr.append(course)
+            except Course.DoesNotExist:
+                pass
+        subjects = self.model.objects.filter(course__in=courses_arr).distinct()
         return subjects
 
 # Adds a unit for the requested superadmin
@@ -1010,6 +1051,130 @@ def deleteTestCategory(request, pk):
 
     categoryObj.delete()
     return Response({'status': 'successful'})
+
+# View list of all tests under a superadmin
+class TestInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Test
+    serializer_class = TestInfoSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        tests = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
+        return tests
+
+# Add info of a test from superadmin dashboard
+class AddTestInfoView(CreateAPIView):
+    model = Test
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        data = request.data
+        
+        # Search for missing fields
+        check_pass, result = fields_check(
+            ['title', 'instructions', 'duration', 'typeOfTest', 'description', 'course', 'category'],
+            request.data
+        )
+        if not check_pass:
+            return result
+
+        # Do not form another test with the same title
+        testObjs = self.model.objects.filter(title=data['title'], super_admin=super_admin)
+        if(len(testObjs) != 0):
+            return Response({
+                "status": "error", "message": "Test with the same title already exists"})
+
+        # Make courses array
+        courses = data['course'].split(',')
+        courses_arr = []
+        for course_id in courses:
+            try:
+                course = Course.objects.get(pk=int(course_id))
+                courses_arr.append(course)
+            except Course.DoesNotExist:
+                pass
+        # Return if test does not belong to any course
+        if len(courses_arr) == 0:
+            return Response({
+                "status": "error", "message": "Please provide at least one valid course"})
+        
+        # Optional fields
+        subjectObj = None
+        if 'subject' in data:
+            subjectObj = get_object_or_404(Subject, pk=int(data['subject']))
+        unitObj = None
+        if 'unit' in data:
+            unitObj = get_object_or_404(Unit, pk=int(data['unit']))
+
+        # Both subject and unit are compulsory for adding test
+        if (subjectObj and not unitObj) or (not subjectObj and unitObj):
+            return Response({
+                "status": "error",
+                "message": "Error in adding test to unit wise test. "
+                    "Please provide both \"unit\" and \"subject\"."})
+
+        # Entered unit must belong to the entered subject
+        if subjectObj:
+            unit_arr = subjectObj.units.all()
+            if unitObj not in unit_arr:
+                return Response({
+                    "status": "error", "message": "Specified unit does not belong to the specified subject."})
+            # Add remaining courses of the subject to courses_arr
+            subj_courses = subjectObj.course.all()
+            for course in subj_courses:
+                if course not in courses_arr:
+                    courses_arr.append(course)
+
+        # Make categories array
+        categories = data['category'].split(',')
+        categories_arr = []
+        for category_id in categories:
+            try:
+                category = Category.objects.get(pk=int(category_id))
+                categories_arr.append(category)
+            except Category.DoesNotExist:
+                pass
+        # Return if test does not belong to any category (not even unit wise category)
+        if len(categories_arr) == 0 and not unitObj and not subjectObj:
+            return Response({
+                "status": "error", "message": "Please provide at least one valid category."})
+
+        endTime = None
+        if 'endTime' in data:
+            endTime = data['endTime']
+        startTime = timezone.now()
+        if 'startTime' in data:
+            startTime = data['startTime']
+
+        # Return error if end time is less than start time
+        if endTime and startTime:
+            if endTime <= str(startTime):
+                return Response({
+                    "status": "error",
+                    "message": "End Time must be greater than start time (and current time)."})
+
+        testObj = self.model.objects.create(
+            super_admin=super_admin,
+            title=data['title'],
+            instructions=data['instructions'],
+            duration=data['duration'],
+            typeOfTest=data['typeOfTest'],
+            description=data['description'],
+            endtime=endTime,
+            startTime=startTime,
+            subject=subjectObj,
+            unit=unitObj,
+        )
+
+        # Add courses and categories to the test
+        testObj.course.set(courses_arr)
+        testObj.category.set(categories_arr)
+        testObj.save()
+
+        return Response({"status": "successful"})
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

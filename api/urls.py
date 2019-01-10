@@ -18,14 +18,12 @@ urlpatterns = [
 
     # Endpoints for subjects
     path('subjects/', SubjectViewSet.as_view({'get': 'list'})),
-    path('subjects/<str:courses>/', CoursesFilteredSubjectViewSet.as_view({'get': 'list'})),
     path('subjects/add/', AddSubjectView.as_view()),
     path('subjects/edit/<int:pk>/', EditSubjectView.as_view()),
     path('subjects/delete/<int:pk>/', deleteSubject),
 
     # Endpoints for units
     path('units/', UnitViewSet.as_view({'get': 'list'})),
-    path('units/<int:pk>/', SubjectSpecificUnitViewSet.as_view({'get': 'list'})),
     path('subjectWiseUnits/', SubjectWiseUnitViewSet.as_view({'get': 'list'})),
     path('units/add/', AddUnitView.as_view()),
     path('units/edit/<int:pk>/', EditUnitView.as_view()),
@@ -71,6 +69,10 @@ urlpatterns = [
     # Additional urls for choice fields in UI
     # Lists all subjects - subject_name (course_title_1 + course_title_2 + ...)
     path('subjectChoice/', SubjectChoiceView.as_view({'get': 'list'})),
+    # Lists all units belonging to a specific subject
+    path('units/<int:pk>/', SubjectSpecificUnitViewSet.as_view({'get': 'list'})),
+    # Lists all subjects belonging to comma separated string of courses
+    path('subjects/<str:courses>/', CoursesFilteredSubjectViewSet.as_view({'get': 'list'})),
 
     # This is for browsable api login/logout
     path('api-auth/', include('rest_framework.urls')),

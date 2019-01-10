@@ -28,7 +28,22 @@ class NestedUnitSerializer(serializers.ModelSerializer):
         model = Unit
         fields = ('id', 'title')
 
-# ------------------------------------------------
+# ------------Serializers for Choices-----------------
+# Gives choices of subjects along with the names of courses
+class SubjectChoiceSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField()
+    class Meta:
+        model = Subject
+        fields = ('id', 'title')
+
+    def get_title(self, obj):
+        courses = obj.course.all()
+        course_names = [course.title for course in courses]
+        courses = ' + '.join(course_names)
+        title = obj.title + ' (' + courses + ')'
+        return title
+
+# -----------------------------------------------------
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -114,10 +129,15 @@ class SubjectSerializer(serializers.ModelSerializer):
         fields = ['title', 'id', 'course']
 
 class UnitSerializer(serializers.ModelSerializer):
-    subject = SubjectSerializer(read_only=True)
+    subject = NestedSubjectSerializer()
+    course = serializers.SerializerMethodField()
     class Meta:
         model = Unit
         exclude = []
+
+    def get_course(self, obj):
+        courses = obj.subject.course.all()
+        return [course.title for course in courses]
 
 class UnitSerializerExcludingSubject(serializers.ModelSerializer):
     class Meta:
@@ -144,13 +164,13 @@ class TestCategorySerializer(serializers.ModelSerializer):
 class TestInfoSerializer(serializers.ModelSerializer):
     startTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
     endtime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
-    category = NestedCategorySerializer()
+    category = NestedCategorySerializer(many=True)
     subject = NestedSubjectSerializer()
     unit = NestedUnitSerializer()
     course = NestedCourseSerializer(many=True)
     class Meta:
         model = Test
-        exclude = []
+        exclude = ['super_admin']
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:

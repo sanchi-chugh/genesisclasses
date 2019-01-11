@@ -96,10 +96,10 @@ class Centres extends Component {
           <Col>
             <ButtonToolbar>
               <ButtonGroup>
-                <Button bsSize="small" onClick={this.handleShowEditModal.bind(this,row)}>
+                <Button bsSize="small" bsStyle="primary" onClick={this.handleShowEditModal.bind(this,row)}>
                   <Glyphicon glyph="edit" /> EDIT
                 </Button>
-                <Button bsSize="small" onClick={this.handleDelete.bind(this,row)}>
+                <Button bsSize="small" bsStyle="danger" onClick={this.handleDelete.bind(this,row)}>
                   <Glyphicon glyph="trash" /> DELETE
                 </Button>
               </ButtonGroup>

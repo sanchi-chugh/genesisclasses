@@ -46,7 +46,6 @@ class Centres extends Component {
   handleSave(save) {
     // Custom your onSave event here,
     // it's not necessary to implement this function if you have no any process before save
-    this.props.update();
     this.setState({
       data : [{
         sno:12,
@@ -86,14 +85,27 @@ class Centres extends Component {
     );
   }
 
+  remote(remoteObj) {
+      // Only cell editing, insert and delete row will be handled by remote store
+      remoteObj.insertRow = true;
+      remoteObj.dropRow = true;
+      return remoteObj;
+  }
+
+  column(cell, row, enumObject, rowIndex) {
+    
+    return (
+       <button 
+          type="button" 
+          onClick={() => 
+            console.log(row,cell,enumObject,rowIndex)}
+       >
+       Click me { rowIndex }
+       </button>
+    )
+ }
+
   render() {
-
-    const options = {
-        insertModalHeader: this.createCustomModalHeader,
-        insertModalFooter: this.createCustomModalFooter,
-        deleteBtn: this.createCustomDeleteButton
-    };
-
     return (
       <div className="content">
         <Grid fluid>
@@ -108,13 +120,11 @@ class Centres extends Component {
                     <BootstrapTable
                       condensed pagination
                       data={this.state.data}
-                      remote
-                      options={ options }
-                      insertRow={ true }
-                      search={ true }
-                      deleteRow={ true }>
+                      remote={this.remote}
+                      search>
                         <TableHeaderColumn dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
                         <TableHeaderColumn dataField='location'>Centre</TableHeaderColumn>
+                        <TableHeaderColumn dataField='id' dataFormat={this.column.bind(this)}>Edit/Delete</TableHeaderColumn>
                     </BootstrapTable>
                   </div>
                 }

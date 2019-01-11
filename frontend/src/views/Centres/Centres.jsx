@@ -14,6 +14,7 @@ import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 import "../../../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css";
 import EditCentre from "../../components/Actions/Centres/EditCenter";
+import DeleteCentre from "../../components/Actions/Centres/DeleteCentre";
 
 class Centres extends Component {
 
@@ -22,11 +23,14 @@ class Centres extends Component {
         this.handleTextChange = this.handleTextChange.bind(this);
         this.state = {
           data: [],
-          show: false,
+          show: false,//edit modal
+          show2:false,//delete modal
           value: '',
           id:null,
           updatingCentre:false,
           centreUpdated:false,
+          centreDeleted:false,
+          deletingCentre:false
         };
       }
   
@@ -47,8 +51,13 @@ class Centres extends Component {
         this.setState({data:data});
     });
   }
-  handleHide() {
+
+  handleHideEditModal() {
     this.setState({ show: false, updatingCentre:false, centreUpdated:false});
+  }
+
+  handleHideDeleteModal() {
+    this.setState({ show2: false, deletingCentre:false, centreDeleted:false});
   }
 
   handleDelete = (id) => {
@@ -72,17 +81,19 @@ class Centres extends Component {
       this.setState({show:true})
     })
   }
-
-  getValidationState() {
-    const length = this.state.value.length;
-    if (length > 10) return 'success';
-    else if (length > 5) return 'warning';
-    else if (length > 0) return 'error';
-    return null;
-  }
   
+  handleShowDeleteModal(obj){
+    this.setState({ id: obj.id},()=>{
+      this.setState({show2:true})
+    })
+  }
+
   handleTextChange(e) {
     this.setState({ value: e.target.value });
+  }
+
+  toggleTransferData(){
+    this.setState({transferData:!this.state.transferData})
   }
 
   renderColumn(cell, row, enumObject, rowIndex) {
@@ -95,7 +106,7 @@ class Centres extends Component {
                 <Button bsSize="small" bsStyle="primary" onClick={this.handleShowEditModal.bind(this,row)}>
                   <Glyphicon glyph="edit" /> EDIT
                 </Button>
-                <Button bsSize="small" bsStyle="danger" onClick={this.handleDelete.bind(this,row)}>
+                <Button bsSize="small" bsStyle="danger" onClick={this.handleShowDeleteModal.bind(this,row)}>
                   <Glyphicon glyph="trash" /> DELETE
                 </Button>
               </ButtonGroup>
@@ -128,12 +139,23 @@ class Centres extends Component {
                     </BootstrapTable>
                     <EditCentre 
                       show={this.state.show} 
-                      onHide={this.handleHide.bind(this)} 
+                      onHide={this.handleHideEditModal.bind(this)} 
                       centreUpdated={this.state.centreUpdated} 
                       value={this.state.value} 
                       handleTextChange={this.handleTextChange.bind(this)} 
                       updatingCentre={this.state.updatingCentre}
-                      handleEdit={this.handleEdit.bind(this)}/>
+                      handleEdit={this.handleEdit.bind(this)}
+                    />
+                    <DeleteCentre
+                      show={this.state.show2}
+                      onHide={this.handleHideDeleteModal.bind(this)}
+                      centreDeleted={this.state.centreDeleted}
+                      deletingCentre={this.state.deletingCentre}
+                      handleDelete={this.handleDelete.bind(this)}
+                      transferData={this.state.tranferData}
+                      toggle={this.toggleTransferData.bind(this)}
+                      centres={this.state.data}
+                    />
                   </div>
                 }
               />

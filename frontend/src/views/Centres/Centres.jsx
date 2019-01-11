@@ -6,17 +6,14 @@ import { Grid,
          ButtonGroup, 
          Button, 
          Glyphicon, 
-         Modal, 
-         FormGroup, 
-         FormControl,
-         ControlLabel} from "react-bootstrap";
+} from "react-bootstrap";
 import axios from 'axios';
 
 import Card from "../../components/Card/Card.jsx";
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
-import LinearProgress from '@material-ui/core/LinearProgress';
 
 import "../../../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css";
+import EditCentre from "../../components/Actions/Centres/EditCenter";
 
 class Centres extends Component {
 
@@ -71,7 +68,6 @@ class Centres extends Component {
   }
 
   handleShowEditModal(obj){
-    console.log(obj.id)
     this.setState({ id: obj.id , value: obj.location},()=>{
       this.setState({show:true})
     })
@@ -130,51 +126,14 @@ class Centres extends Component {
                         <TableHeaderColumn dataField='location'>Centre</TableHeaderColumn>
                         <TableHeaderColumn dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
                     </BootstrapTable>
-                    <Modal
-                      show={this.state.show}
-                      onHide={this.handleHide.bind(this)}
-                      container={this}
-                      aria-labelledby="contained-modal-title"
-                    >
-                      <Modal.Header closeButton>
-                        <Modal.Title id="contained-modal-title">
-                          EDIT CENTRE
-                        </Modal.Title>
-                      </Modal.Header>
-                      <Modal.Body>
-                        { 
-                          this.state.centreUpdated 
-                          ?
-                          <center><b><p>Updated Successully</p></b></center>
-                          :
-                        <form>
-                          <FormGroup
-                            controlId="formBasicText"
-                          >
-                            <ControlLabel>CENTRE NAME</ControlLabel>
-                            <FormControl
-                              type="text"
-                              value={this.state.value}
-                              placeholder="Centre Name Cannot Be Empty"
-                              onChange={this.handleTextChange}
-                            />
-                          </FormGroup>
-                          <LinearProgress
-                            style={
-                              this.state.updatingCentre ? 
-                                {visibility: 'visible'} :
-                                {visibility: 'hidden'}
-                              }
-                            color="primary"
-                          />
-                        </form>
-                        }
-                      </Modal.Body>
-                      <Modal.Footer>
-                        <Button onClick={this.handleHide.bind(this)}>CLOSE</Button>
-                        {this.state.centreUpdated ? null : <Button bsStyle="primary" onClick={this.handleEdit.bind(this)}>EDIT CENTRE</Button>}
-                      </Modal.Footer>
-                    </Modal>
+                    <EditCentre 
+                      show={this.state.show} 
+                      onHide={this.handleHide.bind(this)} 
+                      centreUpdated={this.state.centreUpdated} 
+                      value={this.state.value} 
+                      handleTextChange={this.handleTextChange.bind(this)} 
+                      updatingCentre={this.state.updatingCentre}
+                      handleEdit={this.handleEdit.bind(this)}/>
                   </div>
                 }
               />

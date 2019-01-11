@@ -30,7 +30,10 @@ class Centres extends Component {
           updatingCentre:false,
           centreUpdated:false,
           centreDeleted:false,
-          deletingCentre:false
+          deletingCentre:false,
+          transferData:false,
+          transferTo:'Select Centre',
+          centre:null
         };
       }
   
@@ -57,10 +60,34 @@ class Centres extends Component {
   }
 
   handleHideDeleteModal() {
-    this.setState({ show2: false, deletingCentre:false, centreDeleted:false});
+    this.setState({ show2: false, deletingCentre:false, centreDeleted:false, transferData:false,transferTo:'Select Centre', centre:null});
   }
 
-  handleDelete = (id) => {
+  handleDelete = () => {
+    this.setState({ deletingCentre: true }, () => {
+      if(this.state.transferData){
+        const data = {data:{ "centre" : this.state.centre }};
+        axios.delete(`/api/centres/delete/${this.state.id}/`, data , {
+            headers: {
+              Authorization: `Token ${localStorage.token}`
+            },
+          })
+          .then((res) => {
+            this.setState({ deletingCentre: false, centreDeleted:true, transferData:false},this.fetchCentres())
+          })
+          .catch((err) => this.setState({ deletingCentre: false }, () => console.log(err)))
+      }else{
+        axios.delete(`/api/centres/delete/${this.state.id}/`,{
+            headers: {
+              Authorization: `Token ${localStorage.token}`
+            },
+          })
+          .then((res) => {
+            this.setState({ deletingCentre: false,centreDeleted:true, transferData:false},this.fetchCentres())
+          })
+          .catch((err) => this.setState({ deletingCentre: false }, () => console.log(err)))
+      }
+    });
   } 
 
   handleEdit() {
@@ -92,8 +119,12 @@ class Centres extends Component {
     this.setState({ value: e.target.value });
   }
 
-  toggleTransferData(){
-    this.setState({transferData:!this.state.transferData})
+  toggleTransferData(e){
+    this.setState({transferData: !this.state.transferData})
+  }
+
+  handleSelect(item){
+    this.setState({transferTo:item.location, centre:item.id})
   }
 
   renderColumn(cell, row, enumObject, rowIndex) {
@@ -152,9 +183,12 @@ class Centres extends Component {
                       centreDeleted={this.state.centreDeleted}
                       deletingCentre={this.state.deletingCentre}
                       handleDelete={this.handleDelete.bind(this)}
-                      transferData={this.state.tranferData}
+                      transferData={this.state.transferData}
                       toggle={this.toggleTransferData.bind(this)}
                       centres={this.state.data}
+                      id={this.state.id}
+                      centre={this.state.transferTo}
+                      handleSelect={this.handleSelect.bind(this)}
                     />
                   </div>
                 }

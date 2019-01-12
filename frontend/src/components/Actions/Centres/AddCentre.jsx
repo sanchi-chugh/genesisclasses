@@ -7,7 +7,7 @@ import { Button,
 
 import LinearProgress from '@material-ui/core/LinearProgress';
 
-class EditCentre extends Component {
+class AddCentre extends Component {
 
   render() {
     return ( 
@@ -19,14 +19,14 @@ class EditCentre extends Component {
             >
                 <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title">
-                        EDIT CENTRE
+                        ADD CENTRE
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     { 
-                        this.props.centreUpdated 
+                        this.props.centreAdded 
                         ?
-                        <center><b><p>Updated Successully</p></b></center>
+                        <center><b><p>Added Successfully</p></b></center>
                         :
                     <form>
                         <FormGroup
@@ -43,7 +43,7 @@ class EditCentre extends Component {
                         </FormGroup>
                         <LinearProgress
                         style={
-                            this.props.updatingCentre ? 
+                            this.props.addingCentre ? 
                             {visibility: 'visible'} :
                             {visibility: 'hidden'}
                             }
@@ -54,11 +54,11 @@ class EditCentre extends Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.centreUpdated ? null : <Button bsStyle="primary" onClick={this.props.handleEdit}>EDIT CENTRE</Button>}
+                    {this.props.centreAdded ? null : <Button bsStyle="success" onClick={this.props.handleAdd}>ADD CENTRE</Button>}
                 </Modal.Footer>
         </Modal>
     );
   }
 }
 
-export default EditCentre;
+export default AddCentre;

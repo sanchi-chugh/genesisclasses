@@ -15,6 +15,7 @@ import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 import "../../../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css";
 import EditCentre from "../../components/Actions/Centres/EditCenter";
 import DeleteCentre from "../../components/Actions/Centres/DeleteCentre";
+import AddCentre from "../../components/Actions/Centres/AddCentre";
 
 class Centres extends Component {
 
@@ -25,6 +26,7 @@ class Centres extends Component {
           data: [],
           show: false,//edit modal
           show2:false,//delete modal
+          show3:false,//add modal
           value: '',
           id:null,
           updatingCentre:false,
@@ -33,7 +35,10 @@ class Centres extends Component {
           deletingCentre:false,
           transferData:false,
           transferTo:'Select Centre',
-          centre:null
+          centre:null,
+          centreAdded:false,
+          addingCentre:false,
+
         };
       }
   
@@ -56,11 +61,28 @@ class Centres extends Component {
   }
 
   handleHideEditModal() {
-    this.setState({ show: false, updatingCentre:false, centreUpdated:false});
+    this.setState({ show: false, updatingCentre:false, centreUpdated:false, value:''});
+  }
+
+  handleHideAddModal() {
+    this.setState({ show3: false, addingCentre:false, centreAdded:false,value:''});
   }
 
   handleHideDeleteModal() {
     this.setState({ show2: false, deletingCentre:false, centreDeleted:false, transferData:false,transferTo:'Select Centre', centre:null});
+  }
+
+  handleAdd(){
+    this.setState({ addingCentre: true }, () => {
+      const data = {location:this.state.value}
+      axios.post('/api/centres/add/', data, {
+        headers: {
+          Authorization: `Token ${localStorage.token}`
+        },
+      })
+      .then((res) => this.setState({ addingCentre: false, centreAdded:true }, this.fetchCentres()))
+      .catch((err) => this.setState({ addingCentre: false }, () => console.log(err)))
+    });
   }
 
   handleDelete = () => {
@@ -115,6 +137,10 @@ class Centres extends Component {
     })
   }
 
+  handleShowAddModal(){
+    this.setState({show3:true})
+  }
+
   handleTextChange(e) {
     this.setState({ value: e.target.value });
   }
@@ -156,6 +182,8 @@ class Centres extends Component {
             <Col>
               <Card
                 title="Centres"
+                addButton={true}
+                handleShowAddModal={this.handleShowAddModal.bind(this)}
                 ctTableFullWidth
                 ctTableResponsive
                 content={
@@ -189,6 +217,15 @@ class Centres extends Component {
                       id={this.state.id}
                       centre={this.state.transferTo}
                       handleSelect={this.handleSelect.bind(this)}
+                    />
+                    <AddCentre
+                      show={this.state.show3}
+                      onHide={this.handleHideAddModal.bind(this)}
+                      centreAdded={this.state.centreAdded}
+                      addingCentre={this.state.addingCentre}
+                      handleAdd={this.handleAdd.bind(this)}
+                      value={this.state.value}
+                      handleTextChange={this.handleTextChange.bind(this)}
                     />
                   </div>
                 }

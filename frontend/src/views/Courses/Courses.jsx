@@ -13,11 +13,11 @@ import Card from "../../components/Card/Card.jsx";
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 import "../../../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css";
-import EditCentre from "../../components/Actions/Centres/EditCentre";
-import DeleteCentre from "../../components/Actions/Centres/DeleteCentre";
-import AddCentre from "../../components/Actions/Centres/AddCentre";
+import EditCourse from "../../components/Actions/Courses/EditCourse";
+import DeleteCourse from "../../components/Actions/Courses/DeleteCourse";
+import AddCourse from "../../components/Actions/Courses/AddCourse";
 
-class Centres extends Component {
+class Courses extends Component {
 
     constructor() {
         super();
@@ -29,25 +29,25 @@ class Centres extends Component {
           show3:false,//add modal
           value: '',
           id:null,
-          updatingCentre:false,
-          centreUpdated:false,
-          centreDeleted:false,
-          deletingCentre:false,
+          updatingCourse:false,
+          courseUpdated:false,
+          courseDeleted:false,
+          deletingCourse:false,
           transferData:false,
-          transferTo:'Select Centre',
-          centre:null,
-          centreAdded:false,
-          addingCentre:false,
+          transferTo:'Select Course',
+          course:null,
+          courseAdded:false,
+          addingCourse:false,
 
         };
       }
   
   componentDidMount() {
-   this.fetchCentres();
+   this.fetchCourses();
   }
 
-  fetchCentres(){
-    axios.get("/api/centres/", {
+  fetchCourses(){
+    axios.get("/api/courses/", {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
@@ -61,72 +61,72 @@ class Centres extends Component {
   }
 
   handleHideEditModal() {
-    this.setState({ show: false, updatingCentre:false, centreUpdated:false, value:''});
+    this.setState({ show: false, updatingCourse:false, courseUpdated:false, value:''});
   }
 
   handleHideAddModal() {
-    this.setState({ show3: false, addingCentre:false, centreAdded:false,value:''});
+    this.setState({ show3: false, addingCourse:false, courseAdded:false,value:''});
   }
 
   handleHideDeleteModal() {
-    this.setState({ show2: false, deletingCentre:false, centreDeleted:false, transferData:false,transferTo:'Select Centre', centre:null});
+    this.setState({ show2: false, deletingCourse:false, courseDeleted:false, transferData:false,transferTo:'Select Course', course:null});
   }
 
   handleAdd(){
-    this.setState({ addingCentre: true }, () => {
-      const data = {location:this.state.value}
-      axios.post('/api/centres/add/', data, {
+    this.setState({ addingCourse: true }, () => {
+      const data = {title:this.state.value}
+      axios.post('/api/courses/add/', data, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => this.setState({ addingCentre: false, centreAdded:true }, this.fetchCentres()))
-      .catch((err) => this.setState({ addingCentre: false }, () => console.log(err)))
+      .then((res) => this.setState({ addingCourse: false, courseAdded:true }, this.fetchCourses()))
+      .catch((err) => this.setState({ addingCourse: false }, () => console.log(err)))
     });
   }
 
   handleDelete = () => {
-    this.setState({ deletingCentre: true }, () => {
+    this.setState({ deletingCourse: true }, () => {
       if(this.state.transferData){
-        const data = {data:{ "centre" : this.state.centre }};
-        axios.delete(`/api/centres/delete/${this.state.id}/`, data , {
+        const data = {data:{ "Course" : this.state.course }};
+        axios.delete(`/api/courses/delete/${this.state.id}/`, data , {
             headers: {
               Authorization: `Token ${localStorage.token}`
             },
           })
           .then((res) => {
-            this.setState({ deletingCentre: false, centreDeleted:true, transferData:false},this.fetchCentres())
+            this.setState({ deletingCourse: false, courseDeleted:true, transferData:false},this.fetchCourses())
           })
-          .catch((err) => this.setState({ deletingCentre: false }, () => console.log(err)))
+          .catch((err) => this.setState({ deletingCourse: false }, () => console.log(err)))
       }else{
-        axios.delete(`/api/centres/delete/${this.state.id}/`,{
+        axios.delete(`/api/courses/delete/${this.state.id}/`,{
             headers: {
               Authorization: `Token ${localStorage.token}`
             },
           })
           .then((res) => {
-            this.setState({ deletingCentre: false,centreDeleted:true, transferData:false},this.fetchCentres())
+            this.setState({ deletingCourse: false,courseDeleted:true, transferData:false},this.fetchCourses())
           })
-          .catch((err) => this.setState({ deletingCentre: false }, () => console.log(err)))
+          .catch((err) => this.setState({ deletingCourse: false }, () => console.log(err)))
       }
     });
   } 
 
   handleEdit() {
-    this.setState({ updatingCentre: true }, () => {
-      const data = {location:this.state.value}
-      axios.put(`/api/centres/edit/${this.state.id}/`, data, {
+    this.setState({ updatingCourse: true }, () => {
+      const data = {title:this.state.value}
+      axios.put(`/api/courses/edit/${this.state.id}/`, data, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => {this.setState({ updatingCentre: false, centreUpdated:true }); this.fetchCentres()})
-      .catch((err) => this.setState({ updatingCentre: false }, () => console.log(err)))
+      .then((res) => {this.setState({ updatingCourse: false, courseUpdated:true }); this.fetchCourses()})
+      .catch((err) => this.setState({ updatingCourse: false }, () => console.log(err)))
     });
   }
 
   handleShowEditModal(obj){
-    this.setState({ id: obj.id , value: obj.location},()=>{
+    this.setState({ id: obj.id , value: obj.title},()=>{
       this.setState({show:true})
     })
   }
@@ -150,7 +150,7 @@ class Centres extends Component {
   }
 
   handleSelect(item){
-    this.setState({transferTo:item.location, centre:item.id})
+    this.setState({transferTo:item.title, course:item.id})
   }
 
   renderColumn(cell, row, enumObject, rowIndex) {
@@ -181,7 +181,7 @@ class Centres extends Component {
           <Row>
             <Col>
               <Card
-                title="Centres"
+                title="Courses"
                 addButton={true}
                 handleShowAddModal={this.handleShowAddModal.bind(this)}
                 ctTableFullWidth
@@ -193,36 +193,30 @@ class Centres extends Component {
                       data={this.state.data}
                       search>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
-                        <TableHeaderColumn dataField='location'>Centre</TableHeaderColumn>
+                        <TableHeaderColumn dataField='title'>Course</TableHeaderColumn>
                         <TableHeaderColumn dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
                     </BootstrapTable>
-                    <EditCentre 
+                    <EditCourse 
                       show={this.state.show} 
                       onHide={this.handleHideEditModal.bind(this)} 
-                      centreUpdated={this.state.centreUpdated} 
+                      courseUpdated={this.state.courseUpdated} 
                       value={this.state.value} 
                       handleTextChange={this.handleTextChange.bind(this)} 
-                      updatingCentre={this.state.updatingCentre}
+                      updatingCourse={this.state.updatingCourse}
                       handleEdit={this.handleEdit.bind(this)}
                     />
-                    <DeleteCentre
+                    <DeleteCourse
                       show={this.state.show2}
                       onHide={this.handleHideDeleteModal.bind(this)}
-                      centreDeleted={this.state.centreDeleted}
-                      deletingCentre={this.state.deletingCentre}
+                      courseDeleted={this.state.courseDeleted}
+                      deletingCourse={this.state.deletingCourse}
                       handleDelete={this.handleDelete.bind(this)}
-                      transferData={this.state.transferData}
-                      toggle={this.toggleTransferData.bind(this)}
-                      centres={this.state.data}
-                      id={this.state.id}
-                      centre={this.state.transferTo}
-                      handleSelect={this.handleSelect.bind(this)}
                     />
-                    <AddCentre
+                    <AddCourse
                       show={this.state.show3}
                       onHide={this.handleHideAddModal.bind(this)}
-                      centreAdded={this.state.centreAdded}
-                      addingCentre={this.state.addingCentre}
+                      courseAdded={this.state.courseAdded}
+                      addingCourse={this.state.addingCourse}
                       handleAdd={this.handleAdd.bind(this)}
                       value={this.state.value}
                       handleTextChange={this.handleTextChange.bind(this)}
@@ -238,4 +232,4 @@ class Centres extends Component {
   }
 }
 
-export default Centres;
+export default Courses;

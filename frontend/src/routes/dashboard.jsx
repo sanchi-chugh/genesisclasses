@@ -7,6 +7,7 @@ import Maps from "../views/Maps/Maps";
 import Notifications from "../views/Notifications/Notifications";
 import Upgrade from "../views/Upgrade/Upgrade";
 import Centres from "../views/Centres/Centres";
+import Courses from "../views/Courses/Courses";
 
 const dashboardRoutes = [
   {
@@ -14,6 +15,12 @@ const dashboardRoutes = [
     name: "Dashboard",
     icon: "pe-7s-graph",
     component: Dashboard
+  },
+  {
+    path: "/course",
+    name: "Courses",
+    icon: "pe-7s-study",
+    component: Courses
   },
   {
     path: "/centre",

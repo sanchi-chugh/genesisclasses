@@ -7,7 +7,7 @@ import { Button,
 
 import LinearProgress from '@material-ui/core/LinearProgress';
 
-class EditCentre extends Component {
+class EditCourse extends Component {
 
   render() {
     return ( 
@@ -19,30 +19,31 @@ class EditCentre extends Component {
             >
                 <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title">
-                        EDIT CENTRE
+                        EDIT COURSE
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     { 
-                        this.props.centreUpdated 
+                        this.props.courseUpdated 
                         ?
                         <center><b><p>Updated Successully</p></b></center>
                         :
                     <form>
                         <FormGroup
                         controlId="formBasicText"
+                        validationState={this.props.value.trim() == ''? "error" : "success"}
                         >
-                        <ControlLabel>CENTRE NAME</ControlLabel>
+                        <ControlLabel>COURSE NAME</ControlLabel>
                         <FormControl
                             type="text"
                             value={this.props.value}
-                            placeholder="Centre Name Cannot Be Empty"
+                            placeholder="Course Name Cannot Be Empty"
                             onChange={this.props.handleTextChange}
                         />
                         </FormGroup>
                         <LinearProgress
                         style={
-                            this.props.updatingCentre ? 
+                            this.props.updatingCourse ? 
                             {visibility: 'visible'} :
                             {visibility: 'hidden'}
                             }
@@ -53,11 +54,11 @@ class EditCentre extends Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.centreUpdated ? null : <Button bsStyle="primary" onClick={this.props.handleEdit}>EDIT CENTRE</Button>}
+                    {this.props.courseUpdated ? null : <Button bsStyle="primary" onClick={this.props.handleEdit}>EDIT COURSE</Button>}
                 </Modal.Footer>
         </Modal>
     );
   }
 }
 
-export default EditCentre;
+export default EditCourse;

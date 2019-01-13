@@ -99,7 +99,7 @@ class BulkStudentsSerializer(serializers.ModelSerializer):
 
 class StaffSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    course = CourseSerializer(read_only=True)
+    course = NestedCourseSerializer(read_only=True)
     centre = CentreSerializer(read_only=True)
     user_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(), source='user', write_only=True)
@@ -114,7 +114,7 @@ class StaffSerializer(serializers.ModelSerializer):
 
 # Currently being used in complete profile view
 class StudentSerializer(serializers.ModelSerializer):
-    course = CourseSerializer(read_only=True)
+    course = NestedCourseSerializer(read_only=True)
     centre = CentreSerializer(read_only=True)
     user = UserSerializer(read_only=True)
     user_id = serializers.PrimaryKeyRelatedField(
@@ -129,10 +129,10 @@ class StudentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SubjectSerializer(serializers.ModelSerializer):
-    course = CourseSerializer(many=True, read_only=True)
+    course = NestedCourseSerializer(many=True, read_only=True)
     class Meta:
         model = Subject
-        fields = ['title', 'id', 'course']
+        exclude = ['super_admin']
 
 class UnitSerializer(serializers.ModelSerializer):
     subject = NestedSubjectSerializer()

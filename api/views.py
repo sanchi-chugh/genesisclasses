@@ -46,6 +46,16 @@ def fields_check(fields_arr, data):
         "status": "error", "message": "Some fields are missing. Please provide \"" + '", "'.join(missing_fields) + "\""}, 
         status=HTTP_400_BAD_REQUEST))
 
+# Helper function to set value as None if field value is not present
+def set_optional_fields(fields_arr, data):
+    dictV = {}
+    for field in fields_arr:
+        dictV[field] = None
+        if field in data:
+            if data[field]:
+                dictV[field] = data[field]
+    return dictV
+
 class CompleteProfileView(UpdateAPIView):
     serializer_class = StudentSerializer
 
@@ -1075,6 +1085,99 @@ class TestInfoViewSet(viewsets.ReadOnlyModelViewSet):
         tests = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
         return tests
 
+# Helper function for adding and editing test info
+def validate_test_info(data, super_admin):
+    # Search for missing fields
+    check_pass, result = fields_check(
+        ['title', 'instructions', 'duration', 'typeOfTest', 'description', 'course', 'category'], data)
+    if not check_pass:
+        return {}, False, result
+
+    # Make courses array
+    courses = data['course'].split(',')
+    courses_arr = []
+    for course_id in courses:
+        try:
+            course = Course.objects.get(pk=int(course_id))
+            courses_arr.append(course)
+        except Course.DoesNotExist:
+            pass
+    # Return if test does not belong to any course
+    if len(courses_arr) == 0:
+        return ({}, False, Response({
+            "status": "error", "message": "Please provide at least one valid course."},
+            status=HTTP_400_BAD_REQUEST))
+    
+    # Get optional fields' values
+    op_dict = set_optional_fields(['subject', 'unit', 'endtime', 'startTime'], data)
+
+    subjectObj = None
+    if op_dict['subject']:
+        subjectObj = get_object_or_404(Subject, pk=int(data['subject']))
+    unitObj = None
+    if op_dict['unit']:
+        unitObj = get_object_or_404(Unit, pk=int(data['unit']))
+
+    # Either none or both subject and unit are compulsory for adding test
+    if (subjectObj and not unitObj) or (not subjectObj and unitObj):
+        return ({}, False, Response({
+            "status": "error",
+            "message": "Error in adding test to unit wise test. "
+                "Please provide both \"unit\" and \"subject\"."}, status=HTTP_400_BAD_REQUEST))
+
+    # Entered unit must belong to the entered subject
+    if subjectObj:
+        unit_arr = subjectObj.units.all()
+        if unitObj not in unit_arr:
+            return ({}, False, Response({
+                "status": "error", "message": "Specified unit does not belong to the specified subject."},
+                status=HTTP_400_BAD_REQUEST))
+        # Add remaining courses of the subject to courses_arr
+        subj_courses = subjectObj.course.all()
+        for course in subj_courses:
+            if course not in courses_arr:
+                courses_arr.append(course)
+
+    # Make categories array
+    categories = data['category'].split(',')
+    categories_arr = []
+    for category_id in categories:
+        try:
+            category = Category.objects.get(pk=int(category_id))
+            categories_arr.append(category)
+        except Category.DoesNotExist:
+            pass
+    # Return if test does not belong to any category (not even unit wise category)
+    if len(categories_arr) == 0 and not unitObj and not subjectObj:
+        return ({}, False, Response({
+            "status": "error", "message": "Please provide at least one valid category."},
+            status=HTTP_400_BAD_REQUEST))
+
+    # Set start time and end time
+    endtime = op_dict['endtime']
+    startTime = timezone.now()
+    if op_dict['startTime']:
+        startTime = data['startTime']
+
+    # Return error if end time is less than start time
+    if endtime and startTime:
+        if endtime <= str(startTime):
+            return ({}, False, Response({
+                "status": "error",
+                "message": "End Time must be greater than start time (and current time)."},
+                status=HTTP_400_BAD_REQUEST))
+
+    # Check if type of test has any value other than practice/upcoming
+    typeOfTest = data['typeOfTest']
+    if typeOfTest not in ('practice', 'upcoming'):
+        return ({}, False, Response({
+            "status": "error", "message": "\"Type of test\" must be one of (practice, upcoming)."},
+            status=HTTP_400_BAD_REQUEST))
+
+    dictV = {'endtime': endtime, 'startTime': startTime, 'subject': subjectObj, 'unit': unitObj,
+             'courses_arr': courses_arr, 'categories_arr': categories_arr}
+    return dictV, True, Response({"status": "successful"})
+
 # Add info of a test from superadmin dashboard
 class AddTestInfoView(CreateAPIView):
     model = Test
@@ -1083,14 +1186,6 @@ class AddTestInfoView(CreateAPIView):
     def post(self, request, *args, **kwargs):
         super_admin = get_super_admin(self.request.user)
         data = request.data
-        
-        # Search for missing fields
-        check_pass, result = fields_check(
-            ['title', 'instructions', 'duration', 'typeOfTest', 'description', 'course', 'category'],
-            request.data
-        )
-        if not check_pass:
-            return result
 
         # Do not form another test with the same title
         testObjs = self.model.objects.filter(title=data['title'], super_admin=super_admin)
@@ -1099,78 +1194,10 @@ class AddTestInfoView(CreateAPIView):
                 "status": "error", "message": "Test with the same title already exists"},
                 status=HTTP_400_BAD_REQUEST)
 
-        # Make courses array
-        courses = data['course'].split(',')
-        courses_arr = []
-        for course_id in courses:
-            try:
-                course = Course.objects.get(pk=int(course_id))
-                courses_arr.append(course)
-            except Course.DoesNotExist:
-                pass
-        # Return if test does not belong to any course
-        if len(courses_arr) == 0:
-            return Response({
-                "status": "error", "message": "Please provide at least one valid course"},
-                status=HTTP_400_BAD_REQUEST)
-        
-        # Optional fields
-        subjectObj = None
-        if 'subject' in data:
-            subjectObj = get_object_or_404(Subject, pk=int(data['subject']))
-        unitObj = None
-        if 'unit' in data:
-            unitObj = get_object_or_404(Unit, pk=int(data['unit']))
-
-        # Both subject and unit are compulsory for adding test
-        if (subjectObj and not unitObj) or (not subjectObj and unitObj):
-            return Response({
-                "status": "error",
-                "message": "Error in adding test to unit wise test. "
-                    "Please provide both \"unit\" and \"subject\"."}, status=HTTP_400_BAD_REQUEST)
-
-        # Entered unit must belong to the entered subject
-        if subjectObj:
-            unit_arr = subjectObj.units.all()
-            if unitObj not in unit_arr:
-                return Response({
-                    "status": "error", "message": "Specified unit does not belong to the specified subject."},
-                    status=HTTP_400_BAD_REQUEST)
-            # Add remaining courses of the subject to courses_arr
-            subj_courses = subjectObj.course.all()
-            for course in subj_courses:
-                if course not in courses_arr:
-                    courses_arr.append(course)
-
-        # Make categories array
-        categories = data['category'].split(',')
-        categories_arr = []
-        for category_id in categories:
-            try:
-                category = Category.objects.get(pk=int(category_id))
-                categories_arr.append(category)
-            except Category.DoesNotExist:
-                pass
-        # Return if test does not belong to any category (not even unit wise category)
-        if len(categories_arr) == 0 and not unitObj and not subjectObj:
-            return Response({
-                "status": "error", "message": "Please provide at least one valid category."},
-                status=HTTP_400_BAD_REQUEST)
-
-        endTime = None
-        if 'endTime' in data:
-            endTime = data['endTime']
-        startTime = timezone.now()
-        if 'startTime' in data:
-            startTime = data['startTime']
-
-        # Return error if end time is less than start time
-        if endTime and startTime:
-            if endTime <= str(startTime):
-                return Response({
-                    "status": "error",
-                    "message": "End Time must be greater than start time (and current time)."},
-                    status=HTTP_400_BAD_REQUEST)
+        # Validate and get required values
+        dictV, check, response = validate_test_info(data, super_admin)
+        if not check:
+            return response
 
         testObj = self.model.objects.create(
             super_admin=super_admin,
@@ -1179,18 +1206,64 @@ class AddTestInfoView(CreateAPIView):
             duration=data['duration'],
             typeOfTest=data['typeOfTest'],
             description=data['description'],
-            endtime=endTime,
-            startTime=startTime,
-            subject=subjectObj,
-            unit=unitObj,
+            endtime=dictV['endtime'],
+            startTime=dictV['startTime'],
+            subject=dictV['subject'],
+            unit=dictV['unit'],
         )
 
         # Add courses and categories to the test
-        testObj.course.set(courses_arr)
-        testObj.category.set(categories_arr)
+        testObj.course.set(dictV['courses_arr'])
+        testObj.category.set(dictV['categories_arr'])
         testObj.save()
 
         return Response({"status": "successful"})
+
+class EditTestInfoView(UpdateAPIView):
+    model = Test
+    serializer_class = TestInfoSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        tests = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
+        return tests
+
+    def put(self, request, *args, **kwargs):
+        test_id = kwargs['pk']
+        testObj = get_object_or_404(Test, pk=test_id)
+        super_admin = get_super_admin(self.request.user)
+        data = request.data
+
+        # Do not form another test with the same title
+        testObjs = Test.objects.filter(title=data['title'], super_admin=super_admin)
+        if len(testObjs) != 0 and testObj not in testObjs:
+            return Response({
+                "status": "error", "message": "Test with the same title already exists."},
+                status=HTTP_400_BAD_REQUEST)
+
+        # Validate and get required values
+        dictV, check, response = validate_test_info(data, super_admin)
+        if not check:
+            return response
+
+        # Add courses and categories to the test
+        testObj.course.set(dictV['courses_arr'])
+        testObj.category.set(dictV['categories_arr'])
+
+        # Update rest of the data
+        testObj.title = data['title']
+        testObj.instructions = data['instructions']
+        testObj.duration = data['duration']
+        testObj.typeOfTest = data['typeOfTest']
+        testObj.description = data['description']
+        testObj.endtime = dictV['endtime']
+        testObj.startTime = dictV['startTime']
+        testObj.subject = dictV['subject']
+        testObj.unit = dictV['unit']
+        testObj.save()
+
+        return Response({'status': 'successful'}) 
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

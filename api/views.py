@@ -1039,16 +1039,6 @@ class EditTestCategoryView(UpdateAPIView):
 @permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
 def deleteTestCategory(request, pk):
     categoryObj = get_object_or_404(Category, pk=pk)
-    transfer_category = request.data.get('category')
-    if transfer_category:
-        # If tests have to be shifted to another category
-        # otherwise tests belonging to this category will be deleted
-        transfer_category = get_object_or_404(Category, pk=int(transfer_category))
-        testObjs = Test.objects.filter(category=transfer_category)
-        for testObj in testObjs:
-            testObj.category = transfer_category
-            testObj.save()
-
     categoryObj.delete()
     return Response({'status': 'successful'})
 

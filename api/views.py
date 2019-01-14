@@ -190,38 +190,17 @@ class AddStudentUserView(CreateAPIView):
         student.save()
         
         # Add rest of the values
-        student.father_name = None
-        if 'father_name' in data:
-            student.father_name = data['father_name']
-        
-        student.address = None
-        if 'address' in data:
-            student.address = data['address']
-        
-        student.city = None
-        if 'city' in data:
-            student.city = data['city']
+        op_dict = set_optional_fields(
+            ['father_name', 'address', 'city', 'state', 'pinCode', 'gender', 'dateOfBirth', 'image'], data)
 
-        student.state = None
-        if 'state' in data:
-            student.state = data['state']
-
-        student.pinCode = None
-        if 'pinCode' in data:
-            student.pinCode = data['pinCode']
-
-        student.gender = None
-        if 'gender' in data:
-            student.gender = data['gender']
-
-        student.dateOfBirth = None
-        if 'dateOfBirth' in data:
-            student.dateOfBirth = data['dateOfBirth']
-
-        student.image = None
-        if 'image' in data:
-            student.image = data['image']
-        
+        student.father_name = op_dict['father_name']
+        student.address = op_dict['address']
+        student.city = op_dict['city']
+        student.state = op_dict['state']
+        student.pinCode = op_dict['pinCode']
+        student.gender = op_dict['gender']
+        student.dateOfBirth = op_dict['dateOfBirth']
+        student.image = op_dict['image']   
         student.save()
 
         return Response({"status": "successful"})
@@ -701,18 +680,13 @@ class AddSubjectView(CreateAPIView):
                     status=HTTP_400_BAD_REQUEST)
 
         # Image and description are optional
-        image = None
-        if 'image' in data:
-            image = data['image']
-        description = None
-        if 'description' in data:
-            description = data['description']
+        op_dict = set_optional_fields(['image', 'description'], data)
         subject = self.model.objects.create(
             title=title,
-            description=description,
-            image=image,
+            description=op_dict['description'],
+            image=op_dict['image'],
             super_admin=super_admin,
-            )
+        )
 
         # Add courses to subject
         courses = data['course'].split(',')
@@ -890,16 +864,11 @@ class AddUnitView(CreateAPIView):
                 status=HTTP_400_BAD_REQUEST)
 
         # Image and description are optional
-        image = None
-        if 'image' in data:
-            image = data['image']
-        description = None
-        if 'description' in data:
-            description = data['description']
+        op_dict = set_optional_fields(['image', 'description'], data)
         self.model.objects.create(
             title=title,
-            description=description,
-            image=image,
+            image=op_dict['image'],
+            description=op_dict['description'],
             subject=subject,
             )
         return Response({'status': 'successful'})
@@ -1008,18 +977,13 @@ class AddTestCategoryView(CreateAPIView):
                 status=HTTP_400_BAD_REQUEST)
         
         # Image and description are optional
-        image = None
-        if 'image' in data:
-            image = data['image']
-        description = None
-        if 'description' in data:
-            description = data['description']
+        op_dict = set_optional_fields(['image', 'description'], data)
         self.model.objects.create(
             title=title,
             super_admin=super_admin,
-            image=image,
-            description=description,
-            )
+            image=op_dict['image'],
+            description=op_dict['description'],
+        )
 
         return Response({"status": "successful"})
 

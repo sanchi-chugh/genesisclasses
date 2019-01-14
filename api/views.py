@@ -1183,6 +1183,7 @@ class AddTestInfoView(CreateAPIView):
 
         return Response({"status": "successful"})
 
+# Edit test info
 class EditTestInfoView(UpdateAPIView):
     model = Test
     serializer_class = TestInfoSerializer
@@ -1227,7 +1228,15 @@ class EditTestInfoView(UpdateAPIView):
         testObj.unit = dictV['unit']
         testObj.save()
 
-        return Response({'status': 'successful'}) 
+        return Response({'status': 'successful'})
+
+# Delete a test
+@api_view(['DELETE'])
+@permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
+def deleteTest(request, pk):
+    testObj = get_object_or_404(Test, pk=pk)
+    testObj.delete()
+    return Response({'status': 'successful'})
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

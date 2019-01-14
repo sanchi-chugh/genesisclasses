@@ -768,18 +768,23 @@ def deleteSubject(request, pk):
     subjectObj = get_object_or_404(Subject, pk=pk)
     transfer_subj = request.data.get('subject')
     if transfer_subj:
-        # If units and tests have to be shifted to another subject
-        # **needed in case of unit wise tests only**
+        # If units have to be shifted to another subject
         transfer_subj = get_object_or_404(Subject, pk=int(transfer_subj))
         unitObjs = Unit.objects.filter(subject=subjectObj)
         for unitObj in unitObjs:
             unitObj.subject = transfer_subj
             unitObj.save()
+        # Only those tests which are only unit wise and 
+        # don't have any category will be shifted to tranfer_subject
         testObjs = Test.objects.filter(subject=subjectObj)
         for testObj in testObjs:
-            testObj.subject = transfer_subj
-            testObj.save()
-
+            if len(testObj.category.all()) == 0:
+                testObj.subject = transfer_subj
+                testObj.save()
+            else:
+                testObj.subject = None
+                testObj.unit = None
+                testObj.save()
     subjectObj.delete()
     return Response({'status': 'successful'})
 
@@ -932,12 +937,23 @@ def deleteUnit(request, pk):
     transfer_unit = request.data.get('unit')
     if transfer_unit:
         # If tests have to be shifted to another unit
-        # **needed in case of unit wise tests only**
+        # **for tests belonging to ONLY unit wise category**
         transfer_unit = get_object_or_404(Unit, pk=int(transfer_unit))
+        unit_arr = unitObj.subject.units.all()
+        if transfer_unit not in unit_arr:
+            return Response({
+                "status": "error",
+                "message": "Entered unit must belong to the same subject as the unit being deleted."},
+                status=HTTP_400_BAD_REQUEST)
         testObjs = Test.objects.filter(unit=unitObj)
         for testObj in testObjs:
-            testObj.unit = transfer_unit
-            testObj.save()
+            if len(testObj.category.all()) == 0:
+                testObj.unit = transfer_unit
+                testObj.save()
+            else:
+                testObj.subject = None
+                testObj.unit = None
+                testObj.save()
 
     unitObj.delete()
     return Response({'status': 'successful'})

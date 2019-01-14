@@ -113,7 +113,8 @@ class AddStudentUserView(CreateAPIView):
             validate_email(email)
         except ValidationError:
             return Response({
-                "status": "error", "message": "Provided email id is invalid."})
+                "status": "error", "message": "Provided email id is invalid."},
+                status=HTTP_400_BAD_REQUEST)
 
         # Validate contact number
         valid_contact = True
@@ -124,13 +125,15 @@ class AddStudentUserView(CreateAPIView):
 
         if len(data['contact_number']) != 10 or not valid_contact:
             return Response({
-                "status": "error", "message": "Provided contact number is invalid. Only 10 digits are allowed."})
+                "status": "error", "message": "Provided contact number is invalid. Only 10 digits are allowed."},
+                status=HTTP_400_BAD_REQUEST)
 
         # Do not form another student with the same email id
         userObjs = User.objects.filter(email=email, type_of_user='student')
         if(len(userObjs) != 0):
             return Response({
-                "status": "error", "message": "A student with the same email id already exists."})
+                "status": "error", "message": "A student with the same email id already exists."},
+                status=HTTP_400_BAD_REQUEST)
 
         centre = get_object_or_404(Centre, pk=int(data['centre']), super_admin=super_admin)
 
@@ -146,7 +149,8 @@ class AddStudentUserView(CreateAPIView):
         # Return if student can't access any course
         if len(courses_arr) == 0:
             return Response({
-                "status": "error", "message": "Please provide at least one valid course"})
+                "status": "error", "message": "Please provide at least one valid course"},
+                status=HTTP_400_BAD_REQUEST)
 
         # Get unique username
         last_student = Student.objects.all().order_by('-pk')[0]
@@ -245,7 +249,8 @@ class EditStudentUserView(UpdateAPIView):
             validate_email(email)
         except ValidationError:
             return Response({
-                "status": "error", "message": "Provided email id is invalid."})
+                "status": "error", "message": "Provided email id is invalid."},
+                status=HTTP_400_BAD_REQUEST)
 
         # Validate contact number
         valid_contact = True
@@ -256,14 +261,16 @@ class EditStudentUserView(UpdateAPIView):
 
         if len(data['contact_number']) != 10 or not valid_contact:
             return Response({
-                "status": "error", "message": "Provided contact number is invalid. Only 10 digits are allowed."})
+                "status": "error", "message": "Provided contact number is invalid. Only 10 digits are allowed."},
+                status=HTTP_400_BAD_REQUEST)
 
         # Do not form another student with the same email id
         if email != studentUserObj.email:
             userObjs = User.objects.filter(email=email, type_of_user='student')
             if len(userObjs) != 0:
                 return Response({
-                    "status": "error", "message": "A student with the same email id already exists."})
+                    "status": "error", "message": "A student with the same email id already exists."},
+                    status=HTTP_400_BAD_REQUEST)
             studentUserObj.email = email
             studentUserObj.save()
 
@@ -281,7 +288,8 @@ class EditStudentUserView(UpdateAPIView):
         # Return if student can't access any course
         if len(courses_arr) == 0:
             return Response({
-                "status": "error", "message": "Please provide at least one valid course"})
+                "status": "error", "message": "Please provide at least one valid course"},
+                status=HTTP_400_BAD_REQUEST)
         studentObj.course.set(courses_arr)
         studentObj.save()
 
@@ -342,7 +350,8 @@ class AddBulkStudentsView(CreateAPIView):
         # Return if no course access is granted
         if len(courses_arr) == 0:
             return Response({
-                "status": "error", "message": "Please provide at least one valid course"})
+                "status": "error", "message": "Please provide at least one valid course"},
+                status=HTTP_400_BAD_REQUEST)
 
         # Make studentCSVs directory if it does not exist
         directory = 'media/studentCSVs/'
@@ -505,7 +514,8 @@ class AddCentreView(CreateAPIView):
         centreObjs = Centre.objects.filter(location=location, super_admin=super_admin)
         if(len(centreObjs) != 0):
             return Response({
-                "status": "error", "message": "Centre with the same location already exists"})
+                "status": "error", "message": "Centre with the same location already exists"},
+                status=HTTP_400_BAD_REQUEST)
         Centre.objects.create(location=location, super_admin=super_admin)
         return Response({"status": "successful"})
 
@@ -537,7 +547,8 @@ class EditCentreView(UpdateAPIView):
         centreObjs = self.model.objects.filter(location=location, super_admin=super_admin)
         if len(centreObjs) != 0 and centre not in centreObjs:
             return Response({
-                "status": "error", "message": "Centre with the same location already exists"})
+                "status": "error", "message": "Centre with the same location already exists"},
+                status=HTTP_400_BAD_REQUEST)
 
         self.partial_update(request, *args, **kwargs)
         return Response({ "status": "successful" })
@@ -594,7 +605,8 @@ class AddCourseView(CreateAPIView):
         courseObjs = self.model.objects.filter(title=title, super_admin=super_admin)
         if(len(courseObjs) != 0):
             return Response({
-                "status": "error", "message": "Course with the same title already exists"})
+                "status": "error", "message": "Course with the same title already exists"},
+                status=HTTP_400_BAD_REQUEST)
         self.model.objects.create(title=title, super_admin=super_admin)
         return Response({"status": "successful"})
 
@@ -625,7 +637,8 @@ class EditCourseView(UpdateAPIView):
         courseObjs = self.model.objects.filter(title=title, super_admin=super_admin)
         if len(courseObjs) != 0 and course not in courseObjs:
             return Response({
-                "status": "error", "message": "Course with the same title already exists"})
+                "status": "error", "message": "Course with the same title already exists"},
+                status=HTTP_400_BAD_REQUEST)
 
         self.partial_update(request, *args, **kwargs)
         return Response({ "status": "successful" })
@@ -674,7 +687,8 @@ class AddSubjectView(CreateAPIView):
                 )
             if len(subjectObjs) != 0:
                 return Response({"status": "error",
-                    "message": "Subject with the same title in the same course(s) already exists"})
+                    "message": "Subject with the same title in the same course(s) already exists"},
+                    status=HTTP_400_BAD_REQUEST)
 
         # Image and description are optional
         image = None
@@ -737,7 +751,8 @@ class EditSubjectView(UpdateAPIView):
                 )
             if len(subjectObjs) != 0 and subject not in subjectObjs:
                 return Response({"status": "error",
-                    "message": "Subject with the same title in the same course(s) already exists"})
+                    "message": "Subject with the same title in the same course(s) already exists"},
+                    status=HTTP_400_BAD_REQUEST)
 
         # Remove previous image from system
         if subject.image:
@@ -861,7 +876,8 @@ class AddUnitView(CreateAPIView):
         unitObjs = self.model.objects.filter(title=title, subject=subject)
         if len(unitObjs) != 0:
             return Response({
-                "status": "error", "message": "Unit with the same title in the same subject already exists"})
+                "status": "error", "message": "Unit with the same title in the same subject already exists"},
+                status=HTTP_400_BAD_REQUEST)
 
         # Image and description are optional
         image = None
@@ -911,7 +927,8 @@ class EditUnitView(UpdateAPIView):
         unitObjs = self.model.objects.filter(title=title, subject=subject)
         if len(unitObjs) != 0 and unit not in unitObjs:
             return Response({
-                "status": "error", "message": "Unit with the same title in the same subject already exists"})
+                "status": "error", "message": "Unit with the same title in the same subject already exists"},
+                status=HTTP_400_BAD_REQUEST)
 
         # Remove previous image from system
         if unit.image:
@@ -977,7 +994,8 @@ class AddTestCategoryView(CreateAPIView):
         categoryObjs = self.model.objects.filter(title=title, super_admin=super_admin)
         if(len(categoryObjs) != 0):
             return Response({
-                "status": "error", "message": "Test Category with the same title already exists"})
+                "status": "error", "message": "Test Category with the same title already exists"},
+                status=HTTP_400_BAD_REQUEST)
         
         # Image and description are optional
         image = None
@@ -1023,7 +1041,8 @@ class EditTestCategoryView(UpdateAPIView):
         categoryObjs = self.model.objects.filter(title=title, super_admin=super_admin)
         if(len(categoryObjs) != 0 and category not in categoryObjs):
             return Response({
-                "status": "error", "message": "Test Category with the same title already exists"})
+                "status": "error", "message": "Test Category with the same title already exists"},
+                status=HTTP_400_BAD_REQUEST)
 
         # Remove previous image from system
         if category.image:
@@ -1077,7 +1096,8 @@ class AddTestInfoView(CreateAPIView):
         testObjs = self.model.objects.filter(title=data['title'], super_admin=super_admin)
         if(len(testObjs) != 0):
             return Response({
-                "status": "error", "message": "Test with the same title already exists"})
+                "status": "error", "message": "Test with the same title already exists"},
+                status=HTTP_400_BAD_REQUEST)
 
         # Make courses array
         courses = data['course'].split(',')
@@ -1091,7 +1111,8 @@ class AddTestInfoView(CreateAPIView):
         # Return if test does not belong to any course
         if len(courses_arr) == 0:
             return Response({
-                "status": "error", "message": "Please provide at least one valid course"})
+                "status": "error", "message": "Please provide at least one valid course"},
+                status=HTTP_400_BAD_REQUEST)
         
         # Optional fields
         subjectObj = None
@@ -1106,14 +1127,15 @@ class AddTestInfoView(CreateAPIView):
             return Response({
                 "status": "error",
                 "message": "Error in adding test to unit wise test. "
-                    "Please provide both \"unit\" and \"subject\"."})
+                    "Please provide both \"unit\" and \"subject\"."}, status=HTTP_400_BAD_REQUEST)
 
         # Entered unit must belong to the entered subject
         if subjectObj:
             unit_arr = subjectObj.units.all()
             if unitObj not in unit_arr:
                 return Response({
-                    "status": "error", "message": "Specified unit does not belong to the specified subject."})
+                    "status": "error", "message": "Specified unit does not belong to the specified subject."},
+                    status=HTTP_400_BAD_REQUEST)
             # Add remaining courses of the subject to courses_arr
             subj_courses = subjectObj.course.all()
             for course in subj_courses:
@@ -1132,7 +1154,8 @@ class AddTestInfoView(CreateAPIView):
         # Return if test does not belong to any category (not even unit wise category)
         if len(categories_arr) == 0 and not unitObj and not subjectObj:
             return Response({
-                "status": "error", "message": "Please provide at least one valid category."})
+                "status": "error", "message": "Please provide at least one valid category."},
+                status=HTTP_400_BAD_REQUEST)
 
         endTime = None
         if 'endTime' in data:
@@ -1146,7 +1169,8 @@ class AddTestInfoView(CreateAPIView):
             if endTime <= str(startTime):
                 return Response({
                     "status": "error",
-                    "message": "End Time must be greater than start time (and current time)."})
+                    "message": "End Time must be greater than start time (and current time)."},
+                    status=HTTP_400_BAD_REQUEST)
 
         testObj = self.model.objects.create(
             super_admin=super_admin,

@@ -36,6 +36,8 @@ def fields_check(fields_arr, data):
     for field in fields_arr:
         if field not in data:
             missing_fields.append(field)
+        elif data[field] == '' or data[field] == None:
+            missing_fields.append(field)
 
     # Return True if check passes
     if len(missing_fields) == 0:

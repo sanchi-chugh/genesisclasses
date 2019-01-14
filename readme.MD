@@ -19,9 +19,11 @@
    - npm install webpack
 7. Install react-pdf renderer in frontend directory
    - npm install @react-pdf/renderer
-8. Start npm server
+8. Install other packages mentioned in package.json
+   - npm install
+9. Start npm server
    - npm start
-9. Keep both servers running and app will start running on localhost:8000 (not localhost:3000).
+10. Keep both servers running and app will start running on localhost:8000 (not localhost:3000).
 
 ### Login and Initial setup
 1. Create superuser

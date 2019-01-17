@@ -43,10 +43,14 @@ urlpatterns = [
 
     # Endpoints for sections
     # List sections of a partiular test (takes test pk as input)
-    path('tests/sections/<int:pk>/', SectionsInfoViewSet.as_view({'get': 'list'})),
+    path('tests/sections/<int:pk>/', SectionsViewSet.as_view({'get': 'list'})),
     path('tests/sections/add/', AddSectionView.as_view()),    # Add a section
     path('tests/sections/edit/<int:pk>/', EditSectionView.as_view()),   # Edit a section
     path('tests/sections/delete/<int:pk>/', DeleteSectionView),   # Delete a section
+
+    # Endpoints for questions
+    # List ques of a partiular section (takes section pk as input)
+    path('tests/sections/questions/<int:pk>/', QuestionsViewSet.as_view({'get': 'list'})),
 
     # Endpoints for students
     path('users/students/', StudentUserViewSet.as_view({'get': 'list'})),

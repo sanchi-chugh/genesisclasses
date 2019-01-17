@@ -1255,9 +1255,9 @@ def deleteTest(request, pk):
     return Response({'status': 'successful'})
 
 # View sections of a particular test
-class SectionsInfoViewSet(viewsets.ReadOnlyModelViewSet):
+class SectionsViewSet(viewsets.ReadOnlyModelViewSet):
     model = Section
-    serializer_class = SectionInfoSerializer
+    serializer_class = TestSectionSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
     def get_queryset(self):
@@ -1290,7 +1290,7 @@ class AddSectionView(CreateAPIView):
 # Edit a section
 class EditSectionView(UpdateAPIView):
     model = Section
-    serializer_class = SectionInfoSerializer
+    serializer_class = TestSectionSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
     def put(self, request, *args, **kwargs):
@@ -1323,6 +1323,18 @@ def DeleteSectionView(request, pk):
     section = get_object_or_404(Section, pk=pk)
     section.delete()
     return Response({'status': 'successful'})
+
+# List all questions
+class QuestionsViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Question
+    serializer_class = TestQuestionSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        section_id = self.kwargs['pk']
+        questions = Question.objects.filter(section__id=int(section_id)).order_by('pk')
+        return questions
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

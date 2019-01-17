@@ -174,9 +174,37 @@ class TestInfoSerializer(serializers.ModelSerializer):
     subject = NestedSubjectSerializer()
     unit = NestedUnitSerializer()
     course = NestedCourseSerializer(many=True)
+    sections = serializers.SerializerMethodField()
     class Meta:
         model = Test
         exclude = ['super_admin']
+
+    def get_sections(self, obj):
+        return 'http://localhost:8000/api/tests/sections/' + str(obj.pk) + '/'
+
+class TestSectionSerializer(serializers.ModelSerializer):
+    questions = serializers.SerializerMethodField()
+    class Meta:
+        model = Section
+        exclude = ['test']
+
+    def get_questions(self, obj):
+        return 'http://localhost:8000/api/tests/sections/questions/' + str(obj.pk) + '/'
+
+class TestQuestionSerializer(serializers.ModelSerializer):
+    questionDetail = serializers.SerializerMethodField()
+    passage = serializers.SerializerMethodField()
+    class Meta:
+        model = Question
+        exclude = ['section']
+
+    def get_questionDetail(self, obj):
+        return 'http://localhost:8000/api/tests/sections/questions/detail/' + str(obj.pk) + '/'
+
+    def get_passage(self, obj):
+        if obj.passage:
+            return 'http://localhost:8000/api/tests/sections/questions/passages/' + str(obj.passage.pk) + '/'
+        return None
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:

@@ -283,6 +283,12 @@ class Section(models.Model):
     def __str__(self):
         return self.title + ' (' + self.test.title + ')'
 
+# Passage Model : Provides a unique id to every passage
+class Passage(models.Model):
+    paragraph = models.TextField()
+
+    def __str__(self):
+        return str(self.paragraph)[:20] + '....'
 
 # Test Question Model : Each Question will have maximum 6 options 
 # with +ve & -ve marks along with a correct response and explanation(optional).
@@ -298,8 +304,15 @@ class Question(models.Model):
         choices=(('mcq', 'mcq'), ('scq', 'scq'), 
             ('integer', 'integer'), ('passage', 'passage')),
     )
-    passage = models.TextField(blank=True, null=True)   #For passage type questions only
-    intAnswer = models.IntegerField(     #For integer type questions only
+    #For passage type questions only
+    passage = models.ForeignKey(
+        Passage,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
+    #For integer type questions only
+    intAnswer = models.IntegerField(
         validators=[MaxValueValidator(9), MinValueValidator(0)],
         blank=True,
         null=True

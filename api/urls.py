@@ -41,6 +41,17 @@ urlpatterns = [
     path('tests/edit/<int:pk>/', EditTestInfoView.as_view()),
     path('tests/delete/<int:pk>/', deleteTest),
 
+    # Endpoints for sections
+    # List sections of a partiular test (takes test pk as input)
+    path('tests/sections/<int:pk>/', SectionsViewSet.as_view({'get': 'list'})),
+    path('tests/sections/add/', AddSectionView.as_view()),    # Add a section
+    path('tests/sections/edit/<int:pk>/', EditSectionView.as_view()),   # Edit a section
+    path('tests/sections/delete/<int:pk>/', DeleteSectionView),   # Delete a section
+
+    # Endpoints for questions
+    # List ques of a partiular section (takes section pk as input)
+    path('tests/sections/questions/<int:pk>/', QuestionsViewSet.as_view({'get': 'list'})),
+
     # Endpoints for students
     path('users/students/', StudentUserViewSet.as_view({'get': 'list'})),
     path('users/students/add/', AddStudentUserView.as_view()),
@@ -55,7 +66,6 @@ urlpatterns = [
     # (under a particular superadmin)
     path('getStudentData/', DownloadStudentDataView.as_view()),
 
-    path('sections/add/', AddSectionView.as_view()),
     path('staff/add/', AddStaffView.as_view()),
     path('users/staff/', GetStaffUsersView.as_view()),
     path('tests/list/', TestListView.as_view()),

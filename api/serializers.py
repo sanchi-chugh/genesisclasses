@@ -174,9 +174,22 @@ class TestInfoSerializer(serializers.ModelSerializer):
     subject = NestedSubjectSerializer()
     unit = NestedUnitSerializer()
     course = NestedCourseSerializer(many=True)
+    sections = serializers.SerializerMethodField()
     class Meta:
         model = Test
         exclude = ['super_admin']
+
+    def get_sections(self, obj):
+        return 'http://localhost:8000/api/tests/sections/' + str(obj.pk) + '/'
+
+class SectionInfoSerializer(serializers.ModelSerializer):
+    questions = serializers.SerializerMethodField()
+    class Meta:
+        model = Section
+        exclude = ['test']
+
+    def get_questions(self, obj):
+        return 'http://localhost:8000/api/tests/sections/questions/' + str(obj.pk) + '/'
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:

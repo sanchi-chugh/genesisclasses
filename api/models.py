@@ -255,6 +255,12 @@ class Test(models.Model):
         SuperAdmin,
         on_delete=models.CASCADE,
     )
+    doc = models.FileField(
+        blank=True,
+        null=True,
+        upload_to='docs/',
+        validators=[FileExtensionValidator(['doc', 'docx'])],
+    )
 
     def save(self, *args, **kwargs):
         if self.unit and not self.subject:

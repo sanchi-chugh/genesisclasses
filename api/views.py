@@ -1158,6 +1158,10 @@ def validate_test_info(data, super_admin):
              'courses_arr': courses_arr, 'categories_arr': categories_arr}
     return dictV, True, Response({"status": "successful"})
 
+# Parse questions from doc
+def parse_doc_ques(testObj):
+    pass
+
 # Add info of a test from superadmin dashboard
 class AddTestInfoView(CreateAPIView):
     model = Test
@@ -1179,6 +1183,9 @@ class AddTestInfoView(CreateAPIView):
         if not check:
             return response
 
+        # Get doc value
+        op_dict = set_optional_fields(['doc'], data)
+
         testObj = self.model.objects.create(
             super_admin=super_admin,
             title=data['title'],
@@ -1190,12 +1197,20 @@ class AddTestInfoView(CreateAPIView):
             startTime=dictV['startTime'],
             subject=dictV['subject'],
             unit=dictV['unit'],
+            doc=op_dict['doc'],
         )
 
         # Add courses and categories to the test
         testObj.course.set(dictV['courses_arr'])
         testObj.category.set(dictV['categories_arr'])
         testObj.save()
+
+        # Parse questions from doc
+        if op_dict['doc']:
+            try:
+                parse_doc_ques(testObj)
+            except Exception:
+                testObj.delete()
 
         return Response({"status": "successful"})
 

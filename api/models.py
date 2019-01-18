@@ -274,9 +274,24 @@ class Test(models.Model):
             return self.title + ' (' + self.subject.title + ')'
         return self.title + ' (' + self.super_admin.institution_name + ')'
 
+# SectionQuerySet : A query manager to Section Model
+# Used for bulk deletion of Section model objs
+class SectionQuerySet(models.QuerySet):
+
+    def delete(self, *args, **kwargs):
+        for sectionObj in self:
+            # Auto arrange section number of all sections
+            missingNum = sectionObj.sectionNumber
+            nextSecObjs = Section.objects.filter(test=sectionObj.test, sectionNumber__gt=missingNum).order_by('sectionNumber')
+            for secObj in nextSecObjs:
+                secObj.sectionNumber = secObj.sectionNumber - 1
+                secObj.save()
+        super(SectionQuerySet, self).delete(*args, **kwargs)
+
 # Section Model : Each test will have one or more section
 # section will contain questions.
 class Section(models.Model):
+    objects = SectionQuerySet.as_manager()
     title = models.CharField(max_length = 30)
     totalMarks = models.FloatField(default=0.0, blank=True)
     totalQuestions = models.IntegerField(default=0, blank=True)
@@ -285,6 +300,31 @@ class Section(models.Model):
         on_delete = models.CASCADE,
         related_name = 'sections',
     )
+    sectionNumber = models.IntegerField(default=1)
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            return super().save(*args, **kwargs)
+
+        # Use default section number if test contains no sections
+        testSectionObjs = Section.objects.filter(test=self.test)
+        if len(testSectionObjs) == 0:
+            return super().save(*args, **kwargs)
+
+        # Auto increment the section number before saving next section
+        self.sectionNumber = testSectionObjs.order_by('-sectionNumber')[0].sectionNumber + 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # Delete requested section
+        missingNum = self.sectionNumber
+        super(Section, self).delete(*args,**kwargs)
+
+        # Auto arrange section number of all sections after deleting a section
+        nextSecObjs = Section.objects.filter(test=self.test, sectionNumber__gt=missingNum).order_by('sectionNumber')
+        for secObj in nextSecObjs:
+            secObj.sectionNumber = secObj.sectionNumber - 1
+            secObj.save()
 
     def __str__(self):
         return self.title + ' (' + self.test.title + ')'
@@ -300,9 +340,43 @@ class Passage(models.Model):
     def __str__(self):
         return str(self.paragraph)[:20] + '....'
 
+# QuestionQuerySet : A query manager to Question Model
+# Used for bulk deletion of Question model objs
+class QuestionQuerySet(models.QuerySet):
+
+    def delete(self, *args, **kwargs):
+        quesCount = 0
+        quesMarks = 0
+        for questionObj in self:
+            quesCount += 1
+            quesMarks += questionObj.marksPostive
+
+            # Auto arrange ques number of all questions after deleting a ques
+            missingNum = questionObj.quesNumber
+            nextQuesObjs = Question.objects.filter(section=questionObj.section, quesNumber__gt=missingNum).order_by('quesNumber')
+            for quesObj in nextQuesObjs:
+                quesObj.quesNumber = quesObj.quesNumber - 1
+                quesObj.save()
+            
+            quesObjs = Question.objects.filter(section=questionObj.section).order_by('quesNumber')
+            for ques in quesObjs:
+                print(ques.questionText, ques.quesNumber)
+
+        # Set total marks and ques count in associated test and section obj
+        testObj = questionObj.section.test
+        testObj.totalMarks -= quesMarks
+        testObj.totalQuestions -= quesCount
+        testObj.save()
+        sectionObj = questionObj.section
+        sectionObj.totalMarks -= quesMarks
+        sectionObj.totalQuestions -= quesCount
+        sectionObj.save()
+        super(QuestionQuerySet, self).delete(*args, **kwargs)
+
 # Test Question Model : Each Question will have maximum 6 options 
 # with +ve & -ve marks along with a correct response and explanation(optional).
 class Question(models.Model):
+    objects = QuestionQuerySet.as_manager()
     section = models.ForeignKey(
         Section,
         on_delete = models.CASCADE,
@@ -393,7 +467,7 @@ class Question(models.Model):
             quesObj.save()
 
     def __str__(self):
-        return self.questionText + ' (' + self.section.title + ')'
+        return str(self.questionText)[:20] + '.... ' + ' (' + self.section.title + ' - ' + self.section.test.title + ')'
 
 # Every question (mcq, scq and passage) can have more than one option
 class Option(models.Model):

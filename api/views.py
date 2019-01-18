@@ -1333,7 +1333,7 @@ class QuestionsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         section_id = self.kwargs['pk']
-        questions = Question.objects.filter(section__id=int(section_id)).order_by('pk')
+        questions = Question.objects.filter(section__id=int(section_id)).order_by('quesNumber')
         return questions
 
 class TestFromDocView(APIView):

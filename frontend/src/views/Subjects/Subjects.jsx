@@ -32,7 +32,7 @@ class Subjects extends Component {
             title:'',
             description:'',
             image:'',
-            newImage:'',
+            file:null,
             course:[]
           },
           courses:[],
@@ -47,7 +47,7 @@ class Subjects extends Component {
           subject:null,
           subjectAdded:false,
           addingSubject:false,
-
+          clear:false
         };
       }
   
@@ -93,6 +93,7 @@ class Subjects extends Component {
       formData:{
         title:'',
         description:'',
+        file:null,
         image:'',
         course:[]
     }});
@@ -108,7 +109,11 @@ class Subjects extends Component {
       formData.append('title',this.state.formData.title)
       formData.append('course',this.state.formData.course.join(','))
       formData.append('description',this.state.formData.description)
-      formData.append('image',this.state.formData.image,this.state.formData.image.name)
+      if(this.state.formData.file !== null){
+        formData.append('image',this.state.formData.file,this.state.formData.file.name)
+      }else{
+        formData.append('image','')
+      }
       axios.post('/api/subjects/add/', formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,
@@ -142,14 +147,18 @@ class Subjects extends Component {
             this.setState({ deletingSubject: false,subjectDeleted:true, transferData:false},this.fetchSubjects())
           })
           .catch((err) => this.setState({ deletingSubject: false }, () => console.log(err)))
-      }
+       }
     });
   } 
 
   handleEdit() {
     this.setState({ updatingSubject: true }, () => {
-      const data = {title:this.state.value}
-      axios.put(`/api/subjects/edit/${this.state.id}/`, data, {
+      var formData = new FormData();
+      formData.append('title',this.state.formData.title)
+      formData.append('course',this.state.formData.course.join(','))
+      formData.append('description',this.state.formData.description)
+      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : formData.append('image','')
+      axios.put(`/api/subjects/edit/${this.state.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
@@ -164,7 +173,8 @@ class Subjects extends Component {
       title:obj.title,
       image:obj.image,
       course:obj.course,
-      description:obj.description
+      description:obj.description,
+      file:null
     }},()=>{
       this.setState({show:true})
     })
@@ -181,6 +191,7 @@ class Subjects extends Component {
   }
 
   handleFormDataChange(e) {
+    console.log(this.state.formData.file,this.state)
     if(e.target.name === 'course' ){
         if(e.target.checked){
           this.state.formData.course.push(e.target.value)
@@ -201,11 +212,15 @@ class Subjects extends Component {
         let file = e.target.files[0]
         this.setState({ formData: {
           ...this.state.formData,
-          [e.target.name] : file
+          file : file
       }});
       }
     }
-    else{
+    else if(e.target.name==='clear'){
+      this.setState({ 
+        clear: !e.target.checked
+      });
+    }else{
       this.setState({ formData: {
         ...this.state.formData,
         [e.target.name] : e.target.value
@@ -232,7 +247,7 @@ class Subjects extends Component {
         })}   
         </Row>
       )
-  }
+    }
 
   renderColumn(cell, row, enumObject, rowIndex) {
     return (

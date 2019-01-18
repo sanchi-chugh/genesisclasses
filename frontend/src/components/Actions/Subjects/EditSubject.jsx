@@ -4,10 +4,12 @@ import { Button,
          FormGroup, 
          FormControl,
          ControlLabel,
-         Checkbox,
-         Row} from "react-bootstrap";
+         Row,Col} from "react-bootstrap";
 
+import { Checkbox} from 'antd';
 import LinearProgress from '@material-ui/core/LinearProgress';
+
+import '../../../../node_modules/antd/dist/antd.css'; 
 
 class EditSubject extends Component {
 
@@ -65,8 +67,18 @@ class EditSubject extends Component {
                         </FormGroup>
                         <br/>
                         <ControlLabel>IMAGE</ControlLabel><br/>
-                        <a href={this.props.formData.image} target="_blank">{this.props.formData.image.split('/')[2]}</a>{'   '}
-                        <Button onClick={this.props.handleFormDataChange} bsSize='small'>Clear</Button>                        
+                        <Row md={12}>
+                            {this.props.formData.image === null ? 
+                            <Col  md={4}>
+                                <p>No Image Available</p>
+                            </Col>:
+                            <Col xs={4}>
+                                <a href={this.props.formData.image} target="_blank">{this.props.formData.image.split('/')[4]}</a> 
+                            </Col>}{'\t'}
+                            <Col xs={4}>
+                                <Checkbox onChange={this.props.handleFormDataChange} name="clear" >CLEAR</Checkbox><br/>
+                            </Col>
+                        </Row><br/> 
                         <FormControl
                             type="file"
                             value={this.props.formData.newImage}

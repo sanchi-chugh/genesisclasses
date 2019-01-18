@@ -4,9 +4,12 @@ import { Button,
          FormGroup, 
          FormControl,
          ControlLabel,
-         Checkbox} from "react-bootstrap";
+         } from "react-bootstrap";
 
+import { Checkbox} from 'antd';
 import LinearProgress from '@material-ui/core/LinearProgress';
+
+import '../../../../node_modules/antd/dist/antd.css'; 
 
 class AddSubject extends Component {
 

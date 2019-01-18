@@ -8,6 +8,20 @@ from django.core.validators import (
 )
 import datetime
 
+def set_mcq_scq(questionObj):
+    if questionObj.questionType not in ('mcq', 'scq'):
+        return
+    optionObjs = Option.objects.filter(question=questionObj)
+    correctNum = 0
+    for option in optionObjs:
+        if option.correct:
+            correctNum += 1
+    if correctNum > 1:
+        questionObj.questionType = 'mcq'
+    else:
+        questionObj.questionType = 'scq'
+    questionObj.save()
+
 class CustomUserManager(UserManager):
     def create_user(self, username, email, password=None):
         """
@@ -469,8 +483,19 @@ class Question(models.Model):
     def __str__(self):
         return str(self.questionText)[:20] + '.... ' + ' (' + self.section.title + ' - ' + self.section.test.title + ')'
 
+# OptionQuerySet : A query manager to Option Model
+# Used for bulk deletion of Option model objs
+class OptionQuerySet(models.QuerySet):
+
+    def delete(self, *args, **kwargs):
+        questionObjs = set([option.question for option in self])
+        super(OptionQuerySet, self).delete(*args, **kwargs)
+        for questionObj in questionObjs:
+            set_mcq_scq(questionObj)
+
 # Every question (mcq, scq and passage) can have more than one option
 class Option(models.Model):
+    objects = OptionQuerySet.as_manager()
     optionText = models.TextField()
     correct = models.BooleanField(default=False)
     question = models.ForeignKey(
@@ -479,8 +504,16 @@ class Option(models.Model):
         related_name = 'options',
     )
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        set_mcq_scq(self.question)
+
+    def delete(self, *args, **kwargs):
+        super(Option, self).delete(*args, **kwargs)
+        set_mcq_scq(self.question)
+
     def __str__(self):
-        return self.optionText + '(' + str(self.question) + ')'
+        return self.optionText + ' (' + str(self.question) + ')'
 
 # Result of a particular student for a particular test
 class UserTestResult(models.Model):

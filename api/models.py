@@ -296,7 +296,8 @@ class SectionQuerySet(models.QuerySet):
         for sectionObj in self:
             # Auto arrange section number of all sections
             missingNum = sectionObj.sectionNumber
-            nextSecObjs = Section.objects.filter(test=sectionObj.test, sectionNumber__gt=missingNum).order_by('sectionNumber')
+            nextSecObjs = Section.objects.filter(
+                test=sectionObj.test, sectionNumber__gt=missingNum).order_by('sectionNumber')
             for secObj in nextSecObjs:
                 secObj.sectionNumber = secObj.sectionNumber - 1
                 secObj.save()
@@ -335,7 +336,8 @@ class Section(models.Model):
         super(Section, self).delete(*args,**kwargs)
 
         # Auto arrange section number of all sections after deleting a section
-        nextSecObjs = Section.objects.filter(test=self.test, sectionNumber__gt=missingNum).order_by('sectionNumber')
+        nextSecObjs = Section.objects.filter(
+            test=self.test, sectionNumber__gt=missingNum).order_by('sectionNumber')
         for secObj in nextSecObjs:
             secObj.sectionNumber = secObj.sectionNumber - 1
             secObj.save()
@@ -367,7 +369,8 @@ class QuestionQuerySet(models.QuerySet):
 
             # Auto arrange ques number of all questions after deleting a ques
             missingNum = questionObj.quesNumber
-            nextQuesObjs = Question.objects.filter(section=questionObj.section, quesNumber__gt=missingNum).order_by('quesNumber')
+            nextQuesObjs = Question.objects.filter(
+                section=questionObj.section, quesNumber__gt=missingNum).order_by('quesNumber')
             for quesObj in nextQuesObjs:
                 quesObj.quesNumber = quesObj.quesNumber - 1
                 quesObj.save()
@@ -451,7 +454,8 @@ class Question(models.Model):
                 self.quesNumber = sectionQuesObjs.order_by('-quesNumber')[0].quesNumber + 1
                 return super().save(*args, **kwargs)
             lastPassageQuesNum = passageQues.order_by('-quesNumber')[0].quesNumber
-            nextQuesObjs = Question.objects.filter(section=self.section, quesNumber__gt=lastPassageQuesNum).order_by('quesNumber')
+            nextQuesObjs = Question.objects.filter(
+                section=self.section, quesNumber__gt=lastPassageQuesNum).order_by('quesNumber')
             for quesObj in nextQuesObjs:
                 quesObj.quesNumber = quesObj.quesNumber + 1
                 quesObj.save()
@@ -475,13 +479,15 @@ class Question(models.Model):
         super(Question, self).delete(*args,**kwargs)
 
         # Auto arrange ques number of all questions after deleting a ques
-        nextQuesObjs = Question.objects.filter(section=self.section, quesNumber__gt=missingNum).order_by('quesNumber')
+        nextQuesObjs = Question.objects.filter(
+            section=self.section, quesNumber__gt=missingNum).order_by('quesNumber')
         for quesObj in nextQuesObjs:
             quesObj.quesNumber = quesObj.quesNumber - 1
             quesObj.save()
 
     def __str__(self):
-        return str(self.questionText)[:20] + '.... ' + ' (' + self.section.title + ' - ' + self.section.test.title + ')'
+        quesStr = str(self.questionText)[:20] + '.... '
+        return quesStr + ' (' + self.section.title + ' - ' + self.section.test.title + ')'
 
 # OptionQuerySet : A query manager to Option Model
 # Used for bulk deletion of Option model objs
@@ -532,12 +538,14 @@ class UserTestResult(models.Model):
 
     def get_rank(self):
 		# Rank of a student = (number of users having marks greater than this user) + 1
-        aggregate = TestResult.objects.filter(test = self.test, marksObtained__gt=self.marksObtained).aggregate(rank=Count('marksObtained'))
+        aggregate = TestResult.objects.filter(
+            test = self.test, marksObtained__gt=self.marksObtained).aggregate(rank=Count('marksObtained'))
         return aggregate['rank'] + 1
 
     def get_percentile(self):
         # percentile = (getMyMarks/getTopperMarks)*100
-        topperMarks = TestResult.objects.filter(test = self.test).order_by('-marksObtained').first().marksObtained
+        topperMarks = TestResult.objects.filter(
+            test = self.test).order_by('-marksObtained').first().marksObtained
         try:
             percentile = (self.marksObtained/topperMarks)*100
         except ZeroDivisionError:

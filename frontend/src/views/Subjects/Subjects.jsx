@@ -32,6 +32,7 @@ class Subjects extends Component {
             title:'',
             description:'',
             image:'',
+            newImage:'',
             course:[]
           },
           courses:[],
@@ -76,7 +77,6 @@ class Subjects extends Component {
           item.sno = res.data.indexOf(item) + 1;
           return item;
         })
-        console.log(data)
         this.setState({data:data});
     });
   }
@@ -104,15 +104,14 @@ class Subjects extends Component {
 
   handleAdd(){
     this.setState({ addingSubject: true }, () => {
-      const data = {
-        title:this.state.formData.title,
-        description:this.state.formData.description,
-        image:this.state.formData.image,
-        course:this.state.formData.course.join(',')
-      }
-      axios.post('/api/subjects/add/', data, {
+      var formData = new FormData();
+      formData.append('title',this.state.formData.title)
+      formData.append('course',this.state.formData.course.join(','))
+      formData.append('description',this.state.formData.description)
+      formData.append('image',this.state.formData.image,this.state.formData.image.name)
+      axios.post('/api/subjects/add/', formData, {
         headers: {
-          Authorization: `Token ${localStorage.token}`
+          Authorization: `Token ${localStorage.token}`,
         },
       })
       .then((res) => this.setState({ addingSubject: false, subjectAdded:true }, this.fetchSubjects()))
@@ -161,7 +160,12 @@ class Subjects extends Component {
   }
 
   handleShowEditModal(obj){
-    this.setState({ id: obj.id , value: obj.title},()=>{
+    this.setState({ id: obj.id , formData: {
+      title:obj.title,
+      image:obj.image,
+      course:obj.course,
+      description:obj.description
+    }},()=>{
       this.setState({show:true})
     })
   }
@@ -192,6 +196,14 @@ class Subjects extends Component {
             }
           })
         }
+    }else if(e.target.name === 'image'){
+      if(e.target.files.length){
+        let file = e.target.files[0]
+        this.setState({ formData: {
+          ...this.state.formData,
+          [e.target.name] : file
+      }});
+      }
     }
     else{
       this.setState({ formData: {
@@ -263,15 +275,16 @@ class Subjects extends Component {
                       search>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
                         <TableHeaderColumn dataField='title'>Subject</TableHeaderColumn>
-                        <TableHeaderColumn dataField='courses' dataFormat={this.renderCourses.bind(this)}>Courses</TableHeaderColumn>
                         <TableHeaderColumn dataField='description'>Description</TableHeaderColumn>
+                        <TableHeaderColumn dataField='courses' dataFormat={this.renderCourses.bind(this)}>Courses</TableHeaderColumn>
                         <TableHeaderColumn dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
                     </BootstrapTable>
                     <EditSubject 
                       show={this.state.show} 
                       onHide={this.handleHideEditModal.bind(this)} 
                       subjectUpdated={this.state.subjectUpdated} 
-                      value={this.state.value} 
+                      formData={this.state.formData} 
+                      courses={this.state.courses}
                       handleFormDataChange={this.handleFormDataChange.bind(this)} 
                       updatingSubject={this.state.updatingSubject}
                       handleEdit={this.handleEdit.bind(this)}

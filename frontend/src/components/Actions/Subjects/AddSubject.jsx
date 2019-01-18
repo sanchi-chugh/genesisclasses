@@ -66,7 +66,6 @@ class AddSubject extends Component {
                         <ControlLabel>IMAGE</ControlLabel>
                         <FormControl
                             type="file"
-                            value={this.props.formData.image}
                             placeholder="Image"
                             name='image'
                             onChange={this.props.handleFormDataChange}

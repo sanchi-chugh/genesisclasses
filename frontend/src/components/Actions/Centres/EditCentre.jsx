@@ -31,7 +31,6 @@ class EditCentre extends Component {
                     <form>
                         <FormGroup
                         controlId="formBasicText"
-                        validationState={this.props.value.trim() == ''? "error" : "success"}
                         >
                         <ControlLabel>CENTRE NAME</ControlLabel>
                         <FormControl

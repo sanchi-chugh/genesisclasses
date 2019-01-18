@@ -3,7 +3,9 @@ import { Button,
          Modal, 
          FormGroup, 
          FormControl,
-         ControlLabel} from "react-bootstrap";
+         ControlLabel,
+         Checkbox,
+         Row} from "react-bootstrap";
 
 import LinearProgress from '@material-ui/core/LinearProgress';
 
@@ -31,14 +33,46 @@ class EditSubject extends Component {
                     <form>
                         <FormGroup
                         controlId="formBasicText"
-                        validationState={this.props.value.trim() == ''? "error" : "success"}
                         >
                         <ControlLabel>SUBJECT NAME</ControlLabel>
                         <FormControl
                             type="text"
-                            value={this.props.value}
-                            placeholder="Subject Name Cannot Be Empty"
-                            onChange={this.props.handleTextChange}
+                            value={this.props.formData.title}
+                            placeholder="Subject Name"
+                            name='title'
+                            onChange={this.props.handleFormDataChange}
+                        />
+                        <br/>
+                        <ControlLabel>DESCRIPTION</ControlLabel>
+                        <FormControl
+                            type="text"
+                            value={this.props.formData.description}
+                            placeholder="Description"
+                            name='description'
+                            onChange={this.props.handleFormDataChange}
+                        />
+                        <br/>
+                        <ControlLabel>Courses</ControlLabel>
+                        <FormGroup>
+                            {this.props.courses.map((props)=>{
+                                return(<Checkbox 
+                                            inline
+                                            value={props.id}
+                                            name='course'
+                                            onChange={this.props.handleFormDataChange}
+                                        >{props.title}</Checkbox>);
+                            })} 
+                        </FormGroup>
+                        <br/>
+                        <ControlLabel>IMAGE</ControlLabel><br/>
+                        <a href={this.props.formData.image} target="_blank">{this.props.formData.image.split('/')[2]}</a>{'   '}
+                        <Button onClick={this.props.handleFormDataChange} bsSize='small'>Clear</Button>                        
+                        <FormControl
+                            type="file"
+                            value={this.props.formData.newImage}
+                            placeholder="Image"
+                            name='image'
+                            onChange={this.props.handleFormDataChange}
                         />
                         </FormGroup>
                         <LinearProgress

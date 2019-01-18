@@ -196,7 +196,7 @@ class TestQuestionSerializer(serializers.ModelSerializer):
     passage = serializers.SerializerMethodField()
     class Meta:
         model = Question
-        exclude = ['section']
+        exclude = ['section', 'intAnswer']
 
     def get_questionDetail(self, obj):
         return 'http://localhost:8000/api/tests/sections/questions/detail/' + str(obj.pk) + '/'

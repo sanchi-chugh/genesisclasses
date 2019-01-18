@@ -255,6 +255,12 @@ class Test(models.Model):
         SuperAdmin,
         on_delete=models.CASCADE,
     )
+    doc = models.FileField(
+        blank=True,
+        null=True,
+        upload_to='docs/',
+        validators=[FileExtensionValidator(['doc', 'docx'])],
+    )
 
     def save(self, *args, **kwargs):
         if self.unit and not self.subject:
@@ -286,6 +292,10 @@ class Section(models.Model):
 # Passage Model : Provides a unique id to every passage
 class Passage(models.Model):
     paragraph = models.TextField()
+    section = models.ForeignKey(
+        Section,
+        on_delete = models.CASCADE,
+    )
 
     def __str__(self):
         return str(self.paragraph)[:20] + '....'
@@ -320,10 +330,14 @@ class Question(models.Model):
     explanation = models.TextField(blank=True, null=True)
     marksPostive = models.FloatField(default=4.0)
     marksNegative = models.FloatField(default=1.0)
+    quesNumber = models.IntegerField(default=1)
 
-    # Increase/decrease question count and total marks of 
-    # respective test and respective section on adding/deleting question
     def save(self, *args, **kwargs):
+        if self.pk:
+            return super().save(*args, **kwargs)
+
+        # If object is created for the first time, increase question count
+        # and total marks of the associated test and section
         testObj = self.section.test
         testObj.totalMarks += self.marksPostive
         testObj.totalQuestions += 1
@@ -332,9 +346,23 @@ class Question(models.Model):
         sectionObj.totalMarks += self.marksPostive
         sectionObj.totalQuestions += 1
         sectionObj.save()
+
+        # Auto increment the question number before saving next question
+        if self.questionType != 'passage':
+            self.quesNumber = Question.objects.filter(section=self.section).order_by('-quesNumber')[0].quesNumber + 1
+        else:
+            # Keep passage questions together
+            lastPassageQuesNum = Question.objects.filter(section=self.section, passage=self.passage).order_by('-quesNumber')[0].quesNumber
+            nextQuesObjs = Question.objects.filter(section=self.section, quesNumber__gt=lastPassageQuesNum).order_by('quesNumber')
+            for quesObj in nextQuesObjs:
+                quesObj.quesNumber = quesObj.quesNumber + 1
+                quesObj.save()
+            self.quesNumber = lastPassageQuesNum + 1
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
+        # Decrease question count and total marks of the 
+        # associated test and section before deleting question
         testObj = self.section.test
         testObj.totalMarks -= self.marksPostive
         testObj.totalQuestions -= 1
@@ -343,7 +371,16 @@ class Question(models.Model):
         sectionObj.totalMarks -= self.marksPostive
         sectionObj.totalQuestions -= 1
         sectionObj.save()
-        return super(Question, self).delete(*args,**kwargs)
+
+        # Delete requested question
+        missingNum = self.quesNumber
+        super(Question, self).delete(*args,**kwargs)
+
+        # Auto arrange ques number of all questions after deleting a ques
+        nextQuesObjs = Question.objects.filter(section=self.section, quesNumber__gt=missingNum).order_by('quesNumber')
+        for quesObj in nextQuesObjs:
+            quesObj.quesNumber = quesObj.quesNumber - 1
+            quesObj.save()
 
     def __str__(self):
         return self.questionText + ' (' + self.section.title + ')'

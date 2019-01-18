@@ -330,6 +330,7 @@ class Question(models.Model):
     explanation = models.TextField(blank=True, null=True)
     marksPostive = models.FloatField(default=4.0)
     marksNegative = models.FloatField(default=1.0)
+    # Numbering done separately for every section
     quesNumber = models.IntegerField(default=1)
 
     def save(self, *args, **kwargs):
@@ -347,12 +348,21 @@ class Question(models.Model):
         sectionObj.totalQuestions += 1
         sectionObj.save()
 
+        # Use default ques number if section contains no question
+        sectionQuesObjs = Question.objects.filter(section=self.section)
+        if len(sectionQuesObjs) == 0:
+            return super().save(*args, **kwargs)
+
         # Auto increment the question number before saving next question
         if self.questionType != 'passage':
-            self.quesNumber = Question.objects.filter(section=self.section).order_by('-quesNumber')[0].quesNumber + 1
+            self.quesNumber = sectionQuesObjs.order_by('-quesNumber')[0].quesNumber + 1
         else:
             # Keep passage questions together
-            lastPassageQuesNum = Question.objects.filter(section=self.section, passage=self.passage).order_by('-quesNumber')[0].quesNumber
+            passageQues = Question.objects.filter(section=self.section, passage=self.passage)
+            if not passageQues:
+                self.quesNumber = sectionQuesObjs.order_by('-quesNumber')[0].quesNumber + 1
+                return super().save(*args, **kwargs)
+            lastPassageQuesNum = passageQues.order_by('-quesNumber')[0].quesNumber
             nextQuesObjs = Question.objects.filter(section=self.section, quesNumber__gt=lastPassageQuesNum).order_by('quesNumber')
             for quesObj in nextQuesObjs:
                 quesObj.quesNumber = quesObj.quesNumber + 1

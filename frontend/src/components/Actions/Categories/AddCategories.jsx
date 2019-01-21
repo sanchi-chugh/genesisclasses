@@ -3,11 +3,12 @@ import { Button,
          Modal, 
          FormGroup, 
          FormControl,
-         ControlLabel} from "react-bootstrap";
+         ControlLabel,
+         } from "react-bootstrap";
 
 import LinearProgress from '@material-ui/core/LinearProgress';
 
-class AddCourse extends Component {
+class AddCategories extends Component {
 
   render() {
     return ( 
@@ -19,12 +20,12 @@ class AddCourse extends Component {
             >
                 <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title">
-                        ADD COURSE
+                        ADD CATEGORY
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     { 
-                        this.props.courseAdded 
+                        this.props.categoryAdded 
                         ?
                         <center><b><p>Added Successfully</p></b></center>
                         :
@@ -32,17 +33,35 @@ class AddCourse extends Component {
                         <FormGroup
                         controlId="formBasicText"
                         >
-                        <ControlLabel>COURSES NAME</ControlLabel>
+                        <ControlLabel>CATEGORY NAME</ControlLabel>
                         <FormControl
                             type="text"
-                            value={this.props.value}
-                            placeholder="Course Name Cannot Be Empty"
-                            onChange={this.props.handleTextChange}
+                            value={this.props.formData.title}
+                            placeholder="Categories Name"
+                            name='title'
+                            onChange={this.props.handleFormDataChange}
+                        />
+                        <br/>
+                        <ControlLabel>DESCRIPTION</ControlLabel>
+                        <FormControl
+                            type="text"
+                            value={this.props.formData.description}
+                            placeholder="Description"
+                            name='description'
+                            onChange={this.props.handleFormDataChange}
+                        />
+                        <br/>
+                        <ControlLabel>IMAGE</ControlLabel>
+                        <FormControl
+                            type="file"
+                            placeholder="Image"
+                            name='image'
+                            onChange={this.props.handleFormDataChange}
                         />
                         </FormGroup>
                         <LinearProgress
                         style={
-                            this.props.addingCourse ? 
+                            this.props.addingCategories ? 
                             {visibility: 'visible'} :
                             {visibility: 'hidden'}
                             }
@@ -53,11 +72,11 @@ class AddCourse extends Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.courseAdded ? null : <Button bsStyle="success" onClick={this.props.handleAdd}>ADD COURSE</Button>}
+                    {this.props.categoryAdded ? null : <Button bsStyle="success" onClick={this.props.handleAdd}>ADD CATEGORY</Button>}
                 </Modal.Footer>
         </Modal>
     );
   }
 }
 
-export default AddCourse;
+export default AddCategories;

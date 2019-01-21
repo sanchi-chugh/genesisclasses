@@ -51,6 +51,7 @@ urlpatterns = [
     # Endpoints for questions
     # List ques of a partiular section (takes section pk as input)
     path('tests/sections/questions/<int:pk>/', QuestionsViewSet.as_view({'get': 'list'})),
+    path('tests/sections/questions/detail/<int:pk>/', QuestionDetialsView.as_view()),
 
     # Endpoints for students
     path('users/students/', StudentUserViewSet.as_view({'get': 'list'})),

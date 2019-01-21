@@ -1351,6 +1351,25 @@ class QuestionsViewSet(viewsets.ReadOnlyModelViewSet):
         questions = Question.objects.filter(section__id=int(section_id)).order_by('quesNumber')
         return questions
 
+# Shows details of a particular question
+class QuestionDetialsView(APIView):
+    model = Question
+    serializer_class = TestQuestionDetailsSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, pk, *args, **kwargs):
+        question = get_object_or_404(Question, pk=pk)
+        quesData = TestQuestionDetailsSerializer(question).data
+        if question.questionType == 'integer':
+            quesData.pop('passage', None)
+            quesData.pop('options', None)
+        if question.questionType in ('mcq', 'scq'):
+            quesData.pop('passage', None)
+            quesData.pop('intAnswer', None)
+        if question.questionType == 'passage':
+            quesData.pop('intAnswer', None)
+        return Response({'details': quesData, 'status': 'successful'})
+
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):
 

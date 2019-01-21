@@ -9,6 +9,7 @@ import Upgrade from "../views/Upgrade/Upgrade";
 import Centres from "../views/Centres/Centres";
 import Courses from "../views/Courses/Courses";
 import Subjects from "../views/Subjects/Subjects";
+import Categories from "../views/Categories/Categories";
 
 const dashboardRoutes = [
   {
@@ -28,6 +29,12 @@ const dashboardRoutes = [
     name: "Subjects",
     icon: "pe-7s-study",
     component: Subjects
+  },
+  {
+    path: "/categories",
+    name: "Categories",
+    icon: "pe-7s-study",
+    component: Categories
   },
   {
     path: "/centre",
@@ -60,13 +67,6 @@ const dashboardRoutes = [
     name: "Notifications",
     icon: "pe-7s-bell",
     component: Notifications
-  },
-  {
-    upgrade: true,
-    path: "/upgrade",
-    name: "Upgrade to PRO",
-    icon: "pe-7s-rocket",
-    component: Upgrade
   },
   { redirect: true, path: "/", to: "/dashboard", name: "Dashboard" }
 ];

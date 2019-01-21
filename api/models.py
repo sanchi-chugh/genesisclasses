@@ -529,6 +529,10 @@ class Option(models.Model):
     )
 
     def save(self, *args, **kwargs):
+        # Return error if option is added in integer type question
+        if self.question.questionType == 'integer':
+            raise ValidationError('Integer type questions do not require options.')
+
         super().save(*args, **kwargs)
         set_mcq_scq(self.question).save()
 

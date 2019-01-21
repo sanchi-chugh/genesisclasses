@@ -1457,6 +1457,7 @@ class EditQuestionDetailsView(UpdateAPIView):
 
         return Response({'status': 'successful'})
 
+# Add a question with it's details
 class AddQuestionDetailsView(CreateAPIView):
     model = Question
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -1534,6 +1535,14 @@ class AddQuestionDetailsView(CreateAPIView):
                 status=HTTP_400_BAD_REQUEST)
 
         return Response({'status': 'successful'})
+
+# Delete a question
+@api_view(['DELETE'])
+@permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
+def DeleteQuestionView(request, pk):
+    question = get_object_or_404(Question, pk=pk)
+    question.delete()
+    return Response({'status': 'successful'})
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

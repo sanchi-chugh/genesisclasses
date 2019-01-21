@@ -14,11 +14,11 @@ import Card from "../../components/Card/Card.jsx";
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 import "../../../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css";
-import EditSubject from "../../components/Actions/Subjects/EditSubject";
-import DeleteSubject from "../../components/Actions/Subjects/DeleteSubject";
-import AddSubject from "../../components/Actions/Subjects/AddSubject";
+import EditCategories from "../../components/Actions/Categories/EditCategories";
+import DeleteCategories from "../../components/Actions/Categories/DeleteCategories";
+import AddCategories from "../../components/Actions/Categories/AddCategories";
 
-class Subjects extends Component {
+class Categories extends Component {
 
     constructor() {
         super();
@@ -33,42 +33,26 @@ class Subjects extends Component {
             description:'',
             image:'',
             file:null,
-            course:[]
           },
           courses:[],
           value: '',
           id:null,
-          updatingSubject:false,
-          subjectUpdated:false,
-          subjectDeleted:false,
-          deletingSubject:false,
-          transferData:false,
-          transferTo:'Select Subject',
-          subject:null,
-          subjectAdded:false,
-          addingSubject:false,
+          updatingCategories:false,
+          categoryUpdated:false,
+          categoryDeleted:false,
+          deletingCategories:false,
+          categoryAdded:false,
+          addingCategories:false,
           clear:false
         };
       }
   
   componentDidMount() {
-   this.fetchSubjects();
-   this.fetchCourses();
+   this.fetchCategories();
   }
 
-  fetchCourses(){
-    axios.get("/api/courses/", {
-        headers: {
-        Authorization: `Token ${localStorage.token}`
-        }
-    }).then(res => {
-        const data = res.data;
-        this.setState({courses:data});
-    });
-  }
-
-  fetchSubjects(){
-    axios.get("/api/subjects/", {
+  fetchCategories(){
+    axios.get("/api/testCategories/", {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
@@ -82,89 +66,73 @@ class Subjects extends Component {
   }
 
   handleHideEditModal() {
-    this.setState({ show: false, updatingSubject:false, subjectUpdated:false, value:''});
+    this.setState({ show: false, updatingCategories:false, categoryUpdated:false, value:''});
   }
 
   handleHideAddModal() {
     this.setState({ 
       show3: false, 
-      addingSubject:false, 
-      subjectAdded:false,
+      addingCategories:false, 
+      categoryAdded:false,
       formData:{
         title:'',
         description:'',
         file:null,
         image:'',
-        course:[]
     }});
   }
 
   handleHideDeleteModal() {
-    this.setState({ show2: false, deletingSubject:false, subjectDeleted:false, transferData:false,transferTo:'Select Subject', subject:null});
+    this.setState({ show2: false, deletingCategories:false, categoryDeleted:false});
   }
 
   handleAdd(){
-    this.setState({ addingSubject: true }, () => {
+    this.setState({ addingCategories: true }, () => {
       var formData = new FormData();
       formData.append('title',this.state.formData.title)
-      formData.append('course',this.state.formData.course.join(','))
       formData.append('description',this.state.formData.description)
       if(this.state.formData.file !== null){
         formData.append('image',this.state.formData.file,this.state.formData.file.name)
       }else{
         formData.append('image','')
       }
-      axios.post('/api/subjects/add/', formData, {
+      axios.post('/api/testCategories/add/', formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState({ addingSubject: false, subjectAdded:true }, this.fetchSubjects()))
-      .catch((err) => this.setState({ addingSubject: false }, () => console.log(err)))
+      .then((res) => this.setState({ addingCategories: false, categoryAdded:true }, this.fetchCategories()))
+      .catch((err) => this.setState({ addingCategories: false }, () => console.log(err)))
     });
   }
 
   handleDelete = () => {
-    this.setState({ deletingSubject: true }, () => {
-      if(this.state.transferData){
-        const data = {data:{ "subject" : this.state.subject }};
-        axios.delete(`/api/subjects/delete/${this.state.id}/`, data , {
+    this.setState({ deletingCategories: true }, () => {
+        axios.delete(`/api/testCategories/delete/${this.state.id}/`,{
             headers: {
               Authorization: `Token ${localStorage.token}`
             },
           })
           .then((res) => {
-            this.setState({ deletingSubject: false, subjectDeleted:true, transferData:false},this.fetchSubjects())
+            this.setState({ deletingCategories: false,categoryDeleted:true,},this.fetchCategories())
           })
-          .catch((err) => this.setState({ deletingSubject: false }, () => console.log(err)))
-      }else{
-        axios.delete(`/api/subjects/delete/${this.state.id}/`,{
-            headers: {
-              Authorization: `Token ${localStorage.token}`
-            },
-          })
-          .then((res) => {
-            this.setState({ deletingSubject: false,subjectDeleted:true, transferData:false},this.fetchSubjects())
-          })
-          .catch((err) => this.setState({ deletingSubject: false }, () => console.log(err)))
-       }
+          .catch((err) => this.setState({ deletingCategories: false }, () => console.log(err)))
     });
   } 
 
   handleEdit() {
-    this.setState({ updatingSubject: true }, () => {
+    this.setState({ updatingCategories: true }, () => {
       var formData = new FormData();
       formData.append('title',this.state.formData.title)
-      formData.append('course',this.state.formData.course.join(','))
       formData.append('description',this.state.formData.description)
       this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : formData.append('image','')
-      axios.put(`/api/subjects/edit/${this.state.id}/`, formData, {
+      axios.put(`/api/testCategories/edit/${this.state.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => {this.setState({ updatingSubject: false, subjectUpdated:true }); this.fetchSubjects()})
-      .catch((err) => this.setState({ updatingSubject: false }, () => console.log(err)))
+      .then((res) => {this.setState({ updatingCategories: false, categoryUpdated:true }); this.fetchCategories()})
+      .catch((err) => this.setState({ updatingCategories: false }, () => console.log(err)))
     });
   }
 
@@ -172,9 +140,6 @@ class Subjects extends Component {
     this.setState({ id: obj.id , formData: {
       title:obj.title,
       image:obj.image,
-      course:obj.course.map(item=>{
-        return item.id
-      }),
       description:obj.description,
       file:null
     }},()=>{
@@ -193,23 +158,7 @@ class Subjects extends Component {
   }
 
   handleFormDataChange(e) {
-    console.log(this.state.formData.file,this.state)
-    if(e.target.name === 'course' ){
-        if(e.target.checked){
-          this.state.formData.course.push(e.target.value)
-        }else{
-          this.setState({
-            formData:{
-              ...this.state.formData,
-              course:this.state.formData.course.filter( (item) => {
-                if(item !== e.target.value){
-                  return item
-                }
-              })
-            }
-          })
-        }
-    }else if(e.target.name === 'image'){
+    if(e.target.name === 'image'){
       if(e.target.files.length){
         let file = e.target.files[0]
         this.setState({ formData: {
@@ -229,27 +178,6 @@ class Subjects extends Component {
     }});
     }
   }
-
-  toggleTransferData(e){
-    this.setState({transferData: !this.state.transferData})
-  }
-
-  handleSelect(item){
-    this.setState({transferTo:item.title, subject:item.id})
-  }
-
-  renderCourses(cell, row, enumObject, rowIndex) {
-      return (
-        <Row md={12}>
-          {
-          row.course.map((item)=>{
-            return(
-              <Col md={6}><Badge>{item.title}</Badge></Col>
-            )
-        })}   
-        </Row>
-      )
-    }
 
   renderColumn(cell, row, enumObject, rowIndex) {
     return (
@@ -279,7 +207,7 @@ class Subjects extends Component {
           <Row>
             <Col>
               <Card
-                title="Subjects"
+                title="Categories"
                 addButton={true}
                 handleShowAddModal={this.handleShowAddModal.bind(this)}
                 ctTableFullWidth
@@ -291,39 +219,33 @@ class Subjects extends Component {
                       data={this.state.data}
                       search>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
-                        <TableHeaderColumn dataField='title'>Subject</TableHeaderColumn>
+                        <TableHeaderColumn dataField='title'>Categories</TableHeaderColumn>
                         <TableHeaderColumn dataField='description'>Description</TableHeaderColumn>
-                        <TableHeaderColumn dataField='courses' dataFormat={this.renderCourses.bind(this)}>Courses</TableHeaderColumn>
                         <TableHeaderColumn dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
                     </BootstrapTable>
-                    <EditSubject 
+                    <EditCategories 
                       show={this.state.show} 
                       onHide={this.handleHideEditModal.bind(this)} 
-                      subjectUpdated={this.state.subjectUpdated} 
+                      categoryUpdated={this.state.categoryUpdated} 
                       formData={this.state.formData} 
                       courses={this.state.courses}
                       handleFormDataChange={this.handleFormDataChange.bind(this)} 
-                      updatingSubject={this.state.updatingSubject}
+                      updatingCategories={this.state.updatingCategories}
                       handleEdit={this.handleEdit.bind(this)}
                     />
-                    <DeleteSubject
+                    <DeleteCategories
                       show={this.state.show2}
                       onHide={this.handleHideDeleteModal.bind(this)}
-                      subjectDeleted={this.state.subjectDeleted}
-                      deletingSubject={this.state.deletingSubject}
+                      categoryDeleted={this.state.categoryDeleted}
+                      deletingCategories={this.state.deletingCategories}
                       handleDelete={this.handleDelete.bind(this)}
-                      transferData={this.state.transferData}
-                      toggle={this.toggleTransferData.bind(this)}
-                      subjects={this.state.data}
                       id={this.state.id}
-                      subject={this.state.transferTo}
-                      handleSelect={this.handleSelect.bind(this)}
                     />
-                    <AddSubject
+                    <AddCategories
                       show={this.state.show3}
                       onHide={this.handleHideAddModal.bind(this)}
-                      subjectAdded={this.state.subjectAdded}
-                      addingSubject={this.state.addingSubject}
+                      categoryAdded={this.state.categoryAdded}
+                      addingCategories={this.state.addingCategories}
                       handleAdd={this.handleAdd.bind(this)}
                       formData={this.state.formData}
                       courses={this.state.courses}
@@ -340,4 +262,4 @@ class Subjects extends Component {
   }
 }
 
-export default Subjects;
+export default Categories;

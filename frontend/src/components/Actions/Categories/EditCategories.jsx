@@ -11,7 +11,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 
 import '../../../../node_modules/antd/dist/antd.css'; 
 
-class EditSubject extends Component {
+class EditCategories extends Component {
 
   render() {
     return ( 
@@ -23,12 +23,12 @@ class EditSubject extends Component {
             >
                 <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title">
-                        EDIT SUBJECT
+                        EDIT CATEGORY
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     { 
-                        this.props.subjectUpdated 
+                        this.props.categoryUpdated 
                         ?
                         <center><b><p>Updated Successully</p></b></center>
                         :
@@ -36,11 +36,11 @@ class EditSubject extends Component {
                         <FormGroup
                         controlId="formBasicText"
                         >
-                        <ControlLabel>SUBJECT NAME</ControlLabel>
+                        <ControlLabel>CATEGORY NAME</ControlLabel>
                         <FormControl
                             type="text"
                             value={this.props.formData.title}
-                            placeholder="Subject Name"
+                            placeholder="Categories Name"
                             name='title'
                             onChange={this.props.handleFormDataChange}
                         />
@@ -53,23 +53,6 @@ class EditSubject extends Component {
                             name='description'
                             onChange={this.props.handleFormDataChange}
                         />
-                        <br/>
-                        <ControlLabel>Courses</ControlLabel>
-                        <FormGroup>
-                            {this.props.courses.map((props)=>{
-                                return(<Checkbox 
-                                            inline
-                                            value={props.id}
-                                            defaultChecked={
-                                                this.props.formData.course.find((item)=>{
-                                                    return item === props.id
-                                                })
-                                            }
-                                            name='course'
-                                            onChange={this.props.handleFormDataChange}
-                                        >{props.title}</Checkbox>);
-                            })} 
-                        </FormGroup>
                         <br/>
                         <ControlLabel>IMAGE</ControlLabel><br/>
                         {   this.props.formData.image === null ? 
@@ -95,7 +78,7 @@ class EditSubject extends Component {
                         </FormGroup>
                         <LinearProgress
                         style={
-                            this.props.updatingSubject ? 
+                            this.props.updatingCategories ? 
                             {visibility: 'visible'} :
                             {visibility: 'hidden'}
                             }
@@ -106,11 +89,11 @@ class EditSubject extends Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.subjectUpdated ? null : <Button bsStyle="primary" onClick={this.props.handleEdit}>EDIT SUBJECT</Button>}
+                    {this.props.categoryUpdated ? null : <Button bsStyle="primary" onClick={this.props.handleEdit}>EDIT CATEGORY</Button>}
                 </Modal.Footer>
         </Modal>
     );
   }
 }
 
-export default EditSubject;
+export default EditCategories;

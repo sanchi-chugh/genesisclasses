@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 from django.core.validators import (
     MaxValueValidator,
     MinValueValidator,
@@ -353,7 +354,7 @@ class Passage(models.Model):
     )
 
     def __str__(self):
-        return str(self.paragraph)[:20] + '....'
+        return str(self.paragraph)[:50] + '.... (' + self.section.title + ')'
 
 # QuestionQuerySet : A query manager to Question Model
 # Used for bulk deletion of Question model objs
@@ -439,6 +440,11 @@ class Question(models.Model):
 
         if self.pk:
             return super().save(*args, **kwargs)
+
+        # Return error if section of ques and passage are different
+        if self.questionType == 'passage':
+            if self.passage.section != self.section:
+                raise ValidationError('Question section and passage section do not match.')
 
         # If object is created for the first time, increase question count
         # and total marks of the associated test and section

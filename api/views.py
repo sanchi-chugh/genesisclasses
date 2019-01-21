@@ -1544,6 +1544,57 @@ def DeleteQuestionView(request, pk):
     question.delete()
     return Response({'status': 'successful'})
 
+# View details of a passage
+class PassageDetailsView(APIView):
+    model = Passage
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, pk, *args, **kwargs):
+        passage = get_object_or_404(Passage, pk=pk)
+        passageData = PassageDetailsSerializer(passage).data
+        return Response({'details': passageData, 'status': 'successful'})
+
+# Add a new passage
+class AddPassageView(CreateAPIView):
+    model = Passage
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+
+        # Return if section or paragraph (passage text) are missing
+        check_pass, result = fields_check(['section', 'paragraph'], data)
+        if not check_pass:
+            return result
+
+        section = get_object_or_404(Section, pk=int(data['section']))
+
+        self.model.objects.create(
+            paragraph=data['paragraph'],
+            section=section,
+        )
+
+        return Response({ "status": "successful" })
+
+# Edit passage details
+class EditPassageView(UpdateAPIView):
+    model = Passage
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def put(self, request, pk, *args, **kwargs):
+        passage = get_object_or_404(Passage, pk=pk)
+        data = request.data
+
+        # Return if title is missing
+        check_pass, result = fields_check(['paragraph'], data)
+        if not check_pass:
+            return result
+
+        passage.paragraph = data['paragraph']
+        passage.save()
+
+        return Response({'status': 'successful'})
+
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):
 

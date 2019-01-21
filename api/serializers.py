@@ -277,6 +277,24 @@ class TestQuestionDetailsSerializer(serializers.ModelSerializer):
     def get_quesNumber(self, obj):
         return get_test_ques_number(obj)
 
+class PassageDetailsSerializer(serializers.ModelSerializer):
+    section = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='title',
+    )
+    questions = serializers.SerializerMethodField()
+    class Meta:
+        model = Passage
+        exclude = []
+    
+    def get_questions(self, obj):
+        questions = Question.objects.filter(passage=obj).order_by('quesNumber')
+        quesData = TestQuestionSerializer(questions, many=True).data
+        for ques in quesData:
+            ques.pop('passage', None)
+            ques.pop('questionType', None)
+        return quesData
+
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option

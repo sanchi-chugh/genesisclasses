@@ -56,6 +56,11 @@ urlpatterns = [
     path('tests/sections/questions/detail/add/', AddQuestionDetailsView.as_view()),
     path('tests/sections/questions/delete/<int:pk>/', DeleteQuestionView),
 
+    # Endpoints for passages
+    path('tests/sections/questions/passages/<int:pk>/', PassageDetailsView.as_view()),
+    path('tests/sections/questions/passages/add/', AddPassageView.as_view()),
+    path('tests/sections/questions/passages/edit/<int:pk>/', EditPassageView.as_view()),
+
     # Endpoints for students
     path('users/students/', StudentUserViewSet.as_view({'get': 'list'})),
     path('users/students/add/', AddStudentUserView.as_view()),

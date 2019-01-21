@@ -8,6 +8,7 @@ from django.core.validators import (
 )
 import datetime
 
+# If more than one correct ans, set ques type as mcq
 def set_mcq_scq(questionObj):
     if questionObj.questionType not in ('mcq', 'scq'):
         return
@@ -18,9 +19,7 @@ def set_mcq_scq(questionObj):
             correctNum += 1
     if correctNum > 1:
         questionObj.questionType = 'mcq'
-    else:
-        questionObj.questionType = 'scq'
-    questionObj.save()
+    return questionObj
 
 class CustomUserManager(UserManager):
     def create_user(self, username, email, password=None):
@@ -365,7 +364,7 @@ class QuestionQuerySet(models.QuerySet):
         quesMarks = 0
         for questionObj in self:
             quesCount += 1
-            quesMarks += questionObj.marksPostive
+            quesMarks += questionObj.marksPositive
 
             # Auto arrange ques number of all questions after deleting a ques
             missingNum = questionObj.quesNumber
@@ -419,23 +418,36 @@ class Question(models.Model):
         null=True
     )
     explanation = models.TextField(blank=True, null=True)
-    marksPostive = models.FloatField(default=4.0)
+    marksPositive = models.FloatField(default=4.0)
     marksNegative = models.FloatField(default=1.0)
     # Numbering done separately for every section
     quesNumber = models.IntegerField(default=1)
 
     def save(self, *args, **kwargs):
+        # Maintain integrity of questions
+        questionType = self.questionType
+        if questionType == 'integer':
+            self.passage = None
+        elif questionType == 'passage':
+            self.intAnswer = None
+        elif questionType in ('mcq', 'scq'):
+            self.passage = None
+            self.intAnswer = None
+
+        # Auto set mcq/scq to mcq if correct options > 1
+        set_mcq_scq(self)
+
         if self.pk:
             return super().save(*args, **kwargs)
 
         # If object is created for the first time, increase question count
         # and total marks of the associated test and section
         testObj = self.section.test
-        testObj.totalMarks += self.marksPostive
+        testObj.totalMarks += self.marksPositive
         testObj.totalQuestions += 1
         testObj.save()
         sectionObj = self.section
-        sectionObj.totalMarks += self.marksPostive
+        sectionObj.totalMarks += self.marksPositive
         sectionObj.totalQuestions += 1
         sectionObj.save()
 
@@ -466,11 +478,11 @@ class Question(models.Model):
         # Decrease question count and total marks of the 
         # associated test and section before deleting question
         testObj = self.section.test
-        testObj.totalMarks -= self.marksPostive
+        testObj.totalMarks -= self.marksPositive
         testObj.totalQuestions -= 1
         testObj.save()
         sectionObj = self.section
-        sectionObj.totalMarks -= self.marksPostive
+        sectionObj.totalMarks -= self.marksPositive
         sectionObj.totalQuestions -= 1
         sectionObj.save()
 
@@ -497,7 +509,7 @@ class OptionQuerySet(models.QuerySet):
         questionObjs = set([option.question for option in self])
         super(OptionQuerySet, self).delete(*args, **kwargs)
         for questionObj in questionObjs:
-            set_mcq_scq(questionObj)
+            set_mcq_scq(questionObj).save()
 
 # Every question (mcq, scq and passage) can have more than one option
 class Option(models.Model):
@@ -512,11 +524,11 @@ class Option(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        set_mcq_scq(self.question)
+        set_mcq_scq(self.question).save()
 
     def delete(self, *args, **kwargs):
         super(Option, self).delete(*args, **kwargs)
-        set_mcq_scq(self.question)
+        set_mcq_scq(self.question).save()
 
     def __str__(self):
         return self.optionText + ' (' + str(self.question) + ')'

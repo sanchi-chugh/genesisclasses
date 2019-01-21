@@ -252,7 +252,6 @@ class TestQuestionSerializer(serializers.ModelSerializer):
         return get_test_ques_number(obj)
 
 class TestQuestionDetailsSerializer(serializers.ModelSerializer):
-    questionType = serializers.SerializerMethodField()
     section = serializers.SlugRelatedField(
         read_only=True,
         slug_field='title',
@@ -264,11 +263,6 @@ class TestQuestionDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         exclude = []
-
-    def get_questionType(self, obj):
-        if obj.questionType in ('mcq', 'scq'):
-            return 'mcq/scq'
-        return obj.questionType
 
     def get_valid(self, obj):
         return get_validity_of_ques(obj)

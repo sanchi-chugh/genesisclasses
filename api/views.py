@@ -1358,7 +1358,7 @@ class QuestionsViewSet(viewsets.ReadOnlyModelViewSet):
         return questions
 
 # Shows details of a particular question
-class QuestionDetialsView(APIView):
+class QuestionDetailsView(APIView):
     model = Question
     serializer_class = TestQuestionDetailsSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -1366,15 +1366,74 @@ class QuestionDetialsView(APIView):
     def get(self, request, pk, *args, **kwargs):
         question = get_object_or_404(Question, pk=pk)
         quesData = TestQuestionDetailsSerializer(question).data
-        if question.questionType == 'integer':
+        questionType = question.questionType
+        if questionType == 'integer':
             quesData.pop('passage', None)
             quesData.pop('options', None)
-        if question.questionType in ('mcq', 'scq'):
+        elif questionType in ('mcq', 'scq'):
             quesData.pop('passage', None)
             quesData.pop('intAnswer', None)
-        if question.questionType == 'passage':
+        elif questionType == 'passage':
             quesData.pop('intAnswer', None)
         return Response({'details': quesData, 'status': 'successful'})
+
+# Edit details of a particular question
+class EditQuestionDetailsView(UpdateAPIView):
+    model = Question
+    serializer_class = TestQuestionDetailsSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        ques_id = self.kwargs['pk']
+        questions = Question.objects.filter(pk=ques_id)
+        return questions
+
+    def put(self, request, pk, *args, **kwargs):
+        ques_id = pk
+        question = get_object_or_404(Question, pk=int(ques_id))
+        data = request.data
+
+        # Fields compulsory for all ques types
+        compulsory_list = ['questionText', 'marksPositive', 'marksNegative']
+
+        # Adding additional compulsory fields acc to ques type
+        questionType = question.questionType
+        if questionType == 'integer':
+            compulsory_list.append('intAnswer')
+        elif questionType in ('mcq', 'scq'):
+            compulsory_list.append('questionType')
+
+        # Return error if question type is changed
+        op_dict = set_optional_fields(['questionType'], data)
+        if op_dict['questionType']:
+            if (questionType not in ('mcq', 'scq') and questionType != data['questionType']) or \
+                (data['questionType'] not in ('mcq', 'scq')):
+                return Response({
+                    'status': 'error', 'message': 'Question type wrongly edited.'},
+                    status=HTTP_400_BAD_REQUEST)
+
+        # Return if compulsory fields are missing
+        check_pass, result = fields_check(compulsory_list, data)
+        if not check_pass:
+            return result
+
+        self.partial_update(request, *args, **kwargs)
+
+        # Maintain total marks in section and test when ques obj is updated
+        prevMarks = question.marksPositive    # Taking positive marks from prev obj
+        updatedQues = get_object_or_404(Question, pk=int(ques_id))
+        currMarks = updatedQues.marksPositive    # Taking positive marks from updated obj
+        marksDiff = currMarks - prevMarks
+
+        testObj = question.section.test
+        testObj.totalMarks += marksDiff
+        testObj.save()
+
+        sectionObj = question.section
+        sectionObj.totalMarks += marksDiff
+        sectionObj.save()
+
+        return Response({'status': 'successful'})
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

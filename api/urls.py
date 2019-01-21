@@ -54,6 +54,12 @@ urlpatterns = [
     path('tests/sections/questions/detail/<int:pk>/', QuestionDetailsView.as_view()),
     path('tests/sections/questions/detail/edit/<int:pk>/', EditQuestionDetailsView.as_view()),
     path('tests/sections/questions/detail/add/', AddQuestionDetailsView.as_view()),
+    path('tests/sections/questions/delete/<int:pk>/', DeleteQuestionView),
+
+    # Endpoints for passages
+    path('tests/sections/questions/passages/<int:pk>/', PassageDetailsView.as_view()),
+    path('tests/sections/questions/passages/add/', AddPassageView.as_view()),
+    path('tests/sections/questions/passages/edit/<int:pk>/', EditPassageView.as_view()),
 
     # Endpoints for students
     path('users/students/', StudentUserViewSet.as_view({'get': 'list'})),
@@ -69,17 +75,9 @@ urlpatterns = [
     # (under a particular superadmin)
     path('getStudentData/', DownloadStudentDataView.as_view()),
 
+    # Staff user endpoints (not being used yet)
     path('staff/add/', AddStaffView.as_view()),
     path('users/staff/', GetStaffUsersView.as_view()),
-    path('tests/list/', TestListView.as_view()),
-    path('tests/<int:pk>/', TestDetailsView.as_view()),
-    path('tests/update/<int:pk>/', UpdateTestView.as_view()),
-    path('questions/add/', CreateQuestionView.as_view()),
-    path('questions/update/<int:pk>/', UpdateQuestionView.as_view()),
-    path('options/update/<int:pk>/', UpdateOptionView.as_view()),
-    path('tests/add/manual/', AddTestManualView.as_view()),
-    path('tests/add/from-doc/', TestFromDocView.as_view()),
-    path('complete-profile/<int:pk>/', CompleteProfileView.as_view()),
 
     # Additional urls for choice fields in UI
     # Lists all subjects - subject_name (course_title_1 + course_title_2 + ...)
@@ -89,6 +87,11 @@ urlpatterns = [
     # Lists all subjects belonging to comma separated string of courses
     path('subjects/<str:courses>/', CoursesFilteredSubjectViewSet.as_view({'get': 'list'})),
 
+
+    # -------------------STUDENT APP ENDPOINTS--------------------
+    path('complete-profile/<int:pk>/', CompleteProfileView.as_view()),
+
+    # ---------------------COMMON ENDPOINTS-----------------------
     # This is for browsable api login/logout
     path('api-auth/', include('rest_framework.urls')),
 ]

@@ -56,23 +56,6 @@ def set_optional_fields(fields_arr, data):
                 dictV[field] = data[field]
     return dictV
 
-class CompleteProfileView(UpdateAPIView):
-    serializer_class = StudentSerializer
-
-    def get_queryset(self, *args, **kwargs):
-        return Student.objects.filter(user=self.request.user)
-
-    def put(self, request, *args, **kwargs):
-        print(request.data)
-        response = super(CompleteProfileView, self).put(request,
-                                                    *args,
-                                                    **kwargs)
-        if response.status_code == 200:
-            obj = Student.objects.get(id=kwargs['pk'])
-            obj.complete = True
-            obj.save()
-        return response
-
 # -------------------VIEWS FOR CHOICEs-------------------------
 # Shows all subjects of superadmin in the format
 # subject_name (course_title_1 + course_title_2 + ...)
@@ -1627,72 +1610,10 @@ class TestFromDocView(APIView):
         Option.objects.bulk_create(options)
         return Response({ "id" : testObj.pk })
 
-class TestDetailsView(APIView):
-    def get(self, request, pk, *args, **kwargs):
-        if not request.user or request.user.type_of_user == 'student':
-            raise Http404
-        testObj = Test.objects.get(pk=pk)
-        if testObj.super_admin != get_super_admin(self.request.user):
-            raise Http404
-        data = TestSerializerFull(testObj).data
-        print(data['sections'])
-        return Response(data)
-
-class UpdateTestView(UpdateAPIView):
-    serializer_class = TestSerializer
-
-    def get_queryset(self):
-        super_admin = get_super_admin(self.request.user)
-        queryset = Test.objects.filter(super_admin=super_admin)
-        return queryset
-
-    def put(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
-
-class UpdateQuestionView(UpdateAPIView):
-    serializer_class = QuestionSerializer
-    queryset = Question.objects.all()
-
-    def put(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
-
-class CreateQuestionView(CreateAPIView):
-    serializer_class = QuestionSerializer
-    queryset = Question.objects.all()
-
-    def post(self, request, *args, **kwargs):
-        response = super(CreateQuestionView, self).post(request, *args, **kwargs)
-        qid = response.data['id']
-        for _ in range(4):
-            Option.objects.create(question_id=qid, text="-"*45)
-        return response
-
-class UpdateOptionView(UpdateAPIView):
-    serializer_class = OptionSerializer
-    queryset = Option.objects.all()
-
-    def put(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
-
+# Staff user views (not being used yet)
 class GetStaffUsersView(ListAPIView):
     serializer_class = StaffSerializer
     queryset = Staff.objects.all()
-
-class TestListView(ListAPIView):
-    serializer_class = TestSerializer
-
-    def get_queryset(self):
-        tests = Test.objects.filter(super_admin=get_super_admin(self.request.user)).order_by('-pk')
-        return tests
-
-class AddTestManualView(APIView):
-    def post(self, request, *args, **kwargs):
-        testObj = Test.objects.create(title=request.data['title'],
-                            course=Course.objects.get(pk=request.data['course']),
-                            description=request.data['description'],
-                            super_admin=get_super_admin(request.user))
-        Section.objects.create(title="Section 1", test=testObj)
-        return Response({ "id" : testObj.pk })
 
 class AddStaffView(APIView):
     def post(self, request, *args, **kwargs):
@@ -1725,3 +1646,19 @@ class AddStaffView(APIView):
             "password": password,
         })
 
+class CompleteProfileView(UpdateAPIView):
+    serializer_class = StudentSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        return Student.objects.filter(user=self.request.user)
+
+    def put(self, request, *args, **kwargs):
+        print(request.data)
+        response = super(CompleteProfileView, self).put(request,
+                                                    *args,
+                                                    **kwargs)
+        if response.status_code == 200:
+            obj = Student.objects.get(id=kwargs['pk'])
+            obj.complete = True
+            obj.save()
+        return response

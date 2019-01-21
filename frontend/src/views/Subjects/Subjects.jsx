@@ -172,7 +172,9 @@ class Subjects extends Component {
     this.setState({ id: obj.id , formData: {
       title:obj.title,
       image:obj.image,
-      course:obj.course,
+      course:obj.course.map(item=>{
+        return item.id
+      }),
       description:obj.description,
       file:null
     }},()=>{

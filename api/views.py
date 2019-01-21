@@ -1186,6 +1186,12 @@ class AddTestInfoView(CreateAPIView):
         # Get doc value
         op_dict = set_optional_fields(['doc'], data)
 
+        if op_dict['doc']:
+            # If docs directory does not exist, then make one
+            directory = 'media/docs/'
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+
         testObj = self.model.objects.create(
             super_admin=super_admin,
             title=data['title'],
@@ -1350,6 +1356,184 @@ class QuestionsViewSet(viewsets.ReadOnlyModelViewSet):
         section_id = self.kwargs['pk']
         questions = Question.objects.filter(section__id=int(section_id)).order_by('quesNumber')
         return questions
+
+# Shows details of a particular question
+class QuestionDetailsView(APIView):
+    model = Question
+    serializer_class = TestQuestionDetailsSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, pk, *args, **kwargs):
+        question = get_object_or_404(Question, pk=pk)
+        quesData = TestQuestionDetailsSerializer(question).data
+        questionType = question.questionType
+        if questionType == 'integer':
+            quesData.pop('passage', None)
+            quesData.pop('options', None)
+        elif questionType in ('mcq', 'scq'):
+            quesData.pop('passage', None)
+            quesData.pop('intAnswer', None)
+        elif questionType == 'passage':
+            quesData.pop('intAnswer', None)
+        return Response({'details': quesData, 'status': 'successful'})
+
+# Check validity of int answer (valid if integer in range 0-9)
+def validate_intAnswer(data):
+    error = False
+    if data['questionType'] == 'integer':
+        try:
+            intAnswer = int(data['intAnswer'])
+            if intAnswer not in range(0, 10):
+                error = True
+        except ValueError:
+            error = True
+    if error:
+        return (False, Response({
+                'status': 'error', 'message': 'Answer must be an integral value ranging from 0 to 9.'},
+                status=HTTP_400_BAD_REQUEST))
+    return (True, '')
+
+# Edit details of a particular question
+class EditQuestionDetailsView(UpdateAPIView):
+    model = Question
+    serializer_class = TestQuestionDetailsSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        ques_id = self.kwargs['pk']
+        questions = Question.objects.filter(pk=ques_id)
+        return questions
+
+    def put(self, request, pk, *args, **kwargs):
+        ques_id = pk
+        question = get_object_or_404(Question, pk=int(ques_id))
+        data = request.data
+
+        # Fields compulsory for all ques types
+        compulsory_list = ['questionText', 'marksPositive', 'marksNegative']
+
+        # Adding additional compulsory fields acc to ques type
+        questionType = question.questionType
+        if questionType == 'integer':
+            compulsory_list.append('intAnswer')
+        elif questionType in ('mcq', 'scq'):
+            compulsory_list.append('questionType')
+
+        # Return error if question type is changed
+        op_dict = set_optional_fields(['questionType'], data)
+        if op_dict['questionType']:
+            if (questionType not in ('mcq', 'scq') and questionType != data['questionType']) or \
+                (data['questionType'] not in ('mcq', 'scq')):
+                return Response({
+                    'status': 'error', 'message': 'Question type wrongly edited.'},
+                    status=HTTP_400_BAD_REQUEST)
+
+        # Return if compulsory fields are missing
+        check_pass, result = fields_check(compulsory_list, data)
+        if not check_pass:
+            return result
+
+        # Return if integer answer is not valid
+        valid, result = validate_intAnswer(data)
+        if not valid:
+            return result
+
+        # Update values
+        self.partial_update(request, *args, **kwargs)
+
+        # Maintain total marks in section and test when ques obj is updated
+        prevMarks = question.marksPositive    # Taking positive marks from prev obj
+        updatedQues = get_object_or_404(Question, pk=int(ques_id))
+        currMarks = updatedQues.marksPositive    # Taking positive marks from updated obj
+        marksDiff = currMarks - prevMarks
+
+        testObj = question.section.test
+        testObj.totalMarks += marksDiff
+        testObj.save()
+
+        sectionObj = question.section
+        sectionObj.totalMarks += marksDiff
+        sectionObj.save()
+
+        return Response({'status': 'successful'})
+
+class AddQuestionDetailsView(CreateAPIView):
+    model = Question
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+
+        # Return error if question type is missing
+        check_pass, result = fields_check(['questionType'], data)
+        if not check_pass:
+            return result
+
+        # Fields compulsory for all ques types
+        compulsory_list = ['questionText', 'marksPositive', 'marksNegative', 'section']
+
+        # Adding additional compulsory fields acc to ques type
+        questionType = data['questionType']
+        if questionType == 'integer':
+            compulsory_list.append('intAnswer')
+        elif questionType == 'passage':
+            compulsory_list.append('passage')
+
+        # Return if compulsory fields are missing
+        check_pass, result = fields_check(compulsory_list, data)
+        if not check_pass:
+            return result
+
+        # Get optional value - explanation
+        op_dict = set_optional_fields(['explanation'], data)
+
+        # Create question according to ques type
+        section = get_object_or_404(Section, pk=int(data['section']))
+        marksPositive = float(data['marksPositive'])
+        marksNegative = float(data['marksNegative'])
+
+        if questionType == 'integer':
+            # Return if integer answer is not valid
+            valid, result = validate_intAnswer(data)
+            if not valid:
+                return result
+
+            self.model.objects.create(
+                questionType='integer',
+                section=section,
+                questionText=data['questionText'],
+                intAnswer=int(data['intAnswer']),
+                explanation=op_dict['explanation'],
+                marksPositive=marksPositive,
+                marksNegative=marksNegative,
+            )
+        elif questionType == 'passage':
+            passage_id = data['passage']
+            passageObj = get_object_or_404(Passage, pk=int(passage_id))
+            self.model.objects.create(
+                questionType='passage',
+                section=section,
+                questionText=data['questionText'],
+                passage=passageObj,
+                explanation=op_dict['explanation'],
+                marksPositive=marksPositive,
+                marksNegative=marksNegative,
+            )
+        elif questionType in ('mcq', 'scq'):
+            self.model.objects.create(
+                questionType=questionType,
+                section=section,
+                questionText=data['questionText'],
+                explanation=op_dict['explanation'],
+                marksPositive=marksPositive,
+                marksNegative=marksNegative,
+            )
+        else:
+            return Response({
+                'status': 'error', 'message': 'Wrong question type provided.'},
+                status=HTTP_400_BAD_REQUEST)
+
+        return Response({'status': 'successful'})
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

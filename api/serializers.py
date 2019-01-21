@@ -1,6 +1,33 @@
 from rest_framework import serializers
 from api.models import *
 from django.utils.timezone import localtime
+from django.shortcuts import get_object_or_404
+
+# -------------- Helper Functions ---------------
+# Helper function to get validity of a question
+def get_validity_of_ques(obj):
+    # Int ques is valid iff it has a valid ans in range 0-9
+    if obj.questionType == 'integer':
+        if obj.intAnswer:
+            return True
+        else:
+            return False
+    
+    # mcq, scq and passage ques are valid iff they have at least one correct option
+    options = Option.objects.filter(question=obj, correct=True)
+    if len(options) == 0:
+        return False
+    # Passage question must have a passage
+    if obj.questionType == 'passage' and not obj.passage:
+        return False
+    return True
+
+# Get absolute question number according to test (ques numbers are saved section wise)
+def get_test_ques_number(obj):
+    # Ques number = Questions of all sections before this ques's sec + quesNumber
+    prevSections = Section.objects.filter(sectionNumber__lt=obj.section.sectionNumber)
+    prev_ques = Question.objects.filter(section__in=prevSections).count()
+    return prev_ques + obj.quesNumber
 
 # -----------Nested Helper Serializers-----------
 class NestedCentreSerializer(serializers.ModelSerializer):
@@ -27,6 +54,16 @@ class NestedUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Unit
         fields = ('id', 'title')
+
+class NestedOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Option
+        fields = ('id', 'optionText', 'correct')
+
+class NestedPassageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Passage
+        fields = ('id', 'paragraph')
 
 # ------------Serializers for Choices-----------------
 # Gives choices of subjects along with the names of courses
@@ -156,7 +193,7 @@ class SubjectWiseUnitSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True,
         slug_field='title',
-        )
+    )
     class Meta:
         model = Subject
         fields = ['title', 'id', 'units', 'course']
@@ -195,6 +232,7 @@ class TestQuestionSerializer(serializers.ModelSerializer):
     questionDetail = serializers.SerializerMethodField()
     passage = serializers.SerializerMethodField()
     valid = serializers.SerializerMethodField()
+    quesNumber = serializers.SerializerMethodField()
     class Meta:
         model = Question
         exclude = ['section', 'intAnswer']
@@ -208,21 +246,36 @@ class TestQuestionSerializer(serializers.ModelSerializer):
         return None
 
     def get_valid(self, obj):
-        # Int ques is valid iff it has a valid ans in range 0-9
-        if obj.questionType == 'integer':
-            if obj.intAnswer:
-                return True
-            else:
-                return False
-        
-        # mcq, scq and passage ques are valid iff they have at least one correct option
-        options = Option.objects.filter(question=obj, correct=True)
-        if len(options) == 0:
-            return False
-        # Passage question must have a passage
-        if obj.questionType == 'passage' and not obj.passage:
-            return False
-        return True
+        return get_validity_of_ques(obj)
+
+    def get_quesNumber(self, obj):
+        return get_test_ques_number(obj)
+
+class TestQuestionDetailsSerializer(serializers.ModelSerializer):
+    section = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='title',
+    )
+    valid = serializers.SerializerMethodField()
+    options = NestedOptionSerializer(many=True)
+    passage = serializers.SerializerMethodField()
+    quesNumber = serializers.SerializerMethodField()
+    class Meta:
+        model = Question
+        exclude = []
+
+    def get_valid(self, obj):
+        return get_validity_of_ques(obj)
+    
+    def get_passage(self, obj):
+        if obj.passage and obj.questionType == 'passage':
+            passageObj = get_object_or_404(Passage, pk=obj.passage.pk)
+            passageData = NestedPassageSerializer(passageObj).data
+            return passageData
+        return None
+
+    def get_quesNumber(self, obj):
+        return get_test_ques_number(obj)
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:

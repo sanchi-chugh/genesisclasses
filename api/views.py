@@ -1377,6 +1377,22 @@ class QuestionDetailsView(APIView):
             quesData.pop('intAnswer', None)
         return Response({'details': quesData, 'status': 'successful'})
 
+# Check validity of int answer (valid if integer in range 0-9)
+def validate_intAnswer(data):
+    error = False
+    if data['questionType'] == 'integer':
+        try:
+            intAnswer = int(data['intAnswer'])
+            if intAnswer not in range(0, 10):
+                error = True
+        except ValueError:
+            error = True
+    if error:
+        return (False, Response({
+                'status': 'error', 'message': 'Answer must be an integral value ranging from 0 to 9.'},
+                status=HTTP_400_BAD_REQUEST))
+    return (True, '')
+
 # Edit details of a particular question
 class EditQuestionDetailsView(UpdateAPIView):
     model = Question
@@ -1417,6 +1433,12 @@ class EditQuestionDetailsView(UpdateAPIView):
         if not check_pass:
             return result
 
+        # Return if integer answer is not valid
+        valid, result = validate_intAnswer(data)
+        if not valid:
+            return result
+
+        # Update values
         self.partial_update(request, *args, **kwargs)
 
         # Maintain total marks in section and test when ques obj is updated
@@ -1469,12 +1491,18 @@ class AddQuestionDetailsView(CreateAPIView):
         section = get_object_or_404(Section, pk=int(data['section']))
         marksPositive = float(data['marksPositive'])
         marksNegative = float(data['marksNegative'])
+
         if questionType == 'integer':
+            # Return if integer answer is not valid
+            valid, result = validate_intAnswer(data)
+            if not valid:
+                return result
+
             self.model.objects.create(
                 questionType='integer',
                 section=section,
                 questionText=data['questionText'],
-                intAnswer=data['intAnswer'],
+                intAnswer=int(data['intAnswer']),
                 explanation=op_dict['explanation'],
                 marksPositive=marksPositive,
                 marksNegative=marksNegative,

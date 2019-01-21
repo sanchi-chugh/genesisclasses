@@ -8,6 +8,20 @@ from django.core.validators import (
 )
 import datetime
 
+def set_mcq_scq(questionObj):
+    if questionObj.questionType not in ('mcq', 'scq'):
+        return
+    optionObjs = Option.objects.filter(question=questionObj)
+    correctNum = 0
+    for option in optionObjs:
+        if option.correct:
+            correctNum += 1
+    if correctNum > 1:
+        questionObj.questionType = 'mcq'
+    else:
+        questionObj.questionType = 'scq'
+    questionObj.save()
+
 class CustomUserManager(UserManager):
     def create_user(self, username, email, password=None):
         """
@@ -255,6 +269,12 @@ class Test(models.Model):
         SuperAdmin,
         on_delete=models.CASCADE,
     )
+    doc = models.FileField(
+        blank=True,
+        null=True,
+        upload_to='docs/',
+        validators=[FileExtensionValidator(['doc', 'docx'])],
+    )
 
     def save(self, *args, **kwargs):
         if self.unit and not self.subject:
@@ -268,9 +288,25 @@ class Test(models.Model):
             return self.title + ' (' + self.subject.title + ')'
         return self.title + ' (' + self.super_admin.institution_name + ')'
 
+# SectionQuerySet : A query manager to Section Model
+# Used for bulk deletion of Section model objs
+class SectionQuerySet(models.QuerySet):
+
+    def delete(self, *args, **kwargs):
+        for sectionObj in self:
+            # Auto arrange section number of all sections
+            missingNum = sectionObj.sectionNumber
+            nextSecObjs = Section.objects.filter(
+                test=sectionObj.test, sectionNumber__gt=missingNum).order_by('sectionNumber')
+            for secObj in nextSecObjs:
+                secObj.sectionNumber = secObj.sectionNumber - 1
+                secObj.save()
+        super(SectionQuerySet, self).delete(*args, **kwargs)
+
 # Section Model : Each test will have one or more section
 # section will contain questions.
 class Section(models.Model):
+    objects = SectionQuerySet.as_manager()
     title = models.CharField(max_length = 30)
     totalMarks = models.FloatField(default=0.0, blank=True)
     totalQuestions = models.IntegerField(default=0, blank=True)
@@ -279,14 +315,85 @@ class Section(models.Model):
         on_delete = models.CASCADE,
         related_name = 'sections',
     )
+    sectionNumber = models.IntegerField(default=1)
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            return super().save(*args, **kwargs)
+
+        # Use default section number if test contains no sections
+        testSectionObjs = Section.objects.filter(test=self.test)
+        if len(testSectionObjs) == 0:
+            return super().save(*args, **kwargs)
+
+        # Auto increment the section number before saving next section
+        self.sectionNumber = testSectionObjs.order_by('-sectionNumber')[0].sectionNumber + 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # Delete requested section
+        missingNum = self.sectionNumber
+        super(Section, self).delete(*args,**kwargs)
+
+        # Auto arrange section number of all sections after deleting a section
+        nextSecObjs = Section.objects.filter(
+            test=self.test, sectionNumber__gt=missingNum).order_by('sectionNumber')
+        for secObj in nextSecObjs:
+            secObj.sectionNumber = secObj.sectionNumber - 1
+            secObj.save()
 
     def __str__(self):
         return self.title + ' (' + self.test.title + ')'
 
+# Passage Model : Provides a unique id to every passage
+class Passage(models.Model):
+    paragraph = models.TextField()
+    section = models.ForeignKey(
+        Section,
+        on_delete = models.CASCADE,
+    )
+
+    def __str__(self):
+        return str(self.paragraph)[:20] + '....'
+
+# QuestionQuerySet : A query manager to Question Model
+# Used for bulk deletion of Question model objs
+class QuestionQuerySet(models.QuerySet):
+
+    def delete(self, *args, **kwargs):
+        quesCount = 0
+        quesMarks = 0
+        for questionObj in self:
+            quesCount += 1
+            quesMarks += questionObj.marksPostive
+
+            # Auto arrange ques number of all questions after deleting a ques
+            missingNum = questionObj.quesNumber
+            nextQuesObjs = Question.objects.filter(
+                section=questionObj.section, quesNumber__gt=missingNum).order_by('quesNumber')
+            for quesObj in nextQuesObjs:
+                quesObj.quesNumber = quesObj.quesNumber - 1
+                quesObj.save()
+            
+            quesObjs = Question.objects.filter(section=questionObj.section).order_by('quesNumber')
+            for ques in quesObjs:
+                print(ques.questionText, ques.quesNumber)
+
+        # Set total marks and ques count in associated test and section obj
+        testObj = questionObj.section.test
+        testObj.totalMarks -= quesMarks
+        testObj.totalQuestions -= quesCount
+        testObj.save()
+        sectionObj = questionObj.section
+        sectionObj.totalMarks -= quesMarks
+        sectionObj.totalQuestions -= quesCount
+        sectionObj.save()
+        super(QuestionQuerySet, self).delete(*args, **kwargs)
 
 # Test Question Model : Each Question will have maximum 6 options 
 # with +ve & -ve marks along with a correct response and explanation(optional).
 class Question(models.Model):
+    objects = QuestionQuerySet.as_manager()
     section = models.ForeignKey(
         Section,
         on_delete = models.CASCADE,
@@ -298,8 +405,15 @@ class Question(models.Model):
         choices=(('mcq', 'mcq'), ('scq', 'scq'), 
             ('integer', 'integer'), ('passage', 'passage')),
     )
-    passage = models.TextField(blank=True, null=True)   #For passage type questions only
-    intAnswer = models.IntegerField(     #For integer type questions only
+    #For passage type questions only
+    passage = models.ForeignKey(
+        Passage,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
+    #For integer type questions only
+    intAnswer = models.IntegerField(
         validators=[MaxValueValidator(9), MinValueValidator(0)],
         blank=True,
         null=True
@@ -307,10 +421,15 @@ class Question(models.Model):
     explanation = models.TextField(blank=True, null=True)
     marksPostive = models.FloatField(default=4.0)
     marksNegative = models.FloatField(default=1.0)
+    # Numbering done separately for every section
+    quesNumber = models.IntegerField(default=1)
 
-    # Increase/decrease question count and total marks of 
-    # respective test and respective section on adding/deleting question
     def save(self, *args, **kwargs):
+        if self.pk:
+            return super().save(*args, **kwargs)
+
+        # If object is created for the first time, increase question count
+        # and total marks of the associated test and section
         testObj = self.section.test
         testObj.totalMarks += self.marksPostive
         testObj.totalQuestions += 1
@@ -319,9 +438,33 @@ class Question(models.Model):
         sectionObj.totalMarks += self.marksPostive
         sectionObj.totalQuestions += 1
         sectionObj.save()
+
+        # Use default ques number if section contains no question
+        sectionQuesObjs = Question.objects.filter(section=self.section)
+        if len(sectionQuesObjs) == 0:
+            return super().save(*args, **kwargs)
+
+        # Auto increment the question number before saving next question
+        if self.questionType != 'passage':
+            self.quesNumber = sectionQuesObjs.order_by('-quesNumber')[0].quesNumber + 1
+        else:
+            # Keep passage questions together
+            passageQues = Question.objects.filter(section=self.section, passage=self.passage)
+            if not passageQues:
+                self.quesNumber = sectionQuesObjs.order_by('-quesNumber')[0].quesNumber + 1
+                return super().save(*args, **kwargs)
+            lastPassageQuesNum = passageQues.order_by('-quesNumber')[0].quesNumber
+            nextQuesObjs = Question.objects.filter(
+                section=self.section, quesNumber__gt=lastPassageQuesNum).order_by('quesNumber')
+            for quesObj in nextQuesObjs:
+                quesObj.quesNumber = quesObj.quesNumber + 1
+                quesObj.save()
+            self.quesNumber = lastPassageQuesNum + 1
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
+        # Decrease question count and total marks of the 
+        # associated test and section before deleting question
         testObj = self.section.test
         testObj.totalMarks -= self.marksPostive
         testObj.totalQuestions -= 1
@@ -330,13 +473,35 @@ class Question(models.Model):
         sectionObj.totalMarks -= self.marksPostive
         sectionObj.totalQuestions -= 1
         sectionObj.save()
-        return super(Question, self).delete(*args,**kwargs)
+
+        # Delete requested question
+        missingNum = self.quesNumber
+        super(Question, self).delete(*args,**kwargs)
+
+        # Auto arrange ques number of all questions after deleting a ques
+        nextQuesObjs = Question.objects.filter(
+            section=self.section, quesNumber__gt=missingNum).order_by('quesNumber')
+        for quesObj in nextQuesObjs:
+            quesObj.quesNumber = quesObj.quesNumber - 1
+            quesObj.save()
 
     def __str__(self):
-        return self.questionText + ' (' + self.section.title + ')'
+        quesStr = str(self.questionText)[:20] + '.... '
+        return quesStr + ' (' + self.section.title + ' - ' + self.section.test.title + ')'
+
+# OptionQuerySet : A query manager to Option Model
+# Used for bulk deletion of Option model objs
+class OptionQuerySet(models.QuerySet):
+
+    def delete(self, *args, **kwargs):
+        questionObjs = set([option.question for option in self])
+        super(OptionQuerySet, self).delete(*args, **kwargs)
+        for questionObj in questionObjs:
+            set_mcq_scq(questionObj)
 
 # Every question (mcq, scq and passage) can have more than one option
 class Option(models.Model):
+    objects = OptionQuerySet.as_manager()
     optionText = models.TextField()
     correct = models.BooleanField(default=False)
     question = models.ForeignKey(
@@ -345,8 +510,16 @@ class Option(models.Model):
         related_name = 'options',
     )
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        set_mcq_scq(self.question)
+
+    def delete(self, *args, **kwargs):
+        super(Option, self).delete(*args, **kwargs)
+        set_mcq_scq(self.question)
+
     def __str__(self):
-        return self.optionText + '(' + str(self.question) + ')'
+        return self.optionText + ' (' + str(self.question) + ')'
 
 # Result of a particular student for a particular test
 class UserTestResult(models.Model):
@@ -365,12 +538,14 @@ class UserTestResult(models.Model):
 
     def get_rank(self):
 		# Rank of a student = (number of users having marks greater than this user) + 1
-        aggregate = TestResult.objects.filter(test = self.test, marksObtained__gt=self.marksObtained).aggregate(rank=Count('marksObtained'))
+        aggregate = TestResult.objects.filter(
+            test = self.test, marksObtained__gt=self.marksObtained).aggregate(rank=Count('marksObtained'))
         return aggregate['rank'] + 1
 
     def get_percentile(self):
         # percentile = (getMyMarks/getTopperMarks)*100
-        topperMarks = TestResult.objects.filter(test = self.test).order_by('-marksObtained').first().marksObtained
+        topperMarks = TestResult.objects.filter(
+            test = self.test).order_by('-marksObtained').first().marksObtained
         try:
             percentile = (self.marksObtained/topperMarks)*100
         except ZeroDivisionError:

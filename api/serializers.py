@@ -174,9 +174,55 @@ class TestInfoSerializer(serializers.ModelSerializer):
     subject = NestedSubjectSerializer()
     unit = NestedUnitSerializer()
     course = NestedCourseSerializer(many=True)
+    sections = serializers.SerializerMethodField()
     class Meta:
         model = Test
         exclude = ['super_admin']
+
+    def get_sections(self, obj):
+        return 'http://localhost:8000/api/tests/sections/' + str(obj.pk) + '/'
+
+class TestSectionSerializer(serializers.ModelSerializer):
+    questions = serializers.SerializerMethodField()
+    class Meta:
+        model = Section
+        exclude = ['test']
+
+    def get_questions(self, obj):
+        return 'http://localhost:8000/api/tests/sections/questions/' + str(obj.pk) + '/'
+
+class TestQuestionSerializer(serializers.ModelSerializer):
+    questionDetail = serializers.SerializerMethodField()
+    passage = serializers.SerializerMethodField()
+    valid = serializers.SerializerMethodField()
+    class Meta:
+        model = Question
+        exclude = ['section', 'intAnswer']
+
+    def get_questionDetail(self, obj):
+        return 'http://localhost:8000/api/tests/sections/questions/detail/' + str(obj.pk) + '/'
+
+    def get_passage(self, obj):
+        if obj.passage and obj.questionType == 'passage':
+            return 'http://localhost:8000/api/tests/sections/questions/passages/' + str(obj.passage.pk) + '/'
+        return None
+
+    def get_valid(self, obj):
+        # Int ques is valid iff it has a valid ans in range 0-9
+        if obj.questionType == 'integer':
+            if obj.intAnswer:
+                return True
+            else:
+                return False
+        
+        # mcq, scq and passage ques are valid iff they have at least one correct option
+        options = Option.objects.filter(question=obj, correct=True)
+        if len(options) == 0:
+            return False
+        # Passage question must have a passage
+        if obj.questionType == 'passage' and not obj.passage:
+            return False
+        return True
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:

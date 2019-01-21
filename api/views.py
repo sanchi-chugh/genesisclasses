@@ -1158,6 +1158,10 @@ def validate_test_info(data, super_admin):
              'courses_arr': courses_arr, 'categories_arr': categories_arr}
     return dictV, True, Response({"status": "successful"})
 
+# Parse questions from doc
+def parse_doc_ques(testObj):
+    pass
+
 # Add info of a test from superadmin dashboard
 class AddTestInfoView(CreateAPIView):
     model = Test
@@ -1179,6 +1183,9 @@ class AddTestInfoView(CreateAPIView):
         if not check:
             return response
 
+        # Get doc value
+        op_dict = set_optional_fields(['doc'], data)
+
         testObj = self.model.objects.create(
             super_admin=super_admin,
             title=data['title'],
@@ -1190,12 +1197,20 @@ class AddTestInfoView(CreateAPIView):
             startTime=dictV['startTime'],
             subject=dictV['subject'],
             unit=dictV['unit'],
+            doc=op_dict['doc'],
         )
 
         # Add courses and categories to the test
         testObj.course.set(dictV['courses_arr'])
         testObj.category.set(dictV['categories_arr'])
         testObj.save()
+
+        # Parse questions from doc
+        if op_dict['doc']:
+            try:
+                parse_doc_ques(testObj)
+            except Exception:
+                testObj.delete()
 
         return Response({"status": "successful"})
 
@@ -1253,6 +1268,88 @@ def deleteTest(request, pk):
     testObj = get_object_or_404(Test, pk=pk)
     testObj.delete()
     return Response({'status': 'successful'})
+
+# View sections of a particular test
+class SectionsViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Section
+    serializer_class = TestSectionSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        test_id = self.kwargs['pk']
+        sections = Section.objects.filter(test__id=test_id).order_by('pk')
+        return sections
+
+# Add a section
+class AddSectionView(CreateAPIView):
+    model = Section
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+
+        # Return if title or test id is missing
+        check_pass, result = fields_check(['title', 'test'], data)
+        if not check_pass:
+            return result
+
+        test = get_object_or_404(Test, pk=int(data['test']))
+
+        self.model.objects.create(
+            title=data['title'],
+            test=test,
+        )
+
+        return Response({ "status": "successful" })
+
+# Edit a section
+class EditSectionView(UpdateAPIView):
+    model = Section
+    serializer_class = TestSectionSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def put(self, request, *args, **kwargs):
+        sec_id = kwargs['pk']
+        section = get_object_or_404(Section, pk=int(sec_id))
+        data = request.data
+
+        # Return if title is missing
+        check_pass, result = fields_check(['title'], data)
+        if not check_pass:
+            return result
+
+        # Ensure that no other section in that test has the same title
+        sectionObjs = Section.objects.filter(test__id=section.test.id, title=data['title'])
+        if len(sectionObjs) != 0 and section not in sectionObjs:
+            return Response({
+                'status': 'error',
+                'message': 'Section with the same title and in the same test already exists.'},
+                status=HTTP_400_BAD_REQUEST)
+        
+        section.title = data['title']
+        section.save()
+
+        return Response({'status': 'successful'})
+
+# Delete a section
+@api_view(['DELETE'])
+@permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
+def DeleteSectionView(request, pk):
+    section = get_object_or_404(Section, pk=pk)
+    section.delete()
+    return Response({'status': 'successful'})
+
+# List all questions
+class QuestionsViewSet(viewsets.ReadOnlyModelViewSet):
+    model = Question
+    serializer_class = TestQuestionSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        section_id = self.kwargs['pk']
+        questions = Question.objects.filter(section__id=int(section_id)).order_by('quesNumber')
+        return questions
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):
@@ -1336,11 +1433,6 @@ class UpdateOptionView(UpdateAPIView):
 class GetStaffUsersView(ListAPIView):
     serializer_class = StaffSerializer
     queryset = Staff.objects.all()
-
-class AddSectionView(APIView):
-    def post(self, request, *args, **kwargs):
-        Section.objects.create(test_id=request.data['test'], title=request.data['title'])
-        return Response({ "status": "successful" })
 
 class TestListView(ListAPIView):
     serializer_class = TestSerializer

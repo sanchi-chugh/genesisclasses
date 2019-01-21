@@ -31,7 +31,6 @@ class EditCourse extends Component {
                     <form>
                         <FormGroup
                         controlId="formBasicText"
-                        validationState={this.props.value.trim() == ''? "error" : "success"}
                         >
                         <ControlLabel>COURSE NAME</ControlLabel>
                         <FormControl

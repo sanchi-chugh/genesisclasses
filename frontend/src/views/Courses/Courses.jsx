@@ -33,12 +33,8 @@ class Courses extends Component {
           courseUpdated:false,
           courseDeleted:false,
           deletingCourse:false,
-          transferData:false,
-          transferTo:'Select Course',
-          course:null,
           courseAdded:false,
           addingCourse:false,
-
         };
       }
   
@@ -87,28 +83,15 @@ class Courses extends Component {
 
   handleDelete = () => {
     this.setState({ deletingCourse: true }, () => {
-      if(this.state.transferData){
-        const data = {data:{ "Course" : this.state.course }};
-        axios.delete(`/api/courses/delete/${this.state.id}/`, data , {
-            headers: {
-              Authorization: `Token ${localStorage.token}`
-            },
-          })
-          .then((res) => {
-            this.setState({ deletingCourse: false, courseDeleted:true, transferData:false},this.fetchCourses())
-          })
-          .catch((err) => this.setState({ deletingCourse: false }, () => console.log(err)))
-      }else{
         axios.delete(`/api/courses/delete/${this.state.id}/`,{
             headers: {
               Authorization: `Token ${localStorage.token}`
             },
           })
           .then((res) => {
-            this.setState({ deletingCourse: false,courseDeleted:true, transferData:false},this.fetchCourses())
+            this.setState({ deletingCourse: false,courseDeleted:true},this.fetchCourses())
           })
           .catch((err) => this.setState({ deletingCourse: false }, () => console.log(err)))
-      }
     });
   } 
 

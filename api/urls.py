@@ -53,6 +53,7 @@ urlpatterns = [
     path('tests/sections/questions/<int:pk>/', QuestionsViewSet.as_view({'get': 'list'})),
     path('tests/sections/questions/detail/<int:pk>/', QuestionDetailsView.as_view()),
     path('tests/sections/questions/detail/edit/<int:pk>/', EditQuestionDetailsView.as_view()),
+    path('tests/sections/questions/detail/add/', AddQuestionDetailsView.as_view()),
 
     # Endpoints for students
     path('users/students/', StudentUserViewSet.as_view({'get': 'list'})),

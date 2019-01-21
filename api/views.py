@@ -1435,6 +1435,78 @@ class EditQuestionDetailsView(UpdateAPIView):
 
         return Response({'status': 'successful'})
 
+class AddQuestionDetailsView(CreateAPIView):
+    model = Question
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+
+        # Return error if question type is missing
+        check_pass, result = fields_check(['questionType'], data)
+        if not check_pass:
+            return result
+
+        # Fields compulsory for all ques types
+        compulsory_list = ['questionText', 'marksPositive', 'marksNegative', 'section']
+
+        # Adding additional compulsory fields acc to ques type
+        questionType = data['questionType']
+        if questionType == 'integer':
+            compulsory_list.append('intAnswer')
+        elif questionType == 'passage':
+            compulsory_list.append('passage')
+
+        # Return if compulsory fields are missing
+        check_pass, result = fields_check(compulsory_list, data)
+        if not check_pass:
+            return result
+
+        # Get optional value - explanation
+        op_dict = set_optional_fields(['explanation'], data)
+
+        # Create question according to ques type
+        section = get_object_or_404(Section, pk=int(data['section']))
+        marksPositive = float(data['marksPositive'])
+        marksNegative = float(data['marksNegative'])
+        if questionType == 'integer':
+            self.model.objects.create(
+                questionType='integer',
+                section=section,
+                questionText=data['questionText'],
+                intAnswer=data['intAnswer'],
+                explanation=op_dict['explanation'],
+                marksPositive=marksPositive,
+                marksNegative=marksNegative,
+            )
+        elif questionType == 'passage':
+            passage_id = data['passage']
+            passageObj = get_object_or_404(Passage, pk=int(passage_id))
+            self.model.objects.create(
+                questionType='passage',
+                section=section,
+                questionText=data['questionText'],
+                passage=passageObj,
+                explanation=op_dict['explanation'],
+                marksPositive=marksPositive,
+                marksNegative=marksNegative,
+            )
+        elif questionType in ('mcq', 'scq'):
+            self.model.objects.create(
+                questionType=questionType,
+                section=section,
+                questionText=data['questionText'],
+                explanation=op_dict['explanation'],
+                marksPositive=marksPositive,
+                marksNegative=marksNegative,
+            )
+        else:
+            return Response({
+                'status': 'error', 'message': 'Wrong question type provided.'},
+                status=HTTP_400_BAD_REQUEST)
+
+        return Response({'status': 'successful'})
+
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):
 

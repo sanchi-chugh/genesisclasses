@@ -1186,6 +1186,12 @@ class AddTestInfoView(CreateAPIView):
         # Get doc value
         op_dict = set_optional_fields(['doc'], data)
 
+        if op_dict['doc']:
+            # If docs directory does not exist, then make one
+            directory = 'media/docs/'
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+
         testObj = self.model.objects.create(
             super_admin=super_admin,
             title=data['title'],

@@ -15,7 +15,7 @@ import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 import "../../../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css";
 
-class Units extends Component {
+class BulkStudents extends Component {
 
     constructor() {
         super();
@@ -50,14 +50,14 @@ class Units extends Component {
       }
   
   componentDidMount() {
-   this.fetchUnits(`?page=1`);
+   this.fetchBulkStudents(`?page=1`);
   }
 
-  fetchUnits(page,index=0){
+  fetchBulkStudents(page,index=0){
     if(page===`?page=1`){
         page=""
     }
-    axios.get( `/api/units/${page}`, {
+    axios.get( `/api/users/student/bulk/${page}`, {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
@@ -110,7 +110,7 @@ class Units extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState({ addingSubject: false, subjectAdded:true }, this.fetchUnits()))
+      .then((res) => this.setState({ addingSubject: false, subjectAdded:true }, this.fetchBulkStudents()))
       .catch((err) => this.setState({ addingSubject: false }, () => console.log(err)))
     });
   }
@@ -125,7 +125,7 @@ class Units extends Component {
             },
           })
           .then((res) => {
-            this.setState({ deletingSubject: false, subjectDeleted:true, transferData:false},this.fetchUnits())
+            this.setState({ deletingSubject: false, subjectDeleted:true, transferData:false},this.fetchBulkStudents())
           })
           .catch((err) => this.setState({ deletingSubject: false }, () => console.log(err)))
       }else{
@@ -135,7 +135,7 @@ class Units extends Component {
             },
           })
           .then((res) => {
-            this.setState({ deletingSubject: false,subjectDeleted:true, transferData:false},this.fetchUnits())
+            this.setState({ deletingSubject: false,subjectDeleted:true, transferData:false},this.fetchBulkStudents())
           })
           .catch((err) => this.setState({ deletingSubject: false }, () => console.log(err)))
        }
@@ -154,7 +154,7 @@ class Units extends Component {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => {this.setState({ updatingSubject: false, subjectUpdated:true }); this.fetchUnits()})
+      .then((res) => {this.setState({ updatingSubject: false, subjectUpdated:true }); this.fetchBulkStudents()})
       .catch((err) => this.setState({ updatingSubject: false }, () => console.log(err)))
     });
   }
@@ -230,52 +230,55 @@ class Units extends Component {
   }
 
   renderCourses(cell, row, enumObject, rowIndex) {
-      console.log(row)
       return (
         <Row md={12}>
           {
           row.course.map((item)=>{
             return(
-              <Col md={6}><Badge>{item}</Badge></Col>
+              <Col md={6}><Badge>{item.title}</Badge></Col>
             )
         })}   
         </Row>
       )
     }
-  
-  renderSubjects(cell, row, enumObject, rowIndex) {
-    console.log(row)
-    return (
-        <Row md={12}>
-            <Col md={6}><div>{row.subject.title}</div></Col>
-        </Row>
-    )
-  }
 
-  renderColumn(cell, row, enumObject, rowIndex) {
-    return (
-      <div>
-        <Grid> 
-          <Col>
-            <ButtonToolbar>
-              <ButtonGroup>
-                <Button bsSize="small" bsStyle="primary" onClick={this.handleShowEditModal.bind(this,row)}>
-                  <Glyphicon glyph="edit" /> EDIT
-                </Button>
-                <Button bsSize="small" bsStyle="danger" onClick={this.handleShowDeleteModal.bind(this,row)}>
-                  <Glyphicon glyph="trash" /> DELETE
-                </Button>
-              </ButtonGroup>
-            </ButtonToolbar>
-          </Col>
-        </Grid>
-      </div>
-    )
-  }
+    renderSubjects(cell, row, enumObject, rowIndex) {
+        return (
+          <Row md={12}>
+            {
+            row.course.map((item)=>{
+              return(
+                <Col md={6}><Badge>{item.title}</Badge></Col>
+              )
+          })}   
+          </Row>
+        )
+      }
+  
+    renderColumn(cell, row, enumObject, rowIndex) {
+      return (
+        <div>
+          <Grid> 
+            <Col>
+              <ButtonToolbar>
+                <ButtonGroup>
+                  <Button bsSize="small" bsStyle="primary" onClick={this.handleShowEditModal.bind(this,row)}>
+                    <Glyphicon glyph="edit" /> EDIT
+                  </Button>
+                  <Button bsSize="small" bsStyle="danger" onClick={this.handleShowDeleteModal.bind(this,row)}>
+                    <Glyphicon glyph="trash" /> DELETE
+                  </Button>
+                </ButtonGroup>
+              </ButtonToolbar>
+            </Col>
+          </Grid>
+        </div>
+      )
+    }
 
   onPageChange(page, sizePerPage) {
     const currentIndex = (page - 1) * sizePerPage;
-    this.fetchUnits(`?page=${page}`,currentIndex)
+    this.fetchBulkStudents(`?page=${page}`,currentIndex)
     console.log(currentIndex,page,sizePerPage,this.state.data)
     this.setState({
       page: page,
@@ -289,7 +292,7 @@ class Units extends Component {
           <Row>
             <Col>
               <Card
-                title="Units"
+                title="BulkStudents"
                 addButton={true}
                 handleShowAddModal={this.handleShowAddModal.bind(this)}
                 ctTableFullWidth
@@ -308,9 +311,7 @@ class Units extends Component {
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
                         <TableHeaderColumn dataField='title'>Subject</TableHeaderColumn>
                         <TableHeaderColumn dataField='description'>Description</TableHeaderColumn>
-                        <TableHeaderColumn dataField='subject' dataFormat={this.renderSubjects.bind(this)}>Subjects</TableHeaderColumn>
-                        <TableHeaderColumn dataField='courses' dataFormat={this.renderCourses.bind(this)}>Courses</TableHeaderColumn>
-                        <TableHeaderColumn dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
+                        <TableHeaderColumn dataField='subjects'>Description</TableHeaderColumn>
                     </BootstrapTable>
                   </div>
                 }
@@ -323,4 +324,4 @@ class Units extends Component {
   }
 }
 
-export default Units;
+export default BulkStudents;

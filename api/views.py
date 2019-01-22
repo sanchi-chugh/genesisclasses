@@ -20,6 +20,7 @@ import json
 import uuid
 import os
 
+# Helper func to get super admin of a user
 def get_super_admin(user):
     type_of_user = user.type_of_user
     if type_of_user == 'student':
@@ -55,6 +56,18 @@ def set_optional_fields(fields_arr, data):
             if data[field]:
                 dictV[field] = data[field]
     return dictV
+
+# Helper func to check if the field is bool or not
+def check_for_bool(fields_arr, data):
+    wrong_fields = []
+    for field in fields_arr:
+        if data[field] not in (True, False):
+            wrong_fields.append(field)
+    if len(wrong_fields) == 0:
+        return (True, '')
+    return (False, Response({"status": "error",
+        "message": "Incorrect field type. Please provide bool value in \"" + '", "'.join(wrong_fields) + "\""},
+        status=HTTP_400_BAD_REQUEST))
 
 # -------------------VIEWS FOR CHOICEs-------------------------
 # Shows all subjects of superadmin in the format
@@ -1577,6 +1590,96 @@ class EditPassageView(UpdateAPIView):
         passage.save()
 
         return Response({'status': 'successful'})
+
+# Return if correct answers for passage, scq type ques > 1
+def multi_correct_error(question, data):
+    if question.questionType in ('passage', 'scq'):
+        quesCorrectOptions = Option.objects.filter(question=question, correct=True)
+        if len(quesCorrectOptions) > 0 and data['correct'] == True:
+            return (False, Response({'status': 'error', 
+                'message': 'Multiple correct options are NOT allowed in "' + question.questionType + '" type questions.'},
+                status=HTTP_400_BAD_REQUEST))
+    return (True, '')
+
+# Add an option for a particular question
+class AddOptionView(CreateAPIView):
+    model = Option
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+
+        # Return if required params are missing
+        check_pass, result = fields_check(['optionText', 'correct', 'question'], data)
+        if not check_pass:
+            return result
+
+        question = get_object_or_404(Question, pk=int(data['question']))
+
+        # Return if option is added in integer type question
+        if question.questionType == 'integer':
+            return Response({
+                'status': 'error', 'message': 'Adding options is NOT allowed in integer type questions.'},
+                status=HTTP_400_BAD_REQUEST)
+
+        # Return if correct answers for passage, scq type ques > 1
+        valid, result = multi_correct_error(question, data)
+        if not valid:
+            return result
+
+        # Return if correct is not a bool field
+        valid, result = check_for_bool(['correct'], data)
+        if not valid:
+            return result
+
+        self.model.objects.create(
+            optionText=data['optionText'],
+            correct=data['correct'],
+            question=question,
+        )
+
+        return Response({ "status": "successful" })
+
+# Edit an option
+class EditOptionView(UpdateAPIView):
+    model = Option
+    serializer_class = NestedOptionSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        option_id = self.kwargs['pk']
+        return Option.objects.filter(pk=int(option_id))
+
+    def put(self, request, pk, *args, **kwargs):
+        option = get_object_or_404(Option, pk=pk)
+        data = request.data
+
+        # Return if required params are missing
+        check_pass, result = fields_check(['optionText', 'correct'], data)
+        if not check_pass:
+            return result
+
+        # Return if correct is not a bool field
+        valid, result = check_for_bool(['correct'], data)
+        if not valid:
+            return result
+
+        # Return if correct answers for passage, scq type ques > 1
+        valid, result = multi_correct_error(option.question, data)
+        if not valid:
+            return result
+
+        self.partial_update(request, *args, **kwargs)
+
+        return Response({ "status": "successful" })
+
+# Delete an option
+@api_view(['DELETE'])
+@permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
+def DeleteOptionView(request, pk):
+    option = get_object_or_404(Option, pk=pk)
+    option.delete()
+    return Response({'status': 'successful'})
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

@@ -47,6 +47,8 @@ urlpatterns = [
     path('tests/sections/add/', AddSectionView.as_view()),    # Add a section
     path('tests/sections/edit/<int:pk>/', EditSectionView.as_view()),   # Edit a section
     path('tests/sections/delete/<int:pk>/', DeleteSectionView),   # Delete a section
+    # Endpoint for rearranging sections (of a test)
+    path('tests/sections/rearrange/<int:pk>/', RearrangeSections.as_view()),
 
     # Endpoints for questions
     # List ques of a partiular section (takes section pk as input)

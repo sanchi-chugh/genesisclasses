@@ -1286,7 +1286,7 @@ class SectionsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         test_id = self.kwargs['pk']
-        sections = Section.objects.filter(test__id=test_id).order_by('pk')
+        sections = Section.objects.filter(test__id=test_id).order_by('sectionNumber')
         return sections
 
 # Add a section
@@ -1755,6 +1755,53 @@ class RearrangeQuestions(APIView):
             ques = ques_arr[i]
             ques.quesNumber = i + 1
             ques.save()
+        return Response({'status': 'successful'})
+
+# View for rearranging sections of a test
+class RearrangeSections(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def put(self, request, pk, *args, **kwargs):
+        test = get_object_or_404(Test, pk=pk)
+        sections = Section.objects.filter(test=test)
+        data = request.data
+
+        # Return if order is missing
+        check_pass, result = fields_check(['order'], data)
+        if not check_pass:
+            return result
+
+        order_arr = data['order'].split(',')
+        error_message = ''
+        section_arr = []
+        if len(order_arr) < sections.count():
+            # Return error if all sections are not provided
+            error_message = 'Provided sections are less than the number of sections in this test.'
+        elif len(order_arr) > sections.count():
+            # Return error if extra sections are provided
+            error_message = 'Provided sections are more than the number of sections in this test.'
+        elif len(order_arr) != len(set(order_arr)):
+            # Return error if duplicate sections are provided
+            error_message = 'Error in re-arranging sections. Repeating section id(s) are provided.'
+        else:
+            # Return error if provided sections do not belong to the provided test
+            for section_pk in order_arr:
+                section = get_object_or_404(Section, pk=int(section_pk))
+                section_arr.append(section)
+                if section.test != test:
+                    error_message = 'Some of the sections provided do not exist in provided test.'
+                    break
+
+        if error_message:
+            return Response({'status': 'error', 'message': error_message}, status=HTTP_400_BAD_REQUEST)
+        
+        # Update section number
+        for i in range(len(order_arr)):
+            section_id = order_arr[i]
+            section = get_object_or_404(Section, pk=int(section_id))
+            section.sectionNumber = i + 1
+            section.save()            
+
         return Response({'status': 'successful'})
 
 class TestFromDocView(APIView):

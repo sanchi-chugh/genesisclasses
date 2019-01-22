@@ -20,6 +20,7 @@ import json
 import uuid
 import os
 
+# Helper func to get super admin of a user
 def get_super_admin(user):
     type_of_user = user.type_of_user
     if type_of_user == 'student':
@@ -56,22 +57,17 @@ def set_optional_fields(fields_arr, data):
                 dictV[field] = data[field]
     return dictV
 
-class CompleteProfileView(UpdateAPIView):
-    serializer_class = StudentSerializer
-
-    def get_queryset(self, *args, **kwargs):
-        return Student.objects.filter(user=self.request.user)
-
-    def put(self, request, *args, **kwargs):
-        print(request.data)
-        response = super(CompleteProfileView, self).put(request,
-                                                    *args,
-                                                    **kwargs)
-        if response.status_code == 200:
-            obj = Student.objects.get(id=kwargs['pk'])
-            obj.complete = True
-            obj.save()
-        return response
+# Helper func to check if the field is bool or not
+def check_for_bool(fields_arr, data):
+    wrong_fields = []
+    for field in fields_arr:
+        if data[field] not in (True, False):
+            wrong_fields.append(field)
+    if len(wrong_fields) == 0:
+        return (True, '')
+    return (False, Response({"status": "error",
+        "message": "Incorrect field type. Please provide bool value in \"" + '", "'.join(wrong_fields) + "\""},
+        status=HTTP_400_BAD_REQUEST))
 
 # -------------------VIEWS FOR CHOICEs-------------------------
 # Shows all subjects of superadmin in the format
@@ -163,8 +159,11 @@ class AddStudentUserView(CreateAPIView):
                 status=HTTP_400_BAD_REQUEST)
 
         # Get unique username
-        last_student = Student.objects.all().order_by('-pk')[0]
-        new_pk = last_student.pk + 1
+        try:
+            last_student = Student.objects.all().order_by('-pk')[0]
+            new_pk = last_student.pk + 1
+        except IndexError:
+            new_pk = 0
         username = 'Student' + str(new_pk)
 
         # Change username if another user of the same username already exists
@@ -355,8 +354,12 @@ class AddBulkStudentsView(CreateAPIView):
         # Create bulk students
         count = 0
         existing = [user['username'] for user in User.objects.values('username')]
-        last_st = Student.objects.all().order_by('-pk')[0]
-        last_pk = last_st.pk
+
+        try:
+            last_st = Student.objects.all().order_by('-pk')[0]
+            last_pk = last_st.pk
+        except IndexError:
+            last_pk = -1
         cur_pk = last_pk + 1
 
         while count < n:
@@ -1186,6 +1189,12 @@ class AddTestInfoView(CreateAPIView):
         # Get doc value
         op_dict = set_optional_fields(['doc'], data)
 
+        if op_dict['doc']:
+            # If docs directory does not exist, then make one
+            directory = 'media/docs/'
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+
         testObj = self.model.objects.create(
             super_admin=super_admin,
             title=data['title'],
@@ -1277,7 +1286,7 @@ class SectionsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         test_id = self.kwargs['pk']
-        sections = Section.objects.filter(test__id=test_id).order_by('pk')
+        sections = Section.objects.filter(test__id=test_id).order_by('sectionNumber')
         return sections
 
 # Add a section
@@ -1351,6 +1360,450 @@ class QuestionsViewSet(viewsets.ReadOnlyModelViewSet):
         questions = Question.objects.filter(section__id=int(section_id)).order_by('quesNumber')
         return questions
 
+# Shows details of a particular question
+class QuestionDetailsView(APIView):
+    model = Question
+    serializer_class = TestQuestionDetailsSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, pk, *args, **kwargs):
+        question = get_object_or_404(Question, pk=pk)
+        quesData = TestQuestionDetailsSerializer(question).data
+        questionType = question.questionType
+        if questionType == 'integer':
+            quesData.pop('passage', None)
+            quesData.pop('options', None)
+        elif questionType in ('mcq', 'scq'):
+            quesData.pop('passage', None)
+            quesData.pop('intAnswer', None)
+        elif questionType == 'passage':
+            quesData.pop('intAnswer', None)
+        return Response({'details': quesData, 'status': 'successful'})
+
+# Check validity of int answer (valid if integer in range 0-9)
+def validate_intAnswer(data):
+    error = False
+    if data['questionType'] == 'integer':
+        try:
+            intAnswer = int(data['intAnswer'])
+            if intAnswer not in range(0, 10):
+                error = True
+        except ValueError:
+            error = True
+    if error:
+        return (False, Response({
+                'status': 'error', 'message': 'Answer must be an integral value ranging from 0 to 9.'},
+                status=HTTP_400_BAD_REQUEST))
+    return (True, '')
+
+# Edit details of a particular question
+class EditQuestionDetailsView(UpdateAPIView):
+    model = Question
+    serializer_class = TestQuestionDetailsSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        ques_id = self.kwargs['pk']
+        questions = Question.objects.filter(pk=ques_id)
+        return questions
+
+    def put(self, request, pk, *args, **kwargs):
+        ques_id = pk
+        question = get_object_or_404(Question, pk=int(ques_id))
+        data = request.data
+
+        # Fields compulsory for all ques types
+        compulsory_list = ['questionText', 'marksPositive', 'marksNegative']
+
+        # Adding additional compulsory fields acc to ques type
+        questionType = question.questionType
+        if questionType == 'integer':
+            compulsory_list.append('intAnswer')
+        elif questionType in ('mcq', 'scq'):
+            compulsory_list.append('questionType')
+
+        # Return error if question type is changed
+        op_dict = set_optional_fields(['questionType'], data)
+        if op_dict['questionType']:
+            if (questionType not in ('mcq', 'scq') and questionType != data['questionType']) or \
+                (data['questionType'] not in ('mcq', 'scq')):
+                return Response({
+                    'status': 'error', 'message': 'Question type wrongly edited.'},
+                    status=HTTP_400_BAD_REQUEST)
+
+        # Return if compulsory fields are missing
+        check_pass, result = fields_check(compulsory_list, data)
+        if not check_pass:
+            return result
+
+        # Return if integer answer is not valid
+        valid, result = validate_intAnswer(data)
+        if not valid:
+            return result
+
+        # Update values
+        self.partial_update(request, *args, **kwargs)
+
+        # Maintain total marks in section and test when ques obj is updated
+        prevMarks = question.marksPositive    # Taking positive marks from prev obj
+        updatedQues = get_object_or_404(Question, pk=int(ques_id))
+        currMarks = updatedQues.marksPositive    # Taking positive marks from updated obj
+        marksDiff = currMarks - prevMarks
+
+        testObj = question.section.test
+        testObj.totalMarks += marksDiff
+        testObj.save()
+
+        sectionObj = question.section
+        sectionObj.totalMarks += marksDiff
+        sectionObj.save()
+
+        return Response({'status': 'successful'})
+
+# Add a question with it's details
+class AddQuestionDetailsView(CreateAPIView):
+    model = Question
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+
+        # Return error if question type is missing
+        check_pass, result = fields_check(['questionType'], data)
+        if not check_pass:
+            return result
+
+        # Fields compulsory for all ques types
+        compulsory_list = ['questionText', 'marksPositive', 'marksNegative', 'section']
+
+        # Adding additional compulsory fields acc to ques type
+        questionType = data['questionType']
+        if questionType == 'integer':
+            compulsory_list.append('intAnswer')
+        elif questionType == 'passage':
+            compulsory_list.append('passage')
+
+        # Return if compulsory fields are missing
+        check_pass, result = fields_check(compulsory_list, data)
+        if not check_pass:
+            return result
+
+        # Get optional value - explanation
+        op_dict = set_optional_fields(['explanation'], data)
+
+        # Create question according to ques type
+        section = get_object_or_404(Section, pk=int(data['section']))
+        marksPositive = float(data['marksPositive'])
+        marksNegative = float(data['marksNegative'])
+
+        if questionType == 'integer':
+            # Return if integer answer is not valid
+            valid, result = validate_intAnswer(data)
+            if not valid:
+                return result
+
+            self.model.objects.create(
+                questionType='integer',
+                section=section,
+                questionText=data['questionText'],
+                intAnswer=int(data['intAnswer']),
+                explanation=op_dict['explanation'],
+                marksPositive=marksPositive,
+                marksNegative=marksNegative,
+            )
+        elif questionType == 'passage':
+            passage_id = data['passage']
+            passageObj = get_object_or_404(Passage, pk=int(passage_id))
+            self.model.objects.create(
+                questionType='passage',
+                section=section,
+                questionText=data['questionText'],
+                passage=passageObj,
+                explanation=op_dict['explanation'],
+                marksPositive=marksPositive,
+                marksNegative=marksNegative,
+            )
+        elif questionType in ('mcq', 'scq'):
+            self.model.objects.create(
+                questionType=questionType,
+                section=section,
+                questionText=data['questionText'],
+                explanation=op_dict['explanation'],
+                marksPositive=marksPositive,
+                marksNegative=marksNegative,
+            )
+        else:
+            return Response({
+                'status': 'error', 'message': 'Wrong question type provided.'},
+                status=HTTP_400_BAD_REQUEST)
+
+        return Response({'status': 'successful'})
+
+# Delete a question
+@api_view(['DELETE'])
+@permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
+def DeleteQuestionView(request, pk):
+    question = get_object_or_404(Question, pk=pk)
+    question.delete()
+    return Response({'status': 'successful'})
+
+# View details of a passage
+class PassageDetailsView(APIView):
+    model = Passage
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, pk, *args, **kwargs):
+        passage = get_object_or_404(Passage, pk=pk)
+        passageData = PassageDetailsSerializer(passage).data
+        return Response({'details': passageData, 'status': 'successful'})
+
+# Add a new passage
+class AddPassageView(CreateAPIView):
+    model = Passage
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+
+        # Return if section or paragraph (passage text) are missing
+        check_pass, result = fields_check(['section', 'paragraph'], data)
+        if not check_pass:
+            return result
+
+        section = get_object_or_404(Section, pk=int(data['section']))
+
+        self.model.objects.create(
+            paragraph=data['paragraph'],
+            section=section,
+        )
+
+        return Response({ "status": "successful" })
+
+# Edit passage details
+class EditPassageView(UpdateAPIView):
+    model = Passage
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def put(self, request, pk, *args, **kwargs):
+        passage = get_object_or_404(Passage, pk=pk)
+        data = request.data
+
+        # Return if title is missing
+        check_pass, result = fields_check(['paragraph'], data)
+        if not check_pass:
+            return result
+
+        passage.paragraph = data['paragraph']
+        passage.save()
+
+        return Response({'status': 'successful'})
+
+# Return if correct answers for passage, scq type ques > 1
+def multi_correct_error(question, data):
+    if question.questionType in ('passage', 'scq'):
+        quesCorrectOptions = Option.objects.filter(question=question, correct=True)
+        if len(quesCorrectOptions) > 0 and data['correct'] == True:
+            return (False, Response({'status': 'error', 
+                'message': 'Multiple correct options are NOT allowed in "' + question.questionType + '" type questions.'},
+                status=HTTP_400_BAD_REQUEST))
+    return (True, '')
+
+# Add an option for a particular question
+class AddOptionView(CreateAPIView):
+    model = Option
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+
+        # Return if required params are missing
+        check_pass, result = fields_check(['optionText', 'correct', 'question'], data)
+        if not check_pass:
+            return result
+
+        question = get_object_or_404(Question, pk=int(data['question']))
+
+        # Return if option is added in integer type question
+        if question.questionType == 'integer':
+            return Response({
+                'status': 'error', 'message': 'Adding options is NOT allowed in integer type questions.'},
+                status=HTTP_400_BAD_REQUEST)
+
+        # Return if correct answers for passage, scq type ques > 1
+        valid, result = multi_correct_error(question, data)
+        if not valid:
+            return result
+
+        # Return if correct is not a bool field
+        valid, result = check_for_bool(['correct'], data)
+        if not valid:
+            return result
+
+        self.model.objects.create(
+            optionText=data['optionText'],
+            correct=data['correct'],
+            question=question,
+        )
+
+        return Response({ "status": "successful" })
+
+# Edit an option
+class EditOptionView(UpdateAPIView):
+    model = Option
+    serializer_class = NestedOptionSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get_queryset(self):
+        option_id = self.kwargs['pk']
+        return Option.objects.filter(pk=int(option_id))
+
+    def put(self, request, pk, *args, **kwargs):
+        option = get_object_or_404(Option, pk=pk)
+        data = request.data
+
+        # Return if required params are missing
+        check_pass, result = fields_check(['optionText', 'correct'], data)
+        if not check_pass:
+            return result
+
+        # Return if correct is not a bool field
+        valid, result = check_for_bool(['correct'], data)
+        if not valid:
+            return result
+
+        # Return if correct answers for passage, scq type ques > 1
+        valid, result = multi_correct_error(option.question, data)
+        if not valid:
+            return result
+
+        self.partial_update(request, *args, **kwargs)
+
+        return Response({ "status": "successful" })
+
+# Delete an option
+@api_view(['DELETE'])
+@permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
+def DeleteOptionView(request, pk):
+    option = get_object_or_404(Option, pk=pk)
+    option.delete()
+    return Response({'status': 'successful'})
+
+# View for rearranging questions of a section
+class RearrangeQuestions(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def put(self, request, pk, *args, **kwargs):
+        section = get_object_or_404(Section, pk=pk)
+        questions = Question.objects.filter(section=section)
+        data = request.data
+
+        # Return if order is missing
+        check_pass, result = fields_check(['order'], data)
+        if not check_pass:
+            return result
+
+        order_arr = data['order'].split(',')
+        error_message = ''
+        ques_arr = []
+        if len(order_arr) < questions.count():
+            # Return error if all questions are not provided
+            error_message = 'Provided questions are less than the number of questions in this section.'
+        elif len(order_arr) > questions.count():
+            # Return error if extra questions are provided
+            error_message = 'Provided questions are more than the number of questions in this section.'
+        elif len(order_arr) != len(set(order_arr)):
+            # Return error if duplicate questions are provided
+            error_message = 'Error in re-arranging questions. Repeating question id(s) are provided.'
+        else:
+            # Return error if provided questions are not of the provided section
+            for ques_pk in order_arr:
+                ques = get_object_or_404(Question, pk=int(ques_pk))
+                ques_arr.append(ques)
+                if ques.section != section:
+                    error_message = 'Some of the questions provided do not exist in provided section.'
+                    break
+        
+        if error_message:
+            return Response({'status': 'error', 'message': error_message}, status=HTTP_400_BAD_REQUEST)
+
+        # Return error if questions of any passage are scattered
+        ongoing_passage = -1
+        prev_passages = []
+        error = False
+        for ques in ques_arr:
+            if ques.questionType == 'passage':
+                if ques.passage in prev_passages:
+                    error = True
+                    break
+                elif ongoing_passage == -1:
+                    ongoing_passage = ques.passage
+                elif ques.passage != ongoing_passage:
+                    prev_passages.append(ongoing_passage)
+                    ongoing_passage = ques.passage
+            elif ongoing_passage != -1:
+                prev_passages.append(ongoing_passage)
+                ongoing_passage = -1
+
+        if error:
+            return Response({
+                'status': 'error',
+                'message': 'Error in re-arranging questions. Questions of one passage should remain together.'},
+                status=HTTP_400_BAD_REQUEST)
+
+        # Update question number (section wise)
+        for i in range(len(ques_arr)):
+            ques = ques_arr[i]
+            ques.quesNumber = i + 1
+            ques.save()
+        return Response({'status': 'successful'})
+
+# View for rearranging sections of a test
+class RearrangeSections(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def put(self, request, pk, *args, **kwargs):
+        test = get_object_or_404(Test, pk=pk)
+        sections = Section.objects.filter(test=test)
+        data = request.data
+
+        # Return if order is missing
+        check_pass, result = fields_check(['order'], data)
+        if not check_pass:
+            return result
+
+        order_arr = data['order'].split(',')
+        error_message = ''
+        section_arr = []
+        if len(order_arr) < sections.count():
+            # Return error if all sections are not provided
+            error_message = 'Provided sections are less than the number of sections in this test.'
+        elif len(order_arr) > sections.count():
+            # Return error if extra sections are provided
+            error_message = 'Provided sections are more than the number of sections in this test.'
+        elif len(order_arr) != len(set(order_arr)):
+            # Return error if duplicate sections are provided
+            error_message = 'Error in re-arranging sections. Repeating section id(s) are provided.'
+        else:
+            # Return error if provided sections do not belong to the provided test
+            for section_pk in order_arr:
+                section = get_object_or_404(Section, pk=int(section_pk))
+                section_arr.append(section)
+                if section.test != test:
+                    error_message = 'Some of the sections provided do not exist in provided test.'
+                    break
+
+        if error_message:
+            return Response({'status': 'error', 'message': error_message}, status=HTTP_400_BAD_REQUEST)
+        
+        # Update section number
+        for i in range(len(order_arr)):
+            section_id = order_arr[i]
+            section = get_object_or_404(Section, pk=int(section_id))
+            section.sectionNumber = i + 1
+            section.save()            
+
+        return Response({'status': 'successful'})
+
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):
 
@@ -1383,72 +1836,10 @@ class TestFromDocView(APIView):
         Option.objects.bulk_create(options)
         return Response({ "id" : testObj.pk })
 
-class TestDetailsView(APIView):
-    def get(self, request, pk, *args, **kwargs):
-        if not request.user or request.user.type_of_user == 'student':
-            raise Http404
-        testObj = Test.objects.get(pk=pk)
-        if testObj.super_admin != get_super_admin(self.request.user):
-            raise Http404
-        data = TestSerializerFull(testObj).data
-        print(data['sections'])
-        return Response(data)
-
-class UpdateTestView(UpdateAPIView):
-    serializer_class = TestSerializer
-
-    def get_queryset(self):
-        super_admin = get_super_admin(self.request.user)
-        queryset = Test.objects.filter(super_admin=super_admin)
-        return queryset
-
-    def put(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
-
-class UpdateQuestionView(UpdateAPIView):
-    serializer_class = QuestionSerializer
-    queryset = Question.objects.all()
-
-    def put(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
-
-class CreateQuestionView(CreateAPIView):
-    serializer_class = QuestionSerializer
-    queryset = Question.objects.all()
-
-    def post(self, request, *args, **kwargs):
-        response = super(CreateQuestionView, self).post(request, *args, **kwargs)
-        qid = response.data['id']
-        for _ in range(4):
-            Option.objects.create(question_id=qid, text="-"*45)
-        return response
-
-class UpdateOptionView(UpdateAPIView):
-    serializer_class = OptionSerializer
-    queryset = Option.objects.all()
-
-    def put(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
-
+# Staff user views (not being used yet)
 class GetStaffUsersView(ListAPIView):
     serializer_class = StaffSerializer
     queryset = Staff.objects.all()
-
-class TestListView(ListAPIView):
-    serializer_class = TestSerializer
-
-    def get_queryset(self):
-        tests = Test.objects.filter(super_admin=get_super_admin(self.request.user)).order_by('-pk')
-        return tests
-
-class AddTestManualView(APIView):
-    def post(self, request, *args, **kwargs):
-        testObj = Test.objects.create(title=request.data['title'],
-                            course=Course.objects.get(pk=request.data['course']),
-                            description=request.data['description'],
-                            super_admin=get_super_admin(request.user))
-        Section.objects.create(title="Section 1", test=testObj)
-        return Response({ "id" : testObj.pk })
 
 class AddStaffView(APIView):
     def post(self, request, *args, **kwargs):
@@ -1481,3 +1872,19 @@ class AddStaffView(APIView):
             "password": password,
         })
 
+class CompleteProfileView(UpdateAPIView):
+    serializer_class = StudentSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        return Student.objects.filter(user=self.request.user)
+
+    def put(self, request, *args, **kwargs):
+        print(request.data)
+        response = super(CompleteProfileView, self).put(request,
+                                                    *args,
+                                                    **kwargs)
+        if response.status_code == 200:
+            obj = Student.objects.get(id=kwargs['pk'])
+            obj.complete = True
+            obj.save()
+        return response

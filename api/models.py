@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 from django.core.validators import (
     MaxValueValidator,
     MinValueValidator,
@@ -8,9 +9,10 @@ from django.core.validators import (
 )
 import datetime
 
+# If more than one correct ans, set ques type as mcq
 def set_mcq_scq(questionObj):
     if questionObj.questionType not in ('mcq', 'scq'):
-        return
+        return questionObj
     optionObjs = Option.objects.filter(question=questionObj)
     correctNum = 0
     for option in optionObjs:
@@ -18,9 +20,7 @@ def set_mcq_scq(questionObj):
             correctNum += 1
     if correctNum > 1:
         questionObj.questionType = 'mcq'
-    else:
-        questionObj.questionType = 'scq'
-    questionObj.save()
+    return questionObj
 
 class CustomUserManager(UserManager):
     def create_user(self, username, email, password=None):
@@ -354,7 +354,7 @@ class Passage(models.Model):
     )
 
     def __str__(self):
-        return str(self.paragraph)[:20] + '....'
+        return str(self.paragraph)[:50] + '.... (' + self.section.title + ')'
 
 # QuestionQuerySet : A query manager to Question Model
 # Used for bulk deletion of Question model objs
@@ -365,7 +365,7 @@ class QuestionQuerySet(models.QuerySet):
         quesMarks = 0
         for questionObj in self:
             quesCount += 1
-            quesMarks += questionObj.marksPostive
+            quesMarks += questionObj.marksPositive
 
             # Auto arrange ques number of all questions after deleting a ques
             missingNum = questionObj.quesNumber
@@ -419,23 +419,41 @@ class Question(models.Model):
         null=True
     )
     explanation = models.TextField(blank=True, null=True)
-    marksPostive = models.FloatField(default=4.0)
+    marksPositive = models.FloatField(default=4.0)
     marksNegative = models.FloatField(default=1.0)
     # Numbering done separately for every section
     quesNumber = models.IntegerField(default=1)
 
     def save(self, *args, **kwargs):
+        # Maintain integrity of questions
+        questionType = self.questionType
+        if questionType == 'integer':
+            self.passage = None
+        elif questionType == 'passage':
+            self.intAnswer = None
+        elif questionType in ('mcq', 'scq'):
+            self.passage = None
+            self.intAnswer = None
+
+        # Auto set mcq/scq to mcq if correct options > 1
+        set_mcq_scq(self)
+
         if self.pk:
             return super().save(*args, **kwargs)
+
+        # Return error if section of ques and passage are different
+        if self.questionType == 'passage':
+            if self.passage.section != self.section:
+                raise ValidationError('Question section and passage section do not match.')
 
         # If object is created for the first time, increase question count
         # and total marks of the associated test and section
         testObj = self.section.test
-        testObj.totalMarks += self.marksPostive
+        testObj.totalMarks += self.marksPositive
         testObj.totalQuestions += 1
         testObj.save()
         sectionObj = self.section
-        sectionObj.totalMarks += self.marksPostive
+        sectionObj.totalMarks += self.marksPositive
         sectionObj.totalQuestions += 1
         sectionObj.save()
 
@@ -466,11 +484,11 @@ class Question(models.Model):
         # Decrease question count and total marks of the 
         # associated test and section before deleting question
         testObj = self.section.test
-        testObj.totalMarks -= self.marksPostive
+        testObj.totalMarks -= self.marksPositive
         testObj.totalQuestions -= 1
         testObj.save()
         sectionObj = self.section
-        sectionObj.totalMarks -= self.marksPostive
+        sectionObj.totalMarks -= self.marksPositive
         sectionObj.totalQuestions -= 1
         sectionObj.save()
 
@@ -497,7 +515,7 @@ class OptionQuerySet(models.QuerySet):
         questionObjs = set([option.question for option in self])
         super(OptionQuerySet, self).delete(*args, **kwargs)
         for questionObj in questionObjs:
-            set_mcq_scq(questionObj)
+            set_mcq_scq(questionObj).save()
 
 # Every question (mcq, scq and passage) can have more than one option
 class Option(models.Model):
@@ -511,12 +529,18 @@ class Option(models.Model):
     )
 
     def save(self, *args, **kwargs):
+        # Return error if option is added in integer type question
+        if self.question.questionType == 'integer':
+            raise ValidationError('Integer type questions do not require options.')
+        elif self.question.questionType == 'passage':
+            raise ValidationError('Passage type questions can\'t have more than one correct option.')
+
         super().save(*args, **kwargs)
-        set_mcq_scq(self.question)
+        set_mcq_scq(self.question).save()
 
     def delete(self, *args, **kwargs):
         super(Option, self).delete(*args, **kwargs)
-        set_mcq_scq(self.question)
+        set_mcq_scq(self.question).save()
 
     def __str__(self):
         return self.optionText + ' (' + str(self.question) + ')'

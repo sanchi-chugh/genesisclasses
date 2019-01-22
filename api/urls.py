@@ -55,6 +55,8 @@ urlpatterns = [
     path('tests/sections/questions/detail/edit/<int:pk>/', EditQuestionDetailsView.as_view()),
     path('tests/sections/questions/detail/add/', AddQuestionDetailsView.as_view()),
     path('tests/sections/questions/delete/<int:pk>/', DeleteQuestionView),
+    # Endpoint for rearranging questions (of a section)
+    path('tests/sections/questions/rearrange/<int:pk>/', RearrangeQuestions.as_view()),
 
     # Endpoints for passages
     path('tests/sections/questions/passages/<int:pk>/', PassageDetailsView.as_view()),

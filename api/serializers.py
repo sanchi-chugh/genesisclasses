@@ -26,8 +26,8 @@ def get_validity_of_ques(obj):
 
 # Get absolute question number according to test (ques numbers are saved section wise)
 def get_test_ques_number(obj):
-    # Ques number = Questions of all sections before this ques's sec + quesNumber
-    prevSections = Section.objects.filter(sectionNumber__lt=obj.section.sectionNumber)
+    # Ques number = Questions of all sections (of the same test) before this ques's sec + quesNumber
+    prevSections = Section.objects.filter(sectionNumber__lt=obj.section.sectionNumber, test=obj.section.test)
     prev_ques = Question.objects.filter(section__in=prevSections).count()
     return prev_ques + obj.quesNumber
 

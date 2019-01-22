@@ -159,8 +159,11 @@ class AddStudentUserView(CreateAPIView):
                 status=HTTP_400_BAD_REQUEST)
 
         # Get unique username
-        last_student = Student.objects.all().order_by('-pk')[0]
-        new_pk = last_student.pk + 1
+        try:
+            last_student = Student.objects.all().order_by('-pk')[0]
+            new_pk = last_student.pk + 1
+        except IndexError:
+            new_pk = 0
         username = 'Student' + str(new_pk)
 
         # Change username if another user of the same username already exists
@@ -351,8 +354,12 @@ class AddBulkStudentsView(CreateAPIView):
         # Create bulk students
         count = 0
         existing = [user['username'] for user in User.objects.values('username')]
-        last_st = Student.objects.all().order_by('-pk')[0]
-        last_pk = last_st.pk
+
+        try:
+            last_st = Student.objects.all().order_by('-pk')[0]
+            last_pk = last_st.pk
+        except IndexError:
+            last_pk = -1
         cur_pk = last_pk + 1
 
         while count < n:
@@ -1680,6 +1687,75 @@ def DeleteOptionView(request, pk):
     option = get_object_or_404(Option, pk=pk)
     option.delete()
     return Response({'status': 'successful'})
+
+# View for rearranging questions of a section
+class RearrangeQuestions(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def put(self, request, pk, *args, **kwargs):
+        section = get_object_or_404(Section, pk=pk)
+        questions = Question.objects.filter(section=section)
+        data = request.data
+
+        # Return if order is missing
+        check_pass, result = fields_check(['order'], data)
+        if not check_pass:
+            return result
+
+        order_arr = data['order'].split(',')
+        error_message = ''
+        ques_arr = []
+        if len(order_arr) < questions.count():
+            # Return error if all questions are not provided
+            error_message = 'Provided questions are less than the number of questions in this section.'
+        elif len(order_arr) > questions.count():
+            # Return error if extra questions are provided
+            error_message = 'Provided questions are more than the number of questions in this section.'
+        elif len(order_arr) != len(set(order_arr)):
+            # Return error if duplicate questions are provided
+            error_message = 'Error in re-arranging questions. Repeating question id(s) are provided.'
+        else:
+            # Return error if provided questions are not of the provided section
+            for ques_pk in order_arr:
+                ques = get_object_or_404(Question, pk=int(ques_pk))
+                ques_arr.append(ques)
+                if ques.section != section:
+                    error_message = 'Some of the questions provided do not exist in provided section.'
+                    break
+        
+        if error_message:
+            return Response({'status': 'error', 'message': error_message}, status=HTTP_400_BAD_REQUEST)
+
+        # Return error if questions of any passage are scattered
+        ongoing_passage = -1
+        prev_passages = []
+        error = False
+        for ques in ques_arr:
+            if ques.questionType == 'passage':
+                if ques.passage in prev_passages:
+                    error = True
+                    break
+                elif ongoing_passage == -1:
+                    ongoing_passage = ques.passage
+                elif ques.passage != ongoing_passage:
+                    prev_passages.append(ongoing_passage)
+                    ongoing_passage = ques.passage
+            elif ongoing_passage != -1:
+                prev_passages.append(ongoing_passage)
+                ongoing_passage = -1
+
+        if error:
+            return Response({
+                'status': 'error',
+                'message': 'Error in re-arranging questions. Questions of one passage should remain together.'},
+                status=HTTP_400_BAD_REQUEST)
+
+        # Update question number (section wise)
+        for i in range(len(ques_arr)):
+            ques = ques_arr[i]
+            ques.quesNumber = i + 1
+            ques.save()
+        return Response({'status': 'successful'})
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

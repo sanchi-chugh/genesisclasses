@@ -47,6 +47,8 @@ urlpatterns = [
     path('tests/sections/add/', AddSectionView.as_view()),    # Add a section
     path('tests/sections/edit/<int:pk>/', EditSectionView.as_view()),   # Edit a section
     path('tests/sections/delete/<int:pk>/', DeleteSectionView),   # Delete a section
+    # Endpoint for rearranging sections (of a test)
+    path('tests/sections/rearrange/<int:pk>/', RearrangeSections.as_view()),
 
     # Endpoints for questions
     # List ques of a partiular section (takes section pk as input)
@@ -55,11 +57,18 @@ urlpatterns = [
     path('tests/sections/questions/detail/edit/<int:pk>/', EditQuestionDetailsView.as_view()),
     path('tests/sections/questions/detail/add/', AddQuestionDetailsView.as_view()),
     path('tests/sections/questions/delete/<int:pk>/', DeleteQuestionView),
+    # Endpoint for rearranging questions (of a section)
+    path('tests/sections/questions/rearrange/<int:pk>/', RearrangeQuestions.as_view()),
 
     # Endpoints for passages
     path('tests/sections/questions/passages/<int:pk>/', PassageDetailsView.as_view()),
     path('tests/sections/questions/passages/add/', AddPassageView.as_view()),
     path('tests/sections/questions/passages/edit/<int:pk>/', EditPassageView.as_view()),
+
+    # Endpoints for options
+    path('tests/sections/questions/options/add/', AddOptionView.as_view()),
+    path('tests/sections/questions/options/edit/<int:pk>/', EditOptionView.as_view()),
+    path('tests/sections/questions/options/delete/<int:pk>/', DeleteOptionView),
 
     # Endpoints for students
     path('users/students/', StudentUserViewSet.as_view({'get': 'list'})),

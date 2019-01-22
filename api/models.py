@@ -12,7 +12,7 @@ import datetime
 # If more than one correct ans, set ques type as mcq
 def set_mcq_scq(questionObj):
     if questionObj.questionType not in ('mcq', 'scq'):
-        return
+        return questionObj
     optionObjs = Option.objects.filter(question=questionObj)
     correctNum = 0
     for option in optionObjs:
@@ -532,6 +532,8 @@ class Option(models.Model):
         # Return error if option is added in integer type question
         if self.question.questionType == 'integer':
             raise ValidationError('Integer type questions do not require options.')
+        elif self.question.questionType == 'passage':
+            raise ValidationError('Passage type questions can\'t have more than one correct option.')
 
         super().save(*args, **kwargs)
         set_mcq_scq(self.question).save()

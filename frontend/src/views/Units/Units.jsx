@@ -14,6 +14,7 @@ import Card from "../../components/Card/Card.jsx";
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 import "../../../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css";
+import DeleteUnit from "../../components/Actions/Units/DeleteUnits";
 
 class Units extends Component {
 
@@ -21,7 +22,7 @@ class Units extends Component {
         super();
         this.handleFormDataChange = this.handleFormDataChange.bind(this);
         this.state = {
-          data: [],
+          data: {results:[]},
           show: false,//edit modal
           show2:false,//delete modal
           show3:false,//add modal
@@ -32,27 +33,39 @@ class Units extends Component {
             file:null,
             course:[]
           },
-          courses:[],
+          unitChoice:[],
           value: '',
           id:null,
-          updatingSubject:false,
-          subjectUpdated:false,
-          subjectDeleted:false,
-          deletingSubject:false,
+          updatingUnit:false,
+          unitUpdated:false,
+          unitDeleted:false,
+          deletingUnit:false,
           transferData:false,
-          transferTo:'Select Subject',
-          subject:null,
-          subjectAdded:false,
-          addingSubject:false,
+          transferTo:'Select Unit',
+          unit:null,
+          units:[],
+          unitAdded:false,
+          addingUnit:false,
           clear:false,
-          page:1
+          page:1,
         };
       }
   
-  componentDidMount() {
+  componentWillMount() {
    this.fetchUnits(`?page=1`);
   }
-
+  
+  fetchUnitChoice(){
+    axios.get("/api/unitChoice/", {
+        headers: {
+        Authorization: `Token ${localStorage.token}`
+        }
+    }).then(res => {
+        const data = res.data;
+        this.setState({unitChoice:data});
+    });
+  }
+  
   fetchUnits(page,index=0){
     if(page===`?page=1`){
         page=""
@@ -73,14 +86,14 @@ class Units extends Component {
   }
 
   handleHideEditModal() {
-    this.setState({ show: false, updatingSubject:false, subjectUpdated:false, value:''});
+    this.setState({ show: false, updatingUnit:false, unitUpdated:false, value:''});
   }
 
   handleHideAddModal() {
     this.setState({ 
       show3: false, 
-      addingSubject:false, 
-      subjectAdded:false,
+      addingUnit:false, 
+      unitAdded:false,
       formData:{
         title:'',
         description:'',
@@ -91,11 +104,11 @@ class Units extends Component {
   }
 
   handleHideDeleteModal() {
-    this.setState({ show2: false, deletingSubject:false, subjectDeleted:false, transferData:false,transferTo:'Select Subject', subject:null});
+    this.setState({ show2: false, deletingUnit:false, unitDeleted:false, transferData:false,transferTo:'Select Unit', unit:null});
   }
 
   handleAdd(){
-    this.setState({ addingSubject: true }, () => {
+    this.setState({ addingUnit: true }, () => {
       var formData = new FormData();
       formData.append('title',this.state.formData.title)
       formData.append('course',this.state.formData.course.join(','))
@@ -105,57 +118,57 @@ class Units extends Component {
       }else{
         formData.append('image','')
       }
-      axios.post('/api/subjects/add/', formData, {
+      axios.post('/api/units/add/', formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState({ addingSubject: false, subjectAdded:true }, this.fetchUnits()))
-      .catch((err) => this.setState({ addingSubject: false }, () => console.log(err)))
+      .then((res) => this.setState({ addingUnit: false, unitAdded:true }, this.fetchUnits()))
+      .catch((err) => this.setState({ addingUnit: false }, () => console.log(err)))
     });
   }
 
   handleDelete = () => {
-    this.setState({ deletingSubject: true }, () => {
+    this.setState({ deletingUnit: true }, () => {
       if(this.state.transferData){
-        const data = {data:{ "subject" : this.state.subject }};
-        axios.delete(`/api/subjects/delete/${this.state.id}/`, data , {
+        const data = { "unit" : this.state.unit };
+        axios.delete(`/api/units/delete/${this.state.id}/`, data , {
             headers: {
               Authorization: `Token ${localStorage.token}`
             },
           })
           .then((res) => {
-            this.setState({ deletingSubject: false, subjectDeleted:true, transferData:false},this.fetchUnits())
+            this.setState({ deletingUnits: false, unitDeleted:true, transferData:false},this.this.fetchUnits(`?page=${this.state.page}`,(this.state.page-1)*10))
           })
-          .catch((err) => this.setState({ deletingSubject: false }, () => console.log(err)))
+          .catch((err) => this.setState({ deletingUnits: false }, () => console.log(err)))
       }else{
-        axios.delete(`/api/subjects/delete/${this.state.id}/`,{
+        axios.delete(`/api/units/delete/${this.state.id}/`,{
             headers: {
               Authorization: `Token ${localStorage.token}`
             },
           })
           .then((res) => {
-            this.setState({ deletingSubject: false,subjectDeleted:true, transferData:false},this.fetchUnits())
+            this.setState({ deletingUnit: false,unitDeleted:true, transferData:false},this.fetchUnits(`?page=${this.state.page}`,(this.state.page-1)*10))
           })
-          .catch((err) => this.setState({ deletingSubject: false }, () => console.log(err)))
+          .catch((err) => this.setState({ deletingUnit: false }, () => console.log(err)))
        }
     });
   } 
 
   handleEdit() {
-    this.setState({ updatingSubject: true }, () => {
+    this.setState({ updatingUnit: true }, () => {
       var formData = new FormData();
       formData.append('title',this.state.formData.title)
       formData.append('course',this.state.formData.course.join(','))
       formData.append('description',this.state.formData.description)
       this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : formData.append('image','')
-      axios.put(`/api/subjects/edit/${this.state.id}/`, formData, {
+      axios.put(`/api/units/edit/${this.state.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => {this.setState({ updatingSubject: false, subjectUpdated:true }); this.fetchUnits()})
-      .catch((err) => this.setState({ updatingSubject: false }, () => console.log(err)))
+      .then((res) => {this.setState({ updatingUnit: false, unitUpdated:true }); this.fetchUnits()})
+      .catch((err) => this.setState({ updatingUnit: false }, () => console.log(err)))
     });
   }
 
@@ -173,7 +186,19 @@ class Units extends Component {
     })
   }
   
+  fetchUnitsUnits(unitID){
+    axios.get(`/api/units/${unitID}/`, {
+        headers: {
+        Authorization: `Token ${localStorage.token}`
+        }
+    }).then(res => {
+        const data = res.data;
+        this.setState({units:data});
+    });
+  }
+
   handleShowDeleteModal(obj){
+    this.fetchUnitsUnits(obj.subject.id);
     this.setState({ id: obj.id},()=>{
       this.setState({show2:true})
     })
@@ -226,11 +251,10 @@ class Units extends Component {
   }
 
   handleSelect(item){
-    this.setState({transferTo:item.title, subject:item.id})
+    this.setState({transferTo:item.title, unit:item.id})
   }
 
   renderCourses(cell, row, enumObject, rowIndex) {
-      console.log(row)
       return (
         <Row md={12}>
           {
@@ -244,7 +268,6 @@ class Units extends Component {
     }
   
   renderSubjects(cell, row, enumObject, rowIndex) {
-    console.log(row)
     return (
         <Row md={12}>
             <Col md={6}><div>{row.subject.title}</div></Col>
@@ -273,7 +296,7 @@ class Units extends Component {
     )
   }
 
-  onPageChange(page, sizePerPage) {
+  onPageChange(page, sizePerPage=10) {
     const currentIndex = (page - 1) * sizePerPage;
     this.fetchUnits(`?page=${page}`,currentIndex)
     console.log(currentIndex,page,sizePerPage,this.state.data)
@@ -303,15 +326,28 @@ class Units extends Component {
                       fetchInfo={ { dataTotalSize: this.state.data.count } }
                       options={ { sizePerPage: 10,
                                   onPageChange: this.onPageChange.bind(this),
-                                  sizePerPageList: [ 5, 10 ],
+                                  sizePerPageList: [ 10 ],
                                   page: this.state.page} }>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
-                        <TableHeaderColumn dataField='title'>Subject</TableHeaderColumn>
+                        <TableHeaderColumn dataField='title'>Unit</TableHeaderColumn>
                         <TableHeaderColumn dataField='description'>Description</TableHeaderColumn>
-                        <TableHeaderColumn dataField='subject' dataFormat={this.renderSubjects.bind(this)}>Subjects</TableHeaderColumn>
+                        <TableHeaderColumn dataField='unit' dataFormat={this.renderSubjects.bind(this)}>Subjects</TableHeaderColumn>
                         <TableHeaderColumn dataField='courses' dataFormat={this.renderCourses.bind(this)}>Courses</TableHeaderColumn>
                         <TableHeaderColumn dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
                     </BootstrapTable>
+                    <DeleteUnit
+                      show={this.state.show2}
+                      onHide={this.handleHideDeleteModal.bind(this)}
+                      unitDeleted={this.state.unitDeleted}
+                      deletingUnit={this.state.deletingUnit}
+                      handleDelete={this.handleDelete.bind(this)}
+                      transferData={this.state.transferData}
+                      toggle={this.toggleTransferData.bind(this)}
+                      units={this.state.units}
+                      id={this.state.id}
+                      unit={this.state.transferTo}
+                      handleSelect={this.handleSelect.bind(this)}
+                    />
                   </div>
                 }
               />

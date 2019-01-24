@@ -49,7 +49,7 @@ class BulkStudents extends Component {
         };
       }
   
-  componentDidMount() {
+  componentWillMount() {
    this.fetchBulkStudents(`?page=1`);
   }
 
@@ -57,11 +57,12 @@ class BulkStudents extends Component {
     if(page===`?page=1`){
         page=""
     }
-    axios.get( `/api/users/student/bulk/${page}`, {
+    axios.get(`/api/users/student/bulk/${page}`, {
         headers: {
-        Authorization: `Token ${localStorage.token}`
+        Authorization: `Token ${localStorage.token}`,
         }
     }).then(res => {
+        console.log('hehehehhe',res)
           const results = res.data.results.map(item => {
           item.sno = res.data.results.indexOf(item) + 1+index;
           return item;

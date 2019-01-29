@@ -14,6 +14,7 @@ import Card from "../../components/Card/Card.jsx";
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 import "../../../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css";
+import AddBulkStudents from "../../components/Actions/BulkStudents/AddBulkStudents";
 
 class BulkStudents extends Component {
 
@@ -22,35 +23,28 @@ class BulkStudents extends Component {
         this.handleFormDataChange = this.handleFormDataChange.bind(this);
         this.state = {
           data: [],
-          show: false,//edit modal
-          show2:false,//delete modal
-          show3:false,//add modal
-          formData:{
-            title:'',
-            description:'',
-            image:'',
-            file:null,
-            course:[]
-          },
+          show:false,//add modal
           courses:[],
-          value: '',
+          centres:[],
+          centreName:'Select Centre',
+          centreId:'',
+          numberOfStudents: '',
+          formData:{
+            number:'',
+            course:[],
+          },
           id:null,
-          updatingSubject:false,
-          subjectUpdated:false,
-          subjectDeleted:false,
-          deletingSubject:false,
-          transferData:false,
-          transferTo:'Select Subject',
           subject:null,
-          subjectAdded:false,
-          addingSubject:false,
-          clear:false,
+          bulkAdded:false,
+          addingBulk:false,
           page:1
         };
       }
   
   componentWillMount() {
    this.fetchBulkStudents(`?page=1`);
+   this.fetchCourses();
+   this.fetchCentres();
   }
 
   fetchBulkStudents(page,index=0){
@@ -62,7 +56,6 @@ class BulkStudents extends Component {
         Authorization: `Token ${localStorage.token}`,
         }
     }).then(res => {
-        console.log('hehehehhe',res)
           const results = res.data.results.map(item => {
           item.sno = res.data.results.indexOf(item) + 1+index;
           return item;
@@ -73,119 +66,67 @@ class BulkStudents extends Component {
     });
   }
 
-  handleHideEditModal() {
-    this.setState({ show: false, updatingSubject:false, subjectUpdated:false, value:''});
+  fetchCentres(){
+    axios.get("/api/centres/", {
+        headers: {
+        Authorization: `Token ${localStorage.token}`
+        }
+    }).then(res => {
+        const data = res.data;
+        this.setState({centres:data});
+    });
+  }
+
+  fetchCourses(){
+    axios.get("/api/courses/", {
+        headers: {
+        Authorization: `Token ${localStorage.token}`
+        }
+    }).then(res => {
+        const data = res.data;
+        this.setState({courses:data});
+    });
   }
 
   handleHideAddModal() {
     this.setState({ 
-      show3: false, 
-      addingSubject:false, 
-      subjectAdded:false,
+      show: false, 
+      addingBulk:false, 
+      bulkAdded:false,
       formData:{
-        title:'',
-        description:'',
-        file:null,
-        image:'',
-        course:[]
-    }});
+        number:'',
+        course:[],
+      },
+      centreId:'',
+      centreName:'Select Centre'
+    });
   }
 
-  handleHideDeleteModal() {
-    this.setState({ show2: false, deletingSubject:false, subjectDeleted:false, transferData:false,transferTo:'Select Subject', subject:null});
+  handleShowAddModal(){
+    this.setState({show:true})
+  }
+
+  handleSelect(item){
+    this.setState({centreName:item.location, centreId:item.id})
   }
 
   handleAdd(){
-    this.setState({ addingSubject: true }, () => {
+    this.setState({ addingBulk: true }, () => {
       var formData = new FormData();
-      formData.append('title',this.state.formData.title)
+      formData.append('number',this.state.formData.number)
       formData.append('course',this.state.formData.course.join(','))
-      formData.append('description',this.state.formData.description)
-      if(this.state.formData.file !== null){
-        formData.append('image',this.state.formData.file,this.state.formData.file.name)
-      }else{
-        formData.append('image','')
-      }
-      axios.post('/api/subjects/add/', formData, {
+      formData.append('centre',this.state.centreId)
+      axios.post('/api/users/students/bulk/create/', formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState({ addingSubject: false, subjectAdded:true }, this.fetchBulkStudents()))
-      .catch((err) => this.setState({ addingSubject: false }, () => console.log(err)))
+      .then((res) => this.setState({ addingBulk: false, bulkAdded:true }, this.fetchBulkStudents(`?page=1`)))
+      .catch((err) => this.setState({ addingBulk: false }, () => console.log(err)))
     });
-  }
-
-  handleDelete = () => {
-    this.setState({ deletingSubject: true }, () => {
-      if(this.state.transferData){
-        const data = {data:{ "subject" : this.state.subject }};
-        axios.delete(`/api/subjects/delete/${this.state.id}/`, data , {
-            headers: {
-              Authorization: `Token ${localStorage.token}`
-            },
-          })
-          .then((res) => {
-            this.setState({ deletingSubject: false, subjectDeleted:true, transferData:false},this.fetchBulkStudents())
-          })
-          .catch((err) => this.setState({ deletingSubject: false }, () => console.log(err)))
-      }else{
-        axios.delete(`/api/subjects/delete/${this.state.id}/`,{
-            headers: {
-              Authorization: `Token ${localStorage.token}`
-            },
-          })
-          .then((res) => {
-            this.setState({ deletingSubject: false,subjectDeleted:true, transferData:false},this.fetchBulkStudents())
-          })
-          .catch((err) => this.setState({ deletingSubject: false }, () => console.log(err)))
-       }
-    });
-  } 
-
-  handleEdit() {
-    this.setState({ updatingSubject: true }, () => {
-      var formData = new FormData();
-      formData.append('title',this.state.formData.title)
-      formData.append('course',this.state.formData.course.join(','))
-      formData.append('description',this.state.formData.description)
-      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : formData.append('image','')
-      axios.put(`/api/subjects/edit/${this.state.id}/`, formData, {
-        headers: {
-          Authorization: `Token ${localStorage.token}`
-        },
-      })
-      .then((res) => {this.setState({ updatingSubject: false, subjectUpdated:true }); this.fetchBulkStudents()})
-      .catch((err) => this.setState({ updatingSubject: false }, () => console.log(err)))
-    });
-  }
-
-  handleShowEditModal(obj){
-    this.setState({ id: obj.id , formData: {
-      title:obj.title,
-      image:obj.image,
-      course:obj.course.map(item=>{
-        return item.id
-      }),
-      description:obj.description,
-      file:null
-    }},()=>{
-      this.setState({show:true})
-    })
-  }
-  
-  handleShowDeleteModal(obj){
-    this.setState({ id: obj.id},()=>{
-      this.setState({show2:true})
-    })
-  }
-
-  handleShowAddModal(){
-    this.setState({show3:true})
   }
 
   handleFormDataChange(e) {
-    console.log(this.state.formData.file,this.state)
     if(e.target.name === 'course' ){
         if(e.target.checked){
           this.state.formData.course.push(e.target.value)
@@ -201,19 +142,6 @@ class BulkStudents extends Component {
             }
           })
         }
-    }else if(e.target.name === 'image'){
-      if(e.target.files.length){
-        let file = e.target.files[0]
-        this.setState({ formData: {
-          ...this.state.formData,
-          file : file
-      }});
-      }
-    }
-    else if(e.target.name==='clear'){
-      this.setState({ 
-        clear: !e.target.checked
-      });
     }else{
       this.setState({ formData: {
         ...this.state.formData,
@@ -222,12 +150,8 @@ class BulkStudents extends Component {
     }
   }
 
-  toggleTransferData(e){
-    this.setState({transferData: !this.state.transferData})
-  }
-
-  handleSelect(item){
-    this.setState({transferTo:item.title, subject:item.id})
+  downloadCSV(obj){
+    window.open(obj.csv_file, '_blank');
   }
 
   renderCourses(cell, row, enumObject, rowIndex) {
@@ -236,46 +160,30 @@ class BulkStudents extends Component {
           {
           row.course.map((item)=>{
             return(
-              <Col md={6}><Badge>{item.title}</Badge></Col>
+              <Col md={6}><Badge>{item}</Badge></Col>
             )
         })}   
         </Row>
       )
     }
-
-    renderSubjects(cell, row, enumObject, rowIndex) {
-        return (
-          <Row md={12}>
-            {
-            row.course.map((item)=>{
-              return(
-                <Col md={6}><Badge>{item.title}</Badge></Col>
-              )
-          })}   
-          </Row>
-        )
-      }
   
-    renderColumn(cell, row, enumObject, rowIndex) {
-      return (
-        <div>
-          <Grid> 
-            <Col>
-              <ButtonToolbar>
-                <ButtonGroup>
-                  <Button bsSize="small" bsStyle="primary" onClick={this.handleShowEditModal.bind(this,row)}>
-                    <Glyphicon glyph="edit" /> EDIT
-                  </Button>
-                  <Button bsSize="small" bsStyle="danger" onClick={this.handleShowDeleteModal.bind(this,row)}>
-                    <Glyphicon glyph="trash" /> DELETE
-                  </Button>
-                </ButtonGroup>
-              </ButtonToolbar>
-            </Col>
-          </Grid>
-        </div>
-      )
-    }
+  renderColumn(cell, row, enumObject, rowIndex) {
+    return (
+      <div>
+        <Grid> 
+          <Col>
+            <ButtonToolbar>
+              <ButtonGroup>
+                <Button bsSize="small" bsStyle="primary" onClick={this.downloadCSV.bind(this,row)}>
+                  <Glyphicon glyph="list-alt" /> DOWNLOAD CSV
+                </Button>
+              </ButtonGroup>
+            </ButtonToolbar>
+          </Col>
+        </Grid>
+      </div>
+    )
+  }
 
   onPageChange(page, sizePerPage) {
     const currentIndex = (page - 1) * sizePerPage;
@@ -310,12 +218,27 @@ class BulkStudents extends Component {
                                   sizePerPageList: [ 5, 10 ],
                                   page: this.state.page} }>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
-                        <TableHeaderColumn dataField='title'>Subject</TableHeaderColumn>
-                        <TableHeaderColumn dataField='description'>Description</TableHeaderColumn>
-                        <TableHeaderColumn dataField='subjects'>Description</TableHeaderColumn>
+                        <TableHeaderColumn dataField='centre'>Centre</TableHeaderColumn>
+                        <TableHeaderColumn dataField='number'>Number Of Students</TableHeaderColumn>
+                        <TableHeaderColumn dataField='creationDateTime'>Created On</TableHeaderColumn>
+                        <TableHeaderColumn dataField='courses' dataFormat={this.renderCourses.bind(this)}>Courses</TableHeaderColumn>
+                        <TableHeaderColumn dataField='csv_file' dataFormat={this.renderColumn.bind(this)}>CSV</TableHeaderColumn>
                     </BootstrapTable>
                   </div>
                 }
+              />
+              <AddBulkStudents
+                show={this.state.show}
+                onHide={this.handleHideAddModal.bind(this)}
+                bulkAdded={this.state.bulkAdded}
+                addingBulk={this.state.addingBulk}
+                handleAdd={this.handleAdd.bind(this)}
+                formData={this.state.formData}
+                courses={this.state.courses}
+                centres={this.state.centres}
+                centreName={this.state.centreName}
+                handleFormDataChange={this.handleFormDataChange.bind(this)}
+                handleSelect={this.handleSelect.bind(this)}
               />
             </Col>
           </Row>

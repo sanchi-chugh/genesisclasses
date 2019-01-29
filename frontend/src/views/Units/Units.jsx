@@ -15,6 +15,8 @@ import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 import "../../../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css";
 import DeleteUnit from "../../components/Actions/Units/DeleteUnits";
+import AddUnits from "../../components/Actions/Units/AddUnits";
+import EditUnit from "../../components/Actions/Units/EditUnits";
 
 class Units extends Component {
 
@@ -31,7 +33,7 @@ class Units extends Component {
             description:'',
             image:'',
             file:null,
-            course:[]
+            subject: ''
           },
           unitChoice:[],
           value: '',
@@ -48,21 +50,41 @@ class Units extends Component {
           addingUnit:false,
           clear:false,
           page:1,
+          subjects:[],
+          subject: 'Select Subject',
+          next:'',
+          dropdown:false
         };
       }
   
   componentWillMount() {
    this.fetchUnits(`?page=1`);
+   this.fetchSubjectsChoice();  
   }
   
-  fetchUnitChoice(){
-    axios.get("/api/unitChoice/", {
+  fetchMore(){
+    axios.get(this.state.next, {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
     }).then(res => {
-        const data = res.data;
-        this.setState({unitChoice:data});
+        const data = res.data.results;
+        this.setState({
+          ...this.state,
+          subjects: [...this.state.subjects,...data],
+          next:res.data.next});
+    });
+  }
+
+  fetchSubjectsChoice(){
+    axios.get("/api/subjectChoice/", {
+        headers: {
+        Authorization: `Token ${localStorage.token}`
+        }
+    }).then(res => {
+        const data = res.data.results;
+        this.setState({subjects:data,
+                       next:res.data.next});
     });
   }
   
@@ -94,12 +116,13 @@ class Units extends Component {
       show3: false, 
       addingUnit:false, 
       unitAdded:false,
+      subject:'Select Subject',
       formData:{
         title:'',
         description:'',
         file:null,
         image:'',
-        course:[]
+        subject:''
     }});
   }
 
@@ -111,7 +134,7 @@ class Units extends Component {
     this.setState({ addingUnit: true }, () => {
       var formData = new FormData();
       formData.append('title',this.state.formData.title)
-      formData.append('course',this.state.formData.course.join(','))
+      formData.append('subject',this.state.formData.subject)
       formData.append('description',this.state.formData.description)
       if(this.state.formData.file !== null){
         formData.append('image',this.state.formData.file,this.state.formData.file.name)
@@ -123,7 +146,7 @@ class Units extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState({ addingUnit: false, unitAdded:true }, this.fetchUnits()))
+      .then((res) => this.setState({ addingUnit: false, unitAdded:true }, this.fetchUnits(`?page=1`), this.fetchSubjectsChoice()))
       .catch((err) => this.setState({ addingUnit: false }, () => console.log(err)))
     });
   }
@@ -159,7 +182,7 @@ class Units extends Component {
     this.setState({ updatingUnit: true }, () => {
       var formData = new FormData();
       formData.append('title',this.state.formData.title)
-      formData.append('course',this.state.formData.course.join(','))
+      formData.append('subject',this.state.formData.subject)
       formData.append('description',this.state.formData.description)
       this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : formData.append('image','')
       axios.put(`/api/units/edit/${this.state.id}/`, formData, {
@@ -167,18 +190,19 @@ class Units extends Component {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => {this.setState({ updatingUnit: false, unitUpdated:true }); this.fetchUnits()})
+      .then((res) => {this.setState({ updatingUnit: false, unitUpdated:true },this.fetchUnits(`?page=1`), this.fetchSubjectsChoice());})
       .catch((err) => this.setState({ updatingUnit: false }, () => console.log(err)))
     });
   }
 
   handleShowEditModal(obj){
-    this.setState({ id: obj.id , formData: {
+    console.log(obj.subject.id)
+    console.log(this.state.subjects.filter(item=> obj.subject.id===item.id)[0].title)
+    this.setState({ id: obj.id ,subject: this.state.subjects.filter(item=> obj.subject.id===item.id)[0].title,
+      formData: {
       title:obj.title,
       image:obj.image,
-      course:obj.course.map(item=>{
-        return item.id
-      }),
+      subject:this.state.subjects.filter(item=> obj.subject.id===item.id )[0].id,
       description:obj.description,
       file:null
     }},()=>{
@@ -186,7 +210,7 @@ class Units extends Component {
     })
   }
   
-  fetchUnitsUnits(unitID){
+  fetchSubjectsUnits(unitID){
     axios.get(`/api/units/${unitID}/`, {
         headers: {
         Authorization: `Token ${localStorage.token}`
@@ -198,13 +222,14 @@ class Units extends Component {
   }
 
   handleShowDeleteModal(obj){
-    this.fetchUnitsUnits(obj.subject.id);
+    this.fetchSubjectsUnits(obj.subject.id);
     this.setState({ id: obj.id},()=>{
       this.setState({show2:true})
     })
   }
 
   handleShowAddModal(){
+    console.log(this.props)
     this.setState({show3:true})
   }
 
@@ -252,6 +277,23 @@ class Units extends Component {
 
   handleSelect(item){
     this.setState({transferTo:item.title, unit:item.id})
+  }
+
+  handleSelectSubject(item){
+    this.setState({
+      subject:item.title,
+      formData:{
+        ...this.state.formData,
+        subject:item.id
+      }
+    })
+    this.toggleDropdown()
+  }
+
+  toggleDropdown(){
+    this.setState({
+      dropdown:!this.state.dropdown
+    })
   }
 
   renderCourses(cell, row, enumObject, rowIndex) {
@@ -335,6 +377,22 @@ class Units extends Component {
                         <TableHeaderColumn dataField='courses' dataFormat={this.renderCourses.bind(this)}>Courses</TableHeaderColumn>
                         <TableHeaderColumn dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
                     </BootstrapTable>
+                    <EditUnit 
+                      show={this.state.show} 
+                      onHide={this.handleHideEditModal.bind(this)} 
+                      unitUpdated={this.state.unitUpdated} 
+                      formData={this.state.formData} 
+                      handleFormDataChange={this.handleFormDataChange.bind(this)} 
+                      subjects={this.state.subjects}
+                      subject={this.state.subject}
+                      handleSelect={this.handleSelectSubject.bind(this)}
+                      updatingUnit={this.state.updatingUnit}
+                      handleEdit={this.handleEdit.bind(this)}
+                      fetchMore={this.fetchMore.bind(this)}
+                      hasMore={this.state.next === null ? false :true}
+                      dropdown={this.state.dropdown}
+                      toggle={this.toggleDropdown.bind(this)}
+                    />
                     <DeleteUnit
                       show={this.state.show2}
                       onHide={this.handleHideDeleteModal.bind(this)}
@@ -348,6 +406,21 @@ class Units extends Component {
                       unit={this.state.transferTo}
                       handleSelect={this.handleSelect.bind(this)}
                     />
+                    <AddUnits
+                      show={this.state.show3}
+                      onHide={this.handleHideAddModal.bind(this)}
+                      unitAdded={this.state.unitAdded}
+                      addingUnit={this.state.addingUnit}
+                      handleAdd={this.handleAdd.bind(this)}
+                      formData={this.state.formData}
+                      subjects={this.state.subjects}
+                      subject={this.state.subject}
+                      handleSelect={this.handleSelectSubject.bind(this)}
+                      handleFormDataChange={this.handleFormDataChange.bind(this)}
+                      fetchMore={this.fetchMore.bind(this)}
+                      hasMore={this.state.next === null ? false :true}
+                      dropdown={this.state.dropdown}
+                      toggle={this.toggleDropdown.bind(this)}/>
                   </div>
                 }
               />

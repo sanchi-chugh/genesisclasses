@@ -57,7 +57,7 @@ class BulkStudents extends Component {
     if(page===`?page=1`){
         page=""
     }
-    axios.get(`/api/users/student/bulk/${page}`, {
+    axios.get(`/api/users/students/bulk/${page}`, {
         headers: {
         Authorization: `Token ${localStorage.token}`,
         }

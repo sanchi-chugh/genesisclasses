@@ -1,0 +1,8 @@
+.test{
+    color:'grey' !important;
+    border-radius:0;
+    padding:2;
+}
+.test>a{
+    color:'#7B7F80' !important
+}

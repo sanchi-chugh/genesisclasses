@@ -6,3 +6,4 @@ staticfiles
 webpack-stats.*
 media
 .vscode
+node_modules

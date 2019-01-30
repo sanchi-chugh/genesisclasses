@@ -19,6 +19,7 @@ import {
 } from "../../variables/Variables.jsx";
 
 class Dashboard extends Component {
+  
   createLegend(json) {
     var legend = [];
     for (var i = 0; i < json["names"].length; i++) {
@@ -30,6 +31,8 @@ class Dashboard extends Component {
     return legend;
   }
   render() {
+    console.log("hello",this.props.location.state)
+
     return (
       <div className="content">
         <Grid fluid>

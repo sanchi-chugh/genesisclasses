@@ -69,7 +69,7 @@ class LoginScreen extends React.Component {
       if (isLoggedIn){
         this.props.getUser((user) => {
           console.log("user", user);
-          this.props.history.push("/home/");
+          this.props.history.push("/dashboard");
         });
       }
       else {

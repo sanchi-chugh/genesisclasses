@@ -568,17 +568,19 @@ class UserTestResult(models.Model):
         return aggregate['rank'] + 1
 
     def get_percentile(self):
-        # percentile = (getMyMarks/getTopperMarks)*100
-        topperMarks = UserTestResult.objects.filter(
-            test = self.test).order_by('-marksObtained').first().marksObtained
-        try:
-            percentile = (self.marksObtained/topperMarks)*100
-        except ZeroDivisionError:
-            percentile = 0
+        # percentile = (number of people behind me)/(total number of people who attempted test)*100
+        studentsBehind = UserTestResult.objects.filter(test=self.test, marksObtained__lt=self.marksObtained).count()
+        totalStudents = UserTestResult.objects.filter(test=self.test).count()
+        percentile = (studentsBehind/totalStudents)*100
         return round(percentile, 2)
 
     def get_percentage(self):
-        percentage = (self.marksObtained/self.test.totalMarks)*100
+        # percentage = (getMyMarks/getTotalMarks)*100
+        try:
+            percentage = (self.marksObtained/self.test.totalMarks)*100
+        except ZeroDivisionError:
+            # If total marks are zero
+            percentage = 100
         return round(percentage, 2)
 
     def __str__(self):
@@ -599,8 +601,19 @@ class UserSectionWiseResult(models.Model):
     incorrect = models.IntegerField(default=0)    # Number of questions incorrectly answered
     unattempted = models.IntegerField(default=0)    # Number of questions not attempted by the user
 
+    def get_percentage(self):
+        # percentage = (getMyMarks/getTotalMarks)*100
+        try:
+            percentage = (self.marksObtained/self.section.totalMarks)*100
+        except ZeroDivisionError:
+            # If total marks are zero
+            percentage = 100
+        return round(percentage, 2)
+
     def __str__(self):
-        return self.user + ' - ' + self.section + ' - ' + self.section.test
+        student = self.student.first_name + ' (' + self.student.user.username + ')'
+        section = self.section.title + ' (' + self.section.test.title + ')'
+        return student + ' - ' + section
 
 # Store response of each student for each question
 class UserQuestionWiseResponse(models.Model):

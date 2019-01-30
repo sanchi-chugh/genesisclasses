@@ -91,6 +91,11 @@ class NestedTestSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'totalMarks', 'totalQuestions', 
                   'category', 'course', 'subject', 'unit')
 
+class NestedSectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Section
+        fields = ('id', 'title', 'totalQuestions', 'totalMarks', 'sectionNumber')
+
 # ------------Serializers for Choices-----------------
 # Gives choices of subjects along with the names of courses
 class SubjectChoiceSerializer(serializers.ModelSerializer):
@@ -336,6 +341,17 @@ class StudentTestResultSerializer(serializers.ModelSerializer):
             testObjData['unit'] = None
             testObjData['showSubjUnit'] = False
         return testObjData
+
+class StudentSectionResultSerializer(serializers.ModelSerializer):
+    section = NestedSectionSerializer()
+    percentage = serializers.FloatField(source='get_percentage')
+    questionWiseResponse = serializers.SerializerMethodField()
+    class Meta:
+        model = UserSectionWiseResult
+        exclude = ['id']
+
+    def get_questionWiseResponse(self, obj):
+        return 'http://localhost:8000/api/results/students/{}/tests/sections/{}/'.format(obj.student.id, obj.section.id)
 
 # Currently being used in complete profile view
 class StudentSerializer(serializers.ModelSerializer):

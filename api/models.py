@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Count
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.utils import timezone
 from django.core.exceptions import ValidationError
@@ -562,22 +563,26 @@ class UserTestResult(models.Model):
 
     def get_rank(self):
 		# Rank of a student = (number of users having marks greater than this user) + 1
-        aggregate = TestResult.objects.filter(
+        aggregate = UserTestResult.objects.filter(
             test = self.test, marksObtained__gt=self.marksObtained).aggregate(rank=Count('marksObtained'))
         return aggregate['rank'] + 1
 
     def get_percentile(self):
         # percentile = (getMyMarks/getTopperMarks)*100
-        topperMarks = TestResult.objects.filter(
+        topperMarks = UserTestResult.objects.filter(
             test = self.test).order_by('-marksObtained').first().marksObtained
         try:
             percentile = (self.marksObtained/topperMarks)*100
         except ZeroDivisionError:
             percentile = 0
-        return percentile
+        return round(percentile, 2)
+
+    def get_percentage(self):
+        percentage = (self.marksObtained/self.test.totalMarks)*100
+        return round(percentage, 2)
 
     def __str__(self):
-        return self.user + ' - ' + self.test
+        return self.student.first_name + ' (' + self.student.user.username + ') - ' + self.test.title
 
 # Result of a particular student for a particular section
 class UserSectionWiseResult(models.Model):
@@ -613,7 +618,7 @@ class UserQuestionWiseResponse(models.Model):
         blank=True,
         null=True,
     )
-    # For mcq and scq questions
+    # For mcq, scq and passage type questions
     userChoices = models.ManyToManyField(Option)
     isMarkedForReview = models.BooleanField(default=False)
     status = models.CharField(

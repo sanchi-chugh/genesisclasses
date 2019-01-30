@@ -1804,6 +1804,20 @@ class RearrangeSections(APIView):
 
         return Response({'status': 'successful'})
 
+# Viewset for returning result of all tests of a particular student
+class StudentTestResultViewSet(viewsets.ReadOnlyModelViewSet):
+    model = UserTestResult
+    serializer_class = StudentTestResultSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self):
+        student_id = self.kwargs['pk']
+        super_admin = get_super_admin(self.request.user)
+        testResultObjs = UserTestResult.objects.filter(
+            test__super_admin=super_admin, student__id=student_id).order_by('-pk')
+        return testResultObjs
+
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):
 

@@ -96,6 +96,19 @@ class NestedSectionSerializer(serializers.ModelSerializer):
         model = Section
         fields = ('id', 'title', 'totalQuestions', 'totalMarks', 'sectionNumber')
 
+class NestedQuestionSerializer(serializers.ModelSerializer):
+    correctAnswers = serializers.SerializerMethodField()
+    class Meta:
+        model = Question
+        fields = ('id', 'questionText', 'questionType',
+                  'correctAnswers', 'quesNumber', 'marksPositive')
+
+    def get_correctAnswers(self, obj):
+        if obj.questionType == 'integer':
+            return [str(obj.intAnswer)]
+        correctOptions = Option.objects.filter(question=obj, correct=True).order_by('pk')
+        return [option.optionText for option in correctOptions]
+
 # ------------Serializers for Choices-----------------
 # Gives choices of subjects along with the names of courses
 class SubjectChoiceSerializer(serializers.ModelSerializer):
@@ -352,6 +365,27 @@ class StudentSectionResultSerializer(serializers.ModelSerializer):
 
     def get_questionWiseResponse(self, obj):
         return 'http://localhost:8000/api/results/students/{}/tests/sections/{}/'.format(obj.student.id, obj.section.id)
+
+class StudentQuestionResponseSerializer(serializers.ModelSerializer):
+    userAnswers = serializers.SerializerMethodField()
+    question = NestedQuestionSerializer()
+    marksAwarded = serializers.SerializerMethodField()
+    class Meta:
+        model = UserQuestionWiseResponse
+        exclude = ['id', 'userIntAnswer', 'userChoices', 'student']
+
+    def get_userAnswers(self, obj):
+        if obj.question.questionType == 'integer':
+            return [str(obj.userIntAnswer)]
+        return [choice.optionText for choice in obj.userChoices.all().order_by('pk')]
+
+    def get_marksAwarded(self, obj):
+        if obj.status == 'correct':
+            return obj.question.marksPositive
+        elif obj.status == 'incorrect':
+            return (-1)*obj.question.marksNegative
+        else:
+            return 0
 
 # Currently being used in complete profile view
 class StudentSerializer(serializers.ModelSerializer):

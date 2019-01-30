@@ -632,7 +632,10 @@ class UserQuestionWiseResponse(models.Model):
         null=True,
     )
     # For mcq, scq and passage type questions
-    userChoices = models.ManyToManyField(Option)
+    userChoices = models.ManyToManyField(
+        Option,
+        blank=True,
+    )
     isMarkedForReview = models.BooleanField(default=False)
     status = models.CharField(
         max_length = 100,
@@ -641,4 +644,6 @@ class UserQuestionWiseResponse(models.Model):
     )
 
     def __str__(self):
-        return self.user + ' - ' + self.question + ' - ' + self.question.section.test
+        student = self.student.first_name + ' (' + self.student.user.username + ')'
+        section = self.question.section.title + ' - ' + self.question.section.test.title
+        return student + ' - ' + self.question.questionText[:20] + ' (' + section + ')'

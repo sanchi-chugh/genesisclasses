@@ -1818,7 +1818,7 @@ class StudentTestResultViewSet(viewsets.ReadOnlyModelViewSet):
             test__super_admin=super_admin, student__id=student_id).order_by('-pk')
         return testResultObjs
 
-# Viewset for returning result of all sections of a particular test
+# Viewset for returning result of all sections of a particular test (for a particular student)
 class StudentSectionResultView(viewsets.ReadOnlyModelViewSet):
     model = UserSectionWiseResult
     serializer_class = StudentSectionResultSerializer
@@ -1830,6 +1830,20 @@ class StudentSectionResultView(viewsets.ReadOnlyModelViewSet):
         sectionResultObjs = self.model.objects.filter(
             section__test__id=test_id, student__id=student_id).order_by('section__sectionNumber')
         return sectionResultObjs
+
+# Viewset for returning responses of all questions of a particular section (for a particular student)
+class StudentQuestionResponseView(viewsets.ReadOnlyModelViewSet):
+    model = UserQuestionWiseResponse
+    serializer_class = StudentQuestionResponseSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+    pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self):
+        student_id = self.kwargs['stud_pk']
+        section_id = self.kwargs['sec_pk']
+        questionResponseObjs = self.model.objects.filter(
+            question__section__id=section_id, student__id=student_id).order_by('question__quesNumber')
+        return questionResponseObjs
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

@@ -69,6 +69,25 @@ def check_for_bool(fields_arr, data):
         "message": "Incorrect field type. Please provide bool value in \"" + '", "'.join(wrong_fields) + "\""},
         status=HTTP_400_BAD_REQUEST))
 
+# Helper function to check whether date field data is correct or not
+def check_for_date(fields_arr, data):
+    wrong_fields = []
+    for field in fields_arr:
+        # Error if date is not in string format
+        if type(data[field]) != str:
+            wrong_fields.append(field)
+        else:
+            # Error if date format is incorrect
+            try:
+                datetime.datetime.strptime(data[field], '%Y-%m-%d')
+            except ValueError:
+                wrong_fields.append(field)
+    if len(wrong_fields) == 0:
+        return (True, '')
+    return (False, Response({"status": "error",
+        "message": "Incorrect date format. Please provide \"YYYY-MM-DD\" format in \"" + '", "'.join(wrong_fields) + "\""},
+        status=HTTP_400_BAD_REQUEST))
+
 # -------------------VIEWS FOR CHOICEs-------------------------
 # Shows all subjects of superadmin in the format
 # subject_name (course_title_1 + course_title_2 + ...)
@@ -108,8 +127,13 @@ class AddStudentUserView(CreateAPIView):
         # Search for missing fields
         check_pass, result = fields_check([
             'first_name', 'last_name', 'contact_number', 
-            'email', 'centre', 'course'], data)
+            'email', 'centre', 'course', 'endAccessDate'], data)
         if not check_pass:
+            return result
+
+        # Return if endAccessDate is in incorrect date format
+        valid_date, result = check_for_date(['endAccessDate'], data)
+        if not valid_date:
             return result
 
         email = data['email']
@@ -178,9 +202,12 @@ class AddStudentUserView(CreateAPIView):
             type_of_user='student',
             username=username,
         )
-        
+
         # Add info to corresponding student obj
-        student, _ = self.model.objects.get_or_create(user=user)
+        student, _ = self.model.objects.get_or_create(
+            user=user,
+            endAccessDate=data['endAccessDate'],
+        )
         student.first_name=data['first_name']
         student.last_name=data['last_name']
         student.contact_number=contact_number
@@ -226,8 +253,13 @@ class EditStudentUserView(UpdateAPIView):
         # Search for missing fields
         check_pass, result = fields_check([
             'first_name', 'last_name', 'contact_number', 
-            'email', 'centre', 'course'], data)
+            'email', 'centre', 'course', 'endAccessDate'], data)
         if not check_pass:
+            return result
+
+        # Return if endAccessDate is in incorrect date format
+        valid_date, result = check_for_date(['endAccessDate'], data)
+        if not valid_date:
             return result
 
         email = data['email']
@@ -323,6 +355,18 @@ class AddBulkStudentsView(CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
+
+        # Search for missing fields
+        check_pass, result = fields_check([
+            'number', 'endAccessDate', 'centre', 'course'], data)
+        if not check_pass:
+            return result
+
+        # Return if endAccessDate is in incorrect date format
+        valid_date, result = check_for_date(['endAccessDate'], data)
+        if not valid_date:
+            return result
+
         n = int(data['number'])  # Number of students
         centre = Centre.objects.get(pk=int(data['centre']))  # Centre
 
@@ -381,7 +425,10 @@ class AddBulkStudentsView(CreateAPIView):
             user.set_password(password)
 
             # Set corresponding student courses and centres
-            studentObj = Student.objects.get(user=user)
+            studentObj = Student.objects.get(
+                user=user,
+                endAccessDate=data['endAccessDate'],
+            )
             studentObj.centre = centre
             studentObj.course.set(courses_arr)
             studentObj.save()
@@ -393,7 +440,12 @@ class AddBulkStudentsView(CreateAPIView):
         csvFile.close()
 
         # Make BulkStudentsCSV model object and save csv to it
-        bulkCSVObj = self.model.objects.create(csv_file='studentCSVs/' + filename, centre=centre, number=n)
+        bulkCSVObj = self.model.objects.create(
+            csv_file='studentCSVs/' + filename,
+            centre=centre,
+            number=n,
+            endAccessDate=data['endAccessDate']
+        )
         bulkCSVObj.course.set(courses_arr)
         bulkCSVObj.save()
         return Response({"status": "successful"})
@@ -412,8 +464,8 @@ class DownloadStudentDataView(APIView):
 
         path = directory + 'student_data.csv'
         csvFile = open(path, 'w')
-        csvFile.write('Name,Contact Number,email,Centre,Courses Enrolled,Gender,Date of Birth,\
-            Father\'s Name,Address,City,State,Pin Code\n')
+        csvFile.write('Name,Contact Number,email,Centre,Courses Enrolled,App Access End Date,\
+            Gender,Date of Birth,Father\'s Name,Address,City,State,Pin Code\n')
 
         centres = Centre.objects.filter(super_admin=super_admin)
         students = Student.objects.filter(centre__in=centres)
@@ -445,6 +497,8 @@ class DownloadStudentDataView(APIView):
             if student.dateOfBirth:
                 dateOfBirth = datetime.datetime.strptime(str(student.dateOfBirth), '%Y-%m-%d').strftime('%b %d %Y')
             
+            endAccessDate = datetime.datetime.strptime(str(student.endAccessDate), '%Y-%m-%d').strftime('%b %d %Y')
+            
             father_name = ''
             if student.father_name:
                 father_name = student.father_name
@@ -467,9 +521,10 @@ class DownloadStudentDataView(APIView):
 
             csvFile.write(
                 name.replace(',', '|') + ',' + contact_number.replace(',', '|') + ',' + email.replace(',', '|') +
-                ',' + centre.replace(',', '|')  + ',' + courses.replace(',', '|')  + ',' + gender.replace(',', '|') +
-                ',' + dateOfBirth.replace(',', '|')  + ',' + father_name.replace(',', '|')  + ',' + address.replace(',', '|') +
-                ',' + city.replace(',', '|')  + ',' +  state.replace(',', '|')  + ',' + pinCode.replace(',', '|') + '\n'
+                ',' + centre.replace(',', '|')  + ',' + courses.replace(',', '|') + ',' + endAccessDate.replace(',', '|')  +
+                ',' + gender.replace(',', '|') + ',' + dateOfBirth.replace(',', '|')  + ',' + father_name.replace(',', '|')  +
+                ',' + address.replace(',', '|') + ',' + city.replace(',', '|')  + ',' +  state.replace(',', '|')  +
+                ',' + pinCode.replace(',', '|') + '\n'
             )
 
         csvFile.close()

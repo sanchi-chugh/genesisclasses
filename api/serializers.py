@@ -155,6 +155,7 @@ class StudentUserSerializer(serializers.ModelSerializer):
     centre = NestedCentreSerializer()
     course = NestedCourseSerializer(many=True)
     dateOfBirth = serializers.DateField(format='%b %d, %Y')
+    endAccessDate = serializers.DateField(format='%b %d, %Y')
     email = serializers.SerializerMethodField()
     viewResults = serializers.SerializerMethodField()
     class Meta:
@@ -178,6 +179,7 @@ class BulkStudentsSerializer(serializers.ModelSerializer):
         slug_field='location',
     )
     creationDateTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    endAccessDate = serializers.DateField(format='%b %d, %Y')
     class Meta:
         model = BulkStudentsCSV
         exclude = []

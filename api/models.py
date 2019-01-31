@@ -155,10 +155,15 @@ class Student(models.Model):
         Centre,
         on_delete=models.CASCADE,
     )
+    # Student will be able to access the app till end date only
+    endAccessDate = models.DateField()
 
     def __str__(self):
         return str(self.first_name)
 
+# BulkStudentsCSV: Contains initial information of the added bulk students
+# This information is static. Changes to course, centre or endAccessDate
+# done via edit student (in Student Model) will not be reflected here.
 class BulkStudentsCSV(models.Model):
     csv_file = models.FileField(
         upload_to='studentCSVs/',
@@ -172,6 +177,8 @@ class BulkStudentsCSV(models.Model):
         on_delete=models.CASCADE,
     )
     course = models.ManyToManyField(Course)
+    # Bulk Students will be able to access the app till end date only
+    endAccessDate = models.DateField()
 
     def __str__(self):
         return 'Created for ' + self.centre.location + ' at ' + str(self.creationDateTime)
@@ -270,12 +277,16 @@ class Test(models.Model):
         SuperAdmin,
         on_delete=models.CASCADE,
     )
+    # If questions are to be parsed from the doc
     doc = models.FileField(
         blank=True,
         null=True,
         upload_to='docs/',
         validators=[FileExtensionValidator(['doc', 'docx'])],
     )
+    # Test will be shown to students only if it is active
+    # By default, test is inactive
+    active = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if self.unit and not self.subject:

@@ -70,6 +70,14 @@ urlpatterns = [
     path('tests/sections/questions/options/edit/<int:pk>/', EditOptionView.as_view()),
     path('tests/sections/questions/options/delete/<int:pk>/', DeleteOptionView),
 
+    # Endpoints for student wise test results
+    # Result of all tests of a student
+    path('results/students/<int:pk>/', StudentTestResultViewSet.as_view({'get': 'list'})),
+    # Result of all sections of a test for a student
+    path('results/students/<int:stud_pk>/tests/<int:test_pk>/', StudentSectionResultView.as_view({'get': 'list'})),
+    # Result of all questions of a section for a student
+    path('results/students/<int:stud_pk>/tests/sections/<int:sec_pk>/', StudentQuestionResponseView.as_view({'get': 'list'})),
+
     # Endpoints for students
     path('users/students/', StudentUserViewSet.as_view({'get': 'list'})),
     path('users/students/add/', AddStudentUserView.as_view()),

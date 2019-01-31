@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Count
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.utils import timezone
 from django.core.exceptions import ValidationError
@@ -154,10 +155,15 @@ class Student(models.Model):
         Centre,
         on_delete=models.CASCADE,
     )
+    # Student will be able to access the app till end date only
+    endAccessDate = models.DateField()
 
     def __str__(self):
         return str(self.first_name)
 
+# BulkStudentsCSV: Contains initial information of the added bulk students
+# This information is static. Changes to course, centre or endAccessDate
+# done via edit student (in Student Model) will not be reflected here.
 class BulkStudentsCSV(models.Model):
     csv_file = models.FileField(
         upload_to='studentCSVs/',
@@ -171,6 +177,8 @@ class BulkStudentsCSV(models.Model):
         on_delete=models.CASCADE,
     )
     course = models.ManyToManyField(Course)
+    # Bulk Students will be able to access the app till end date only
+    endAccessDate = models.DateField()
 
     def __str__(self):
         return 'Created for ' + self.centre.location + ' at ' + str(self.creationDateTime)
@@ -269,12 +277,16 @@ class Test(models.Model):
         SuperAdmin,
         on_delete=models.CASCADE,
     )
+    # If questions are to be parsed from the doc
     doc = models.FileField(
         blank=True,
         null=True,
         upload_to='docs/',
         validators=[FileExtensionValidator(['doc', 'docx'])],
     )
+    # Test will be shown to students only if it is active
+    # By default, test is inactive
+    active = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if self.unit and not self.subject:
@@ -562,22 +574,28 @@ class UserTestResult(models.Model):
 
     def get_rank(self):
 		# Rank of a student = (number of users having marks greater than this user) + 1
-        aggregate = TestResult.objects.filter(
+        aggregate = UserTestResult.objects.filter(
             test = self.test, marksObtained__gt=self.marksObtained).aggregate(rank=Count('marksObtained'))
         return aggregate['rank'] + 1
 
     def get_percentile(self):
-        # percentile = (getMyMarks/getTopperMarks)*100
-        topperMarks = TestResult.objects.filter(
-            test = self.test).order_by('-marksObtained').first().marksObtained
+        # percentile = (number of people behind me)/(total number of people who attempted test)*100
+        studentsBehind = UserTestResult.objects.filter(test=self.test, marksObtained__lt=self.marksObtained).count()
+        totalStudents = UserTestResult.objects.filter(test=self.test).count()
+        percentile = (studentsBehind/totalStudents)*100
+        return round(percentile, 2)
+
+    def get_percentage(self):
+        # percentage = (getMyMarks/getTotalMarks)*100
         try:
-            percentile = (self.marksObtained/topperMarks)*100
+            percentage = (self.marksObtained/self.test.totalMarks)*100
         except ZeroDivisionError:
-            percentile = 0
-        return percentile
+            # If total marks are zero
+            percentage = 100
+        return round(percentage, 2)
 
     def __str__(self):
-        return self.user + ' - ' + self.test
+        return self.student.first_name + ' (' + self.student.user.username + ') - ' + self.test.title
 
 # Result of a particular student for a particular section
 class UserSectionWiseResult(models.Model):
@@ -594,8 +612,19 @@ class UserSectionWiseResult(models.Model):
     incorrect = models.IntegerField(default=0)    # Number of questions incorrectly answered
     unattempted = models.IntegerField(default=0)    # Number of questions not attempted by the user
 
+    def get_percentage(self):
+        # percentage = (getMyMarks/getTotalMarks)*100
+        try:
+            percentage = (self.marksObtained/self.section.totalMarks)*100
+        except ZeroDivisionError:
+            # If total marks are zero
+            percentage = 100
+        return round(percentage, 2)
+
     def __str__(self):
-        return self.user + ' - ' + self.section + ' - ' + self.section.test
+        student = self.student.first_name + ' (' + self.student.user.username + ')'
+        section = self.section.title + ' (' + self.section.test.title + ')'
+        return student + ' - ' + section
 
 # Store response of each student for each question
 class UserQuestionWiseResponse(models.Model):
@@ -613,8 +642,11 @@ class UserQuestionWiseResponse(models.Model):
         blank=True,
         null=True,
     )
-    # For mcq and scq questions
-    userChoices = models.ManyToManyField(Option)
+    # For mcq, scq and passage type questions
+    userChoices = models.ManyToManyField(
+        Option,
+        blank=True,
+    )
     isMarkedForReview = models.BooleanField(default=False)
     status = models.CharField(
         max_length = 100,
@@ -623,4 +655,6 @@ class UserQuestionWiseResponse(models.Model):
     )
 
     def __str__(self):
-        return self.user + ' - ' + self.question + ' - ' + self.question.section.test
+        student = self.student.first_name + ' (' + self.student.user.username + ')'
+        section = self.question.section.title + ' - ' + self.question.section.test.title
+        return student + ' - ' + self.question.questionText[:20] + ' (' + section + ')'

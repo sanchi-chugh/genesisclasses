@@ -204,14 +204,12 @@ class AddStudentUserView(CreateAPIView):
         )
 
         # Add info to corresponding student obj
-        student, _ = self.model.objects.get_or_create(
-            user=user,
-            endAccessDate=data['endAccessDate'],
-        )
-        student.first_name=data['first_name']
-        student.last_name=data['last_name']
-        student.contact_number=contact_number
-        student.centre=centre
+        student, _ = self.model.objects.get_or_create(user=user)
+        student.endAccessDate = data['endAccessDate']
+        student.first_name = data['first_name']
+        student.last_name = data['last_name']
+        student.contact_number = contact_number
+        student.centre = centre
         student.course.set(courses_arr)
         student.save()
         
@@ -424,11 +422,9 @@ class AddBulkStudentsView(CreateAPIView):
             user = User.objects.create(username=username, type_of_user="student")
             user.set_password(password)
 
-            # Set corresponding student courses and centres
-            studentObj = Student.objects.get(
-                user=user,
-                endAccessDate=data['endAccessDate'],
-            )
+            # Set corresponding student courses, centres and endAccessDate
+            studentObj = Student.objects.get(user=user)
+            studentObj.endAccessDate = data['endAccessDate']
             studentObj.centre = centre
             studentObj.course.set(courses_arr)
             studentObj.save()

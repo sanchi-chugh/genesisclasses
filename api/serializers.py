@@ -336,6 +336,7 @@ class StudentTestResultSerializer(serializers.ModelSerializer):
     percentile = serializers.FloatField(source='get_percentile')
     percentage = serializers.FloatField(source='get_percentage')
     sectionalResult = serializers.SerializerMethodField()
+    testAttemptDate = serializers.DateField(format='%b %d, %Y')
     class Meta:
         model = UserTestResult
         exclude = ['student', 'id']

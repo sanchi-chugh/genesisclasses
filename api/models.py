@@ -571,6 +571,7 @@ class UserTestResult(models.Model):
     correct = models.IntegerField(default=0)    # Number of questions correctly answered
     unattempted = models.IntegerField(default=0)    # Number of questions unattempted
     incorrect = models.IntegerField(default=0)    # Number of questions incorrectly answered
+    testAttemptDate = models.DateField(default=timezone.now)    # Date when student attempted this test
 
     def get_rank(self):
 		# Rank of a student = (number of users having marks greater than this user) + 1

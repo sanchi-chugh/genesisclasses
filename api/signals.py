@@ -1,5 +1,6 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import datetime
 
 from api.models import SuperAdmin, Staff, Student, User, Centre
 
@@ -19,7 +20,9 @@ def create_user_profile(sender, instance, **kwargs):
     elif instance.type_of_user == 'student':
         # Set a default centre, so that creation of obj from django admin dashboard is possible
         centre = Centre.objects.all().order_by('pk')[0]
-        profile = Student.objects.get_or_create(user=instance, centre=centre)
+        endAccessDate = datetime.date.today() + datetime.timedelta(days=365)
+        endAccessDate_str = endAccessDate.strftime('%Y-%m-%d')
+        profile = Student.objects.get_or_create(user=instance, centre=centre, endAccessDate=endAccessDate_str)
         if(profile[1]):
             profile[0].first_name = instance.username
     else:

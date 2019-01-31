@@ -270,12 +270,16 @@ class Test(models.Model):
         SuperAdmin,
         on_delete=models.CASCADE,
     )
+    # If questions are to be parsed from the doc
     doc = models.FileField(
         blank=True,
         null=True,
         upload_to='docs/',
         validators=[FileExtensionValidator(['doc', 'docx'])],
     )
+    # Test will be shown to students only if it is active
+    # By default, test is inactive
+    active = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if self.unit and not self.subject:

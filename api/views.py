@@ -1072,9 +1072,14 @@ class TestInfoViewSet(viewsets.ReadOnlyModelViewSet):
 def validate_test_info(data, super_admin):
     # Search for missing fields
     check_pass, result = fields_check(
-        ['title', 'instructions', 'duration', 'typeOfTest', 'description', 'course', 'category'], data)
+        ['title', 'instructions', 'duration', 'typeOfTest', 'description', 'course', 'category', 'active'], data)
     if not check_pass:
         return {}, False, result
+
+    # Return if active is not a bool field
+    valid, result = check_for_bool(['active'], data)
+    if not valid:
+        return result
 
     # Make courses array
     courses = data['course'].split(',')
@@ -1207,6 +1212,7 @@ class AddTestInfoView(CreateAPIView):
             subject=dictV['subject'],
             unit=dictV['unit'],
             doc=op_dict['doc'],
+            active=data['active'],
         )
 
         # Add courses and categories to the test
@@ -1266,6 +1272,7 @@ class EditTestInfoView(UpdateAPIView):
         testObj.startTime = dictV['startTime']
         testObj.subject = dictV['subject']
         testObj.unit = dictV['unit']
+        testObj.active = data['active']
         testObj.save()
 
         return Response({'status': 'successful'})

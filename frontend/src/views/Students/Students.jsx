@@ -160,6 +160,16 @@ class Students extends Component {
               <Card
                 title="Students"
                 addButton={true}
+                downloadButton={true}
+                handleDownloadButton={()=>{
+                  axios.get("/api/getStudentData/", {
+                      headers: {
+                      Authorization: `Token ${localStorage.token}`
+                      }
+                  }).then(res => {
+                    window.open(res.data.csvFile, '_blank');
+                  });
+                }}
                 handleShowAddModal={this.handleShowAddModal.bind(this)}
                 ctTableFullWidth
                 ctTableResponsive

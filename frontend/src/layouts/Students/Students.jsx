@@ -19,7 +19,12 @@ class Students extends Component {
           <Switch>
             {studentsRoutes.map((prop, key) => {
               return (
-                <Route path={prop.path} exact component={prop.component} key={key} />
+                <Route path={prop.path} exact render={routeProps => (
+                  <prop.component
+                    {...routeProps}
+                    handleClick={this.props.handleClick}
+                  />
+                )} key={key} />
               );
             })}
           </Switch>

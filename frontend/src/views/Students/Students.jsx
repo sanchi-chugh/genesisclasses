@@ -76,6 +76,10 @@ class Students extends Component {
     })
   }
 
+  handleShowAddModal(){
+    this.props.history.push('/students/add')
+  }
+
   downloadCSV(obj){
     const old = this
     this.props.history.push({pathname:'/students/edit',state:old.state})
@@ -156,7 +160,7 @@ class Students extends Component {
               <Card
                 title="Students"
                 addButton={true}
-                // handleShowAddModal={this.handleShowAddModal.bind(this)}
+                handleShowAddModal={this.handleShowAddModal.bind(this)}
                 ctTableFullWidth
                 ctTableResponsive
                 content={

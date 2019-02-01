@@ -32,6 +32,7 @@ class BulkStudents extends Component {
           formData:{
             number:'',
             course:[],
+            endAccessDate:''
           },
           id:null,
           subject:null,
@@ -116,6 +117,7 @@ class BulkStudents extends Component {
       formData.append('number',this.state.formData.number)
       formData.append('course',this.state.formData.course.join(','))
       formData.append('centre',this.state.centreId)
+      formData.append('endAccessDate', this.state.formData.endAccessDate )
       axios.post('/api/users/students/bulk/create/', formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,
@@ -221,6 +223,7 @@ class BulkStudents extends Component {
                         <TableHeaderColumn dataField='centre'>Centre</TableHeaderColumn>
                         <TableHeaderColumn dataField='number'>Number Of Students</TableHeaderColumn>
                         <TableHeaderColumn dataField='creationDateTime'>Created On</TableHeaderColumn>
+                        <TableHeaderColumn dataField='endAccessDate'>Access Date</TableHeaderColumn>
                         <TableHeaderColumn dataField='courses' dataFormat={this.renderCourses.bind(this)}>Courses</TableHeaderColumn>
                         <TableHeaderColumn dataField='csv_file' dataFormat={this.renderColumn.bind(this)}>CSV</TableHeaderColumn>
                     </BootstrapTable>

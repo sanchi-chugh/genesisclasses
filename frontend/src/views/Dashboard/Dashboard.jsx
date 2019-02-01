@@ -31,8 +31,6 @@ class Dashboard extends Component {
     return legend;
   }
   render() {
-    console.log("hello",this.props.location.state)
-
     return (
       <div className="content">
         <Grid fluid>

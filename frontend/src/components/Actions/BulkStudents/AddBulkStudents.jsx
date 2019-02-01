@@ -57,6 +57,15 @@ class AddBulkStudents extends Component {
                                 onChange={this.props.handleFormDataChange}
                             />
                             <br/>
+                            <ControlLabel>Access Date</ControlLabel>
+                            <FormControl
+                                type="date"
+                                value={this.props.formData.endAccessDate}
+                                placeholder="Access Date"
+                                name='endAccessDate'
+                                onChange={this.props.handleFormDataChange}
+                            />
+                            <br/>
                             <ControlLabel>Centre Name</ControlLabel>
                             <center>
                             <Dropdown overlay={menu}>

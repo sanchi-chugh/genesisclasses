@@ -44,15 +44,17 @@ class AddStudents extends Component {
         image:'',
         file:null,
         course:[],
+        clear:false
       },
       addingStudent:false,
       studentAdded:false
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.fetchCentres();
     this.fetchCourses();
+    this.setOldData();
   }
 
   fetchCentres(){
@@ -75,6 +77,33 @@ class AddStudents extends Component {
         const data = res.data;
         this.setState({courses:data});
     });
+  }
+
+  setOldData(){
+    this.setState({
+      // centreId:this.props.location.data.centre.id,
+      // centreName:this.props.location.data.centre.location,
+      formData:{
+        ...this.state.formData,
+        first_name:this.props.location.data.first_name,
+        last_name:this.props.location.data.last_name,
+        email:this.props.location.data.email,
+        contact_number:this.props.location.data.contact_number,
+        endAccessDate:this.props.location.data.endAccessDate,
+        father_name:this.props.location.data.father_name,
+        gender:this.props.location.data.gender,
+        dateOfBirth:this.props.location.data.dateOfBirth,
+        address:this.props.location.data.address,
+        city:this.props.location.data.city,
+        state:this.props.location.data.state,
+        pinCode:this.props.location.data.pinCode,
+        image:this.props.location.data.file,
+        file:null,
+        course:this.props.location.data.course.map(item=>{
+          return item.id
+        }),
+      }
+    })
   }
 
   handleAdd(e){
@@ -169,7 +198,7 @@ class AddStudents extends Component {
           <Row>
             <Col md={8}>
               <Card
-                title="Add Student"
+                title="Edit Profile"
                 content={
                   <form onSubmit={(event)=>this.handleAdd(event)}>
                     <FormInputs
@@ -248,6 +277,11 @@ class AddStudents extends Component {
                                             inline
                                             value={props.id}
                                             name='course'
+                                            defaultChecked={
+                                              this.state.formData.course.find((item)=>{
+                                                  return item === props.id
+                                              })
+                                            }
                                             onChange={this.handleFormDataChange.bind(this)}
                                         >{props.title}</Checkbox>);
                             })} 
@@ -345,7 +379,7 @@ class AddStudents extends Component {
                       ]}
                     />
                     <Button bsStyle="success" pullRight fill type="submit">
-                      ADD STUDENT
+                      EDIT PROFILE
                     </Button>
                     <div className="clearfix" />
                   </form>

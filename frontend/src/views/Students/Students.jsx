@@ -76,13 +76,17 @@ class Students extends Component {
     })
   }
 
-  handleShowAddModal(){
+  handleAddButton(){
     this.props.history.push('/students/add')
   }
 
   downloadCSV(obj){
     const old = this
     this.props.history.push({pathname:'/students/edit',state:old.state})
+  }
+
+  handleEditButton(obj){
+    this.props.history.push({pathname:'/students/edit',data:obj})
   }
 
   renderCentres(cell, row, enumObject, rowIndex) {
@@ -129,7 +133,7 @@ class Students extends Component {
           <Row>
             <ButtonToolbar>
               <ButtonGroup>
-                <Button bsSize="small" style={{width:'90px'}} bsStyle="info" onClick={this.downloadCSV.bind(this,row)}>
+                <Button bsSize="small" style={{width:'90px'}} bsStyle="info" onClick={this.handleEditButton.bind(this,row)}>
                   <Glyphicon glyph="edit" /> EDIT
                 </Button>
                 <Button bsSize="small" style={{width:'90px'}} bsStyle="danger" onClick={this.handleShowDeleteModal.bind(this,row)}>
@@ -170,7 +174,7 @@ class Students extends Component {
                     window.open(res.data.csvFile, '_blank');
                   });
                 }}
-                handleShowAddModal={this.handleShowAddModal.bind(this)}
+                handleShowAddModal={this.handleAddButton.bind(this)}
                 ctTableFullWidth
                 ctTableResponsive
                 content={

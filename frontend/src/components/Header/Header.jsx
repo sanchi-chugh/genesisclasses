@@ -34,18 +34,18 @@ class Header extends Component {
     dashboardRoutes.map((prop, key) => {
       if (prop.collapse) {
         prop.views.map((prop, key) => {
-          if (prop.path === this.props.location.pathname) {
+          if (prop.path.split('/')[1] === this.props.location.pathname.split('/')[1]) {
             name = prop.name;
           }
           return null;
         });
       } else {
         if (prop.redirect) {
-          if (prop.path === this.props.location.pathname) {
+          if (prop.path.split('/')[1] === this.props.location.pathname.split('/')[1]) {
             name = prop.name;
           }
         } else {
-          if (prop.path === this.props.location.pathname) {
+          if (prop.path.split('/')[1] === this.props.location.pathname.split('/')[1]) {
             name = prop.name;
           }
         }

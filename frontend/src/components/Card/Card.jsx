@@ -13,9 +13,14 @@ export class Card extends Component {
         <div className={"header" + (this.props.hCenter ? " text-center" : "")}>
           <div>
             <Row>
-              <Col md={11}>
+              <Col md={9}>
                 <h4 className="title">{this.props.title}</h4>
               </Col>
+              {this.props.downloadButton ? <Col md={2}>
+                <Button bsSize="small" bsStyle="info" onClick={this.props.handleDownloadButton}>
+                  <Glyphicon glyph="download" /> Download Students Data
+                </Button>
+              </Col> :''}
               {this.props.addButton ? <Col md={1}>
                 <Button bsSize="small" bsStyle="success" onClick={this.props.handleShowAddModal}>
                   <Glyphicon glyph="plus-sign" /> ADD

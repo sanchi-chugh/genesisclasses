@@ -5,13 +5,13 @@ import Typography from "../views/Typography/Typography";
 import Icons from "../views/Icons/Icons";
 import Maps from "../views/Maps/Maps";
 import Notifications from "../views/Notifications/Notifications";
-import Upgrade from "../views/Upgrade/Upgrade";
 import Centres from "../views/Centres/Centres";
 import Courses from "../views/Courses/Courses";
 import Subjects from "../views/Subjects/Subjects";
 import Categories from "../views/Categories/Categories";
 import Units from "../views/Units/Units";
 import BulkStudents from "../views/BulkStudents/BulkStudents";
+import Students from "../layouts/Students/Students";
 
 const dashboardRoutes = [
   {
@@ -19,6 +19,12 @@ const dashboardRoutes = [
     name: "Dashboard",
     icon: "pe-7s-graph",
     component: Dashboard
+  },
+  {
+    path: "/students",
+    name: "Students",
+    icon: "pe-7s-user",
+    component: Students
   },
   {
     path: "/course",

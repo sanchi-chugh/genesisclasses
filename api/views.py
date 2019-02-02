@@ -460,8 +460,8 @@ class DownloadStudentDataView(APIView):
 
         path = directory + 'student_data.csv'
         csvFile = open(path, 'w')
-        csvFile.write('Name,Contact Number,email,Centre,Courses Enrolled,App Access End Date,\
-            Gender,Date of Birth,Father\'s Name,Address,City,State,Pin Code\n')
+        csvFile.write('Name,Contact Number,email,Centre,Courses Enrolled,App Access End Date,'
+            'Gender,Date of Birth,Father\'s Name,Address,City,State,Pin Code\n')
 
         centres = Centre.objects.filter(super_admin=super_admin)
         students = Student.objects.filter(centre__in=centres)
@@ -1938,41 +1938,49 @@ class TestResultGraphView(APIView):
 
         return Response({'details': yr_dict_arr, 'status': 'successful'})
 
+# Helper function to get testResultObjs, provided start_date, end_date and centre in params
+def get_testResultObjs_helper(params_dict, test_id):
+
+    # Return if compulsory parameters are missing
+    check_pass, result = fields_check(['start_date', 'end_date', 'centre'], params_dict)
+    if not check_pass:
+        return (False, result)
+
+    # Return if date format is incorrect
+    valid_date, result = check_for_date(['start_date', 'end_date'], params_dict)
+    if not valid_date:
+        return (False, result)
+
+    # Get parameters
+    start_date = params_dict.get('start_date')
+    end_date = params_dict.get('end_date')
+    centre_id = int(params_dict.get('centre'))
+
+    # Get test result objects
+    testResultObjs = UserTestResult.objects.filter(
+        test__id=test_id, testAttemptDate__gte=start_date, testAttemptDate__lte=end_date)
+
+    # If centre_id is 0 => all centres
+    if centre_id != 0:
+        testResultObjs = testResultObjs.filter(student__centre__id=centre_id)
+        # Sort testResultObjs by rank, show top rankers first
+        testResultObjs = sorted(testResultObjs, key=lambda obj: obj.get_rank(start_date, end_date, centre_id))
+    else:
+        testResultObjs = sorted(testResultObjs, key=lambda obj: obj.get_rank(start_date, end_date))
+    return (True, testResultObjs)
+
 # Return test results of a particular centre within a particular time frame
 class CentreSpecificTestResultView(APIView):
     model = UserTestResult
-    serializer_class = CentreSpecificStudentResultSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
     def get(self, request, pk, *args, **kwargs):
-        params_dict = self.request.GET
-
-        # Return if compulsory parameters are missing
-        check_pass, result = fields_check(['start_date', 'end_date', 'centre'], params_dict)
-        if not check_pass:
-            return result
-
-        # Return if date format is incorrect
-        valid_date, result = check_for_date(['start_date', 'end_date'], params_dict)
-        if not valid_date:
-            return result
-
-        # Get parameters
-        start_date = params_dict.get('start_date')
-        end_date = params_dict.get('end_date')
-        centre_id = int(params_dict.get('centre'))
-
-        # Get test result objects
-        testResultObjs = self.model.objects.filter(
-            test__id=pk, testAttemptDate__gte=start_date, testAttemptDate__lte=end_date)
-
-        # If centre_id is 0 => all centres
-        if centre_id != 0:
-            testResultObjs = testResultObjs.filter(student__centre__id=centre_id)
-            # Sort testResultObjs by rank, show top rankers first
-            testResultObjs = sorted(testResultObjs, key=lambda obj: obj.get_rank(start_date, end_date, centre_id))
+        # Get desired testResultObjs
+        valid, response = get_testResultObjs_helper(self.request.GET, pk)
+        if not valid:
+            return response
         else:
-            testResultObjs = sorted(testResultObjs, key=lambda obj: obj.get_rank(start_date, end_date))
+            testResultObjs = response
 
         # Return paginated response
         paginator = StandardResultsSetPagination()
@@ -1980,9 +1988,72 @@ class CentreSpecificTestResultView(APIView):
 
         testResults = CentreSpecificStudentResultSerializer(
             resultPageObjs, many=True,
-            context={'centre_id': centre_id, 'start_date': start_date, 'end_date': end_date}).data
+            context={
+                'centre_id': int(self.request.GET.get('centre')),
+                'start_date': self.request.GET.get('start_date'),
+                'end_date': self.request.GET.get('end_date'),
+            }).data
 
         return paginator.get_paginated_response(testResults)
+
+# Return csv link to test results of a particular centre within a particular time frame
+class CentreSpecificTestResultCSVView(APIView):
+    model = UserTestResult
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, pk, *args, **kwargs):
+        testObj = get_object_or_404(Test, pk=pk)
+
+        # Get desired testResultObjs
+        valid, response = get_testResultObjs_helper(self.request.GET, pk)
+        if not valid:
+            return response
+        else:
+            testResultObjs = response
+
+        testResults = CentreSpecificStudentResultSerializer(
+            testResultObjs, many=True,
+            context={
+                'centre_id': int(self.request.GET.get('centre')),
+                'start_date': self.request.GET.get('start_date'),
+                'end_date': self.request.GET.get('end_date'),
+            }).data
+        
+        # Make directory having test result csv(s)
+        directory = 'media/studentResultCSVs/'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # Make csv and return the link of this csv in response
+        path = directory + testObj.title.replace(' ', '_') + '_result_data.csv'
+        csvFile = open(path, 'w')
+        csvFile.write('Student Name,Contact Number,email,Centre,Courses Enrolled,Rank,'
+            'Percentile,Percentage,Total Marks,Marks Obtained,Total Questions,Number of correct answers,'
+            'Number of incorrect answers, Number of unattempted questions\n')
+
+        
+        for testResult in testResults:
+            csvFile.write(
+                    testResult['student']['name'].replace(',', '|') + ',' +
+                    (str(testResult['student']['contact_number']).replace(',', '|')).replace('None', '') + ',' +
+                    testResult['student']['email'].replace(',', '|') + ',' +
+                    testResult['student']['centre'].replace(',', '|')  + ',' +
+                    (' | '.join(testResult['student']['course'])).replace(',', '|') + ',' +
+                    str(testResult['rank']).replace(',', '|') + ',' +
+                    str(testResult['percentile']).replace(',', '|') + ',' +
+                    str(testResult['percentage']).replace(',', '|') + ',' +
+                    str(testObj.totalMarks).replace(',', '|') + ',' +
+                    str(testResult['marksObtained']).replace(',', '|') + ',' +
+                    str(testObj.totalQuestions).replace(',', '|') + ',' +
+                    str(testResult['correct']).replace(',', '|') + ',' +
+                    str(testResult['incorrect']).replace(',', '|') + ',' +
+                    str(testResult['unattempted']).replace(',', '|') + '\n'
+                )
+
+        csvFile.close()
+        absolute_path = 'http://localhost:8000/' + path
+        return Response({'status': 'successful', 'csvFile': absolute_path})
+
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

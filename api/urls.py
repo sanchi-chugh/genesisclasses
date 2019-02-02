@@ -72,8 +72,9 @@ urlpatterns = [
 
     # Endpoints for test results
     path('results/tests/graph/<int:pk>/', TestResultGraphView.as_view()),   # Endpoint for Test Result Graph
-    # Endpoint for finding test result of a centre within a particular time frame
-    path('results/tests/<int:pk>/', CentreSpecificTestResultView.as_view()),
+    # Endpoint for finding test result of a centre within a particular time frame and link to csv for the same
+    path('results/tests/<int:pk>/', CentreSpecificTestResultView.as_view()),    # Returns JSON
+    path('results/tests/<int:pk>/csv/', CentreSpecificTestResultCSVView.as_view()),    # Returns link to csv
 
     # Endpoints for student wise test results
     # Result of all tests of a student

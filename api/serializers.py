@@ -120,9 +120,10 @@ class NestedStudentSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field='location',
     )
+    email = serializers.SerializerMethodField()
     class Meta:
         model = Student
-        fields = ('id', 'course', 'centre', 'name')
+        fields = ('id', 'course', 'centre', 'name', 'contact_number', 'email')
 
     def get_name(self, obj):
         name = ''
@@ -133,6 +134,9 @@ class NestedStudentSerializer(serializers.ModelSerializer):
         if name == '':
             name = obj.user.username
         return name
+
+    def get_email(self, obj):
+        return obj.user.email
 
 # ------------Serializers for Choices-----------------
 # Gives choices of subjects along with the names of courses

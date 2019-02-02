@@ -2,6 +2,7 @@ from rest_framework import serializers
 from api.models import *
 from django.utils.timezone import localtime
 from django.shortcuts import get_object_or_404
+from test_series.settings import DOMAIN
 
 # ---------SUPERADMIN VIEW SERIALIZERS-----------
 
@@ -195,7 +196,7 @@ class StudentUserSerializer(serializers.ModelSerializer):
         return obj.user.email
 
     def get_viewResults(self, obj):
-        return 'http://localhost:8000/api/results/students/' + str(obj.pk) + '/'
+        return DOMAIN + 'api/results/students/' + str(obj.pk) + '/'
 
 class BulkStudentsSerializer(serializers.ModelSerializer):
     course = serializers.SlugRelatedField(
@@ -281,7 +282,7 @@ class TestInfoSerializer(serializers.ModelSerializer):
         exclude = ['super_admin']
 
     def get_sections(self, obj):
-        return 'http://localhost:8000/api/tests/sections/' + str(obj.pk) + '/'
+        return DOMAIN + 'api/tests/sections/' + str(obj.pk) + '/'
 
 class TestSectionSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
@@ -290,7 +291,7 @@ class TestSectionSerializer(serializers.ModelSerializer):
         exclude = ['test']
 
     def get_questions(self, obj):
-        return 'http://localhost:8000/api/tests/sections/questions/' + str(obj.pk) + '/'
+        return DOMAIN + 'api/tests/sections/questions/' + str(obj.pk) + '/'
 
 class TestQuestionSerializer(serializers.ModelSerializer):
     questionDetail = serializers.SerializerMethodField()
@@ -302,11 +303,11 @@ class TestQuestionSerializer(serializers.ModelSerializer):
         exclude = ['section', 'intAnswer']
 
     def get_questionDetail(self, obj):
-        return 'http://localhost:8000/api/tests/sections/questions/detail/' + str(obj.pk) + '/'
+        return DOMAIN + 'api/tests/sections/questions/detail/' + str(obj.pk) + '/'
 
     def get_passage(self, obj):
         if obj.passage and obj.questionType == 'passage':
-            return 'http://localhost:8000/api/tests/sections/questions/passages/' + str(obj.passage.pk) + '/'
+            return DOMAIN + 'api/tests/sections/questions/passages/' + str(obj.passage.pk) + '/'
         return None
 
     def get_valid(self, obj):
@@ -369,7 +370,7 @@ class StudentTestResultSerializer(serializers.ModelSerializer):
         exclude = ['student', 'id']
 
     def get_sectionalResult(self, obj):
-        return 'http://localhost:8000/api/results/students/{}/tests/{}/'.format(obj.student.id, obj.test.id)
+        return DOMAIN + 'api/results/students/{}/tests/{}/'.format(obj.student.id, obj.test.id)
 
     def get_test(self, obj):
         # Get test info details and append unit wise tests in
@@ -394,7 +395,7 @@ class StudentSectionResultSerializer(serializers.ModelSerializer):
         exclude = ['id']
 
     def get_questionWiseResponse(self, obj):
-        return 'http://localhost:8000/api/results/students/{}/tests/sections/{}/'.format(obj.student.id, obj.section.id)
+        return DOMAIN + 'api/results/students/{}/tests/sections/{}/'.format(obj.student.id, obj.section.id)
 
 class StudentQuestionResponseSerializer(serializers.ModelSerializer):
     userAnswers = serializers.SerializerMethodField()
@@ -468,7 +469,7 @@ class CentreSpecificStudentResultSerializer(serializers.ModelSerializer):
         return obj.get_rank(startDate=context['start_date'], endDate=context['end_date'], centreID=context['centre_id'])
 
     def get_sectionalResult(self, obj):
-        return 'http://localhost:8000/api/results/students/{}/tests/{}/'.format(obj.student.id, obj.test.id)
+        return DOMAIN + 'api/results/students/{}/tests/{}/'.format(obj.student.id, obj.test.id)
 
 # Currently being used in complete profile view
 class StudentSerializer(serializers.ModelSerializer):

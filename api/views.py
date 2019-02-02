@@ -14,6 +14,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.core.validators import validate_email
 from django.core.validators import ValidationError
+from test_series.settings import DOMAIN
 from .paginators import *
 import datetime
 import json
@@ -524,7 +525,7 @@ class DownloadStudentDataView(APIView):
             )
 
         csvFile.close()
-        absolute_path = 'http://localhost:8000/' + path
+        absolute_path = DOMAIN + path
         return Response({'status': 'successful', 'csvFile': absolute_path})
 
 # Shows list of centres (permitted to a superadmin only)
@@ -2051,7 +2052,7 @@ class CentreSpecificTestResultCSVView(APIView):
                 )
 
         csvFile.close()
-        absolute_path = 'http://localhost:8000/' + path
+        absolute_path = DOMAIN + path
         return Response({'status': 'successful', 'csvFile': absolute_path})
 
 

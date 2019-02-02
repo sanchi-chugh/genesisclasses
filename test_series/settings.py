@@ -6,6 +6,14 @@ import django_heroku
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
+# Turn deployed True when in production
+DEPLOYED = False
+
+# Get domain
+if DEPLOYED:
+    DOMAIN = 'http://13.233.138.166/'   # Public IP
+else:
+    DOMAIN = 'http://localhost:8000/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/

@@ -6,7 +6,6 @@ from rest_framework.views import APIView
 from api.models import Student, Centre, Test, Question, Section, Option
 from rest_framework import viewsets, permissions
 from api.utils import parser
-from datetime import datetime
 from rest_framework.response import Response
 from django.core.mail import send_mail
 from .permissions import *
@@ -16,6 +15,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.core.validators import validate_email
 from django.core.validators import ValidationError
 from .paginators import *
+import datetime
 import json
 import uuid
 import os
@@ -1902,6 +1902,42 @@ class StudentQuestionResponseView(viewsets.ReadOnlyModelViewSet):
         questionResponseObjs = self.model.objects.filter(
             question__section__id=section_id, student__id=student_id).order_by('question__quesNumber')
         return questionResponseObjs
+
+# Return JSON for bar graph containing information of past 10 years' test results
+class TestResultGraphView(APIView):
+    model = UserTestResult
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, pk, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        centreObjs = Centre.objects.filter(super_admin=super_admin).order_by('pk')
+        yr_dict_arr = []
+
+        # Take current 10 year objects
+        curr_date = datetime.datetime.today()
+        curr_yr = curr_date.date().year
+
+        # Make latest 10 year objects
+        for index in range(0, 10):
+            yr = curr_yr - index
+
+            # Get all test results submitted between 1-1-yr and 31-12-yr
+            lower_limit_date = datetime.datetime(year=yr, month=1, day=1)
+            upper_limit_date = datetime.datetime(year=yr, month=12, day=31)
+            testResultObjs = self.model.objects.filter(
+                test__super_admin=super_admin,
+                test__id=pk,
+                testAttemptDate__gte=lower_limit_date,
+                testAttemptDate__lte=upper_limit_date,
+            )
+
+            # Get result filtered centre wise
+            centreWiseResult = CentreWiseResultSerializer(
+                centreObjs, many=True, context={'testResultObjs': testResultObjs, 'test_id': pk}).data
+            yr_dict_arr.append({'year': curr_yr - index, 'centres': [centreWiseResult]})            
+
+        return Response({'details': yr_dict_arr, 'status': 'successful'})
+
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

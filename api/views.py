@@ -1938,6 +1938,51 @@ class TestResultGraphView(APIView):
 
         return Response({'details': yr_dict_arr, 'status': 'successful'})
 
+# Return test results of a particular centre within a particular time frame
+class CentreSpecificTestResultView(APIView):
+    model = UserTestResult
+    serializer_class = CentreSpecificStudentResultSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, pk, *args, **kwargs):
+        params_dict = self.request.GET
+
+        # Return if compulsory parameters are missing
+        check_pass, result = fields_check(['start_date', 'end_date', 'centre'], params_dict)
+        if not check_pass:
+            return result
+
+        # Return if date format is incorrect
+        valid_date, result = check_for_date(['start_date', 'end_date'], params_dict)
+        if not valid_date:
+            return result
+
+        # Get parameters
+        start_date = params_dict.get('start_date')
+        end_date = params_dict.get('end_date')
+        centre_id = int(params_dict.get('centre'))
+
+        # Get test result objects
+        testResultObjs = self.model.objects.filter(
+            test__id=pk, testAttemptDate__gte=start_date, testAttemptDate__lte=end_date)
+
+        # If centre_id is 0 => all centres
+        if centre_id != 0:
+            testResultObjs = testResultObjs.filter(student__centre__id=centre_id)
+            # Sort testResultObjs by rank, show top rankers first
+            testResultObjs = sorted(testResultObjs, key=lambda obj: obj.get_rank(start_date, end_date, centre_id))
+        else:
+            testResultObjs = sorted(testResultObjs, key=lambda obj: obj.get_rank(start_date, end_date))
+
+        # Return paginated response
+        paginator = StandardResultsSetPagination()
+        resultPageObjs = paginator.paginate_queryset(testResultObjs, request)
+
+        testResults = CentreSpecificStudentResultSerializer(
+            resultPageObjs, many=True,
+            context={'centre_id': centre_id, 'start_date': start_date, 'end_date': end_date}).data
+
+        return paginator.get_paginated_response(testResults)
 
 class TestFromDocView(APIView):
     def post(self, request, *args, **kwargs):

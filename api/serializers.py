@@ -109,6 +109,31 @@ class NestedQuestionSerializer(serializers.ModelSerializer):
         correctOptions = Option.objects.filter(question=obj, correct=True).order_by('pk')
         return [option.optionText for option in correctOptions]
 
+class NestedStudentSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    centre = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='location',
+    )
+    class Meta:
+        model = Student
+        fields = ('id', 'course', 'centre', 'name')
+
+    def get_name(self, obj):
+        name = ''
+        if obj.first_name:
+            name += obj.first_name
+        if obj.last_name:
+            name += ' ' + obj.last_name
+        if name == '':
+            name = obj.user.username
+        return name
+
 # ------------Serializers for Choices-----------------
 # Gives choices of subjects along with the names of courses
 class SubjectChoiceSerializer(serializers.ModelSerializer):
@@ -414,6 +439,32 @@ class CentreWiseResultSerializer(serializers.ModelSerializer):
              'mark': redAttempts + yellowAttempts + greenAttempts},
         ]
         return parts
+
+class CentreSpecificStudentResultSerializer(serializers.ModelSerializer):
+    student = NestedStudentSerializer()
+    percentile = serializers.SerializerMethodField()
+    rank = serializers.SerializerMethodField()
+    testAttemptDate = serializers.DateField(format='%b %d, %Y')
+    sectionalResult = serializers.SerializerMethodField()
+    percentage = serializers.FloatField(source='get_percentage')
+    class Meta:
+        model = UserTestResult
+        exclude = ['id']
+
+    def get_percentile(self, obj):
+        context = self.context
+        if context['centre_id'] == 0:
+            return obj.get_percentile(startDate=context['start_date'], endDate=context['end_date'])
+        return obj.get_percentile(startDate=context['start_date'], endDate=context['end_date'], centreID=context['centre_id'])
+
+    def get_rank(self, obj):
+        context = self.context
+        if context['centre_id'] == 0:
+            return obj.get_rank(startDate=context['start_date'], endDate=context['end_date'])
+        return obj.get_rank(startDate=context['start_date'], endDate=context['end_date'], centreID=context['centre_id'])
+
+    def get_sectionalResult(self, obj):
+        return 'http://localhost:8000/api/results/students/{}/tests/{}/'.format(obj.student.id, obj.test.id)
 
 # Currently being used in complete profile view
 class StudentSerializer(serializers.ModelSerializer):

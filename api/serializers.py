@@ -2,6 +2,7 @@ from rest_framework import serializers
 from api.models import *
 from django.utils.timezone import localtime
 from django.shortcuts import get_object_or_404
+from test_series.settings import DOMAIN
 
 # ---------SUPERADMIN VIEW SERIALIZERS-----------
 
@@ -109,6 +110,35 @@ class NestedQuestionSerializer(serializers.ModelSerializer):
         correctOptions = Option.objects.filter(question=obj, correct=True).order_by('pk')
         return [option.optionText for option in correctOptions]
 
+class NestedStudentSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    centre = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='location',
+    )
+    email = serializers.SerializerMethodField()
+    class Meta:
+        model = Student
+        fields = ('id', 'course', 'centre', 'name', 'contact_number', 'email')
+
+    def get_name(self, obj):
+        name = ''
+        if obj.first_name:
+            name += obj.first_name
+        if obj.last_name:
+            name += ' ' + obj.last_name
+        if name == '':
+            name = obj.user.username
+        return name
+
+    def get_email(self, obj):
+        return obj.user.email
+
 # ------------Serializers for Choices-----------------
 # Gives choices of subjects along with the names of courses
 class SubjectChoiceSerializer(serializers.ModelSerializer):
@@ -166,7 +196,7 @@ class StudentUserSerializer(serializers.ModelSerializer):
         return obj.user.email
 
     def get_viewResults(self, obj):
-        return 'http://localhost:8000/api/results/students/' + str(obj.pk) + '/'
+        return DOMAIN + 'api/results/students/' + str(obj.pk) + '/'
 
 class BulkStudentsSerializer(serializers.ModelSerializer):
     course = serializers.SlugRelatedField(
@@ -252,7 +282,7 @@ class TestInfoSerializer(serializers.ModelSerializer):
         exclude = ['super_admin']
 
     def get_sections(self, obj):
-        return 'http://localhost:8000/api/tests/sections/' + str(obj.pk) + '/'
+        return DOMAIN + 'api/tests/sections/' + str(obj.pk) + '/'
 
 class TestSectionSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
@@ -261,7 +291,7 @@ class TestSectionSerializer(serializers.ModelSerializer):
         exclude = ['test']
 
     def get_questions(self, obj):
-        return 'http://localhost:8000/api/tests/sections/questions/' + str(obj.pk) + '/'
+        return DOMAIN + 'api/tests/sections/questions/' + str(obj.pk) + '/'
 
 class TestQuestionSerializer(serializers.ModelSerializer):
     questionDetail = serializers.SerializerMethodField()
@@ -273,11 +303,11 @@ class TestQuestionSerializer(serializers.ModelSerializer):
         exclude = ['section', 'intAnswer']
 
     def get_questionDetail(self, obj):
-        return 'http://localhost:8000/api/tests/sections/questions/detail/' + str(obj.pk) + '/'
+        return DOMAIN + 'api/tests/sections/questions/detail/' + str(obj.pk) + '/'
 
     def get_passage(self, obj):
         if obj.passage and obj.questionType == 'passage':
-            return 'http://localhost:8000/api/tests/sections/questions/passages/' + str(obj.passage.pk) + '/'
+            return DOMAIN + 'api/tests/sections/questions/passages/' + str(obj.passage.pk) + '/'
         return None
 
     def get_valid(self, obj):
@@ -332,16 +362,15 @@ class PassageDetailsSerializer(serializers.ModelSerializer):
 
 class StudentTestResultSerializer(serializers.ModelSerializer):
     test = serializers.SerializerMethodField()
-    rank = serializers.IntegerField(source='get_rank')
-    percentile = serializers.FloatField(source='get_percentile')
     percentage = serializers.FloatField(source='get_percentage')
     sectionalResult = serializers.SerializerMethodField()
+    testAttemptDate = serializers.DateField(format='%b %d, %Y')
     class Meta:
         model = UserTestResult
         exclude = ['student', 'id']
 
     def get_sectionalResult(self, obj):
-        return 'http://localhost:8000/api/results/students/{}/tests/{}/'.format(obj.student.id, obj.test.id)
+        return DOMAIN + 'api/results/students/{}/tests/{}/'.format(obj.student.id, obj.test.id)
 
     def get_test(self, obj):
         # Get test info details and append unit wise tests in
@@ -366,7 +395,7 @@ class StudentSectionResultSerializer(serializers.ModelSerializer):
         exclude = ['id']
 
     def get_questionWiseResponse(self, obj):
-        return 'http://localhost:8000/api/results/students/{}/tests/sections/{}/'.format(obj.student.id, obj.section.id)
+        return DOMAIN + 'api/results/students/{}/tests/sections/{}/'.format(obj.student.id, obj.section.id)
 
 class StudentQuestionResponseSerializer(serializers.ModelSerializer):
     userAnswers = serializers.SerializerMethodField()
@@ -388,6 +417,59 @@ class StudentQuestionResponseSerializer(serializers.ModelSerializer):
             return (-1)*obj.question.marksNegative
         else:
             return 0
+
+# Get result filtered by percentage for each centre
+class CentreWiseResultSerializer(serializers.ModelSerializer):
+    parts = serializers.SerializerMethodField()
+    class Meta:
+        model = Centre
+        fields = ('location', 'parts')
+
+    def get_parts(self, obj):
+        # Get test result objs of this centre
+        centre_id = obj.id
+        testResultObjs = self.context['testResultObjs']
+        testResultObjs = testResultObjs.filter(student__centre__id=centre_id)
+
+        # Get percentage wise test attempts
+        totalMarks = get_object_or_404(Test, pk=self.context['test_id']).totalMarks
+        redAttempts = testResultObjs.filter(marksObtained__lt=(totalMarks/2)).count()
+        yellowAttempts = testResultObjs.filter(marksObtained__gte=(totalMarks/2), marksObtained__lt=(totalMarks*(4/5))).count()
+        greenAttempts = testResultObjs.filter(marksObtained__gte=(totalMarks*(4/5))).count()
+        parts = [
+            {'colour': 'red', 'representation': 'score < 50%', 'attempts': redAttempts, 'mark': redAttempts},
+            {'colour': 'yellow', 'representation': '50% <= score < 80%', 'attempts': yellowAttempts,
+             'mark': redAttempts + yellowAttempts},
+            {'colour': 'green', 'representation': '80% <= score', 'attempts': greenAttempts,
+             'mark': redAttempts + yellowAttempts + greenAttempts},
+        ]
+        return parts
+
+class CentreSpecificStudentResultSerializer(serializers.ModelSerializer):
+    student = NestedStudentSerializer()
+    percentile = serializers.SerializerMethodField()
+    rank = serializers.SerializerMethodField()
+    testAttemptDate = serializers.DateField(format='%b %d, %Y')
+    sectionalResult = serializers.SerializerMethodField()
+    percentage = serializers.FloatField(source='get_percentage')
+    class Meta:
+        model = UserTestResult
+        exclude = ['id']
+
+    def get_percentile(self, obj):
+        context = self.context
+        if context['centre_id'] == 0:
+            return obj.get_percentile(startDate=context['start_date'], endDate=context['end_date'])
+        return obj.get_percentile(startDate=context['start_date'], endDate=context['end_date'], centreID=context['centre_id'])
+
+    def get_rank(self, obj):
+        context = self.context
+        if context['centre_id'] == 0:
+            return obj.get_rank(startDate=context['start_date'], endDate=context['end_date'])
+        return obj.get_rank(startDate=context['start_date'], endDate=context['end_date'], centreID=context['centre_id'])
+
+    def get_sectionalResult(self, obj):
+        return DOMAIN + 'api/results/students/{}/tests/{}/'.format(obj.student.id, obj.test.id)
 
 # Currently being used in complete profile view
 class StudentSerializer(serializers.ModelSerializer):

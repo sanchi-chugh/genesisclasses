@@ -571,20 +571,47 @@ class UserTestResult(models.Model):
     correct = models.IntegerField(default=0)    # Number of questions correctly answered
     unattempted = models.IntegerField(default=0)    # Number of questions unattempted
     incorrect = models.IntegerField(default=0)    # Number of questions incorrectly answered
+    testAttemptDate = models.DateField(default=timezone.now)    # Date when student attempted this test
 
-    def get_rank(self):
-		# Rank of a student = (number of users having marks greater than this user) + 1
-        aggregate = UserTestResult.objects.filter(
-            test = self.test, marksObtained__gt=self.marksObtained).aggregate(rank=Count('marksObtained'))
-        return aggregate['rank'] + 1
+    # Find relative rank of the student in the specified time frame
+    def get_rank(self, startDate=None, endDate=None, centreID=None):
+		# Rank = (number of test results having marks greater than my result) + 1
+        testResultsAhead = UserTestResult.objects.filter(test = self.test, marksObtained__gt=self.marksObtained)
+        testResultsEqual = UserTestResult.objects.filter(test = self.test, marksObtained=self.marksObtained)
+        if startDate:
+            testResultsAhead = testResultsAhead.filter(testAttemptDate__gte=startDate)
+            testResultsEqual = testResultsEqual.filter(testAttemptDate__gte=startDate)
+        if endDate:
+            testResultsAhead = testResultsAhead.filter(testAttemptDate__lte=endDate)
+            testResultsEqual = testResultsEqual.filter(testAttemptDate__lte=endDate)
+        if centreID:
+            testResultsAhead = testResultsAhead.filter(student__centre__id=centreID)
+            testResultsEqual = testResultsEqual.filter(student__centre__id=centreID)
+        aggregate = testResultsAhead.aggregate(rank=Count('marksObtained'))
+        # If more than one person has the same rank, arrange them in increasing order of their username
+        testResultsEqual = testResultsEqual.order_by('student__user__username')
+        return aggregate['rank'] + list(testResultsEqual).index(self) + 1
 
-    def get_percentile(self):
-        # percentile = (number of people behind me)/(total number of people who attempted test)*100
-        studentsBehind = UserTestResult.objects.filter(test=self.test, marksObtained__lt=self.marksObtained).count()
-        totalStudents = UserTestResult.objects.filter(test=self.test).count()
-        percentile = (studentsBehind/totalStudents)*100
+    # Find relative percentile of the student in the specified time frame
+    def get_percentile(self, startDate=None, endDate=None, centreID=None):
+        # percentile = (number of test results behind me)/(total test results)*100
+        testResultsBehind = UserTestResult.objects.filter(test=self.test, marksObtained__lt=self.marksObtained)
+        totalResults = UserTestResult.objects.filter(test=self.test)
+        if startDate:
+            testResultsBehind = testResultsBehind.filter(testAttemptDate__gte=startDate)
+            totalResults = totalResults.filter(testAttemptDate__gte=startDate)
+        if endDate:
+            testResultsBehind = testResultsBehind.filter(testAttemptDate__lte=endDate)
+            totalResults = totalResults.filter(testAttemptDate__lte=endDate)
+        if centreID:
+            testResultsBehind = testResultsBehind.filter(student__centre__id=centreID)
+            totalResults = totalResults.filter(student__centre__id=centreID)
+        testResultsBehind = testResultsBehind.count()
+        totalResults = totalResults.count()
+        percentile = (testResultsBehind/totalResults)*100
         return round(percentile, 2)
 
+    # Find absolute percentage of the student's test result
     def get_percentage(self):
         # percentage = (getMyMarks/getTotalMarks)*100
         try:

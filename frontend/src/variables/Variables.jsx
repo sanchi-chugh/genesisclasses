@@ -4,7 +4,7 @@
 // //
 //
 var defaultWidth =
-  window.screen.width > 768 ? window.screen.width * 1 / 3 : window.screen.width;
+  window.screen.width > 768 ? window.screen.width * 1 / 4.5 : window.screen.width;
 
 var style = {
   Wrapper: {},
@@ -150,11 +150,12 @@ var style = {
 
   MessageWrapper: {
     DefaultStyle: {
-      marginLeft: "55px",
-      marginRight: "30px",
+      // marginLeft: "55px",
+      // marginRight: "30px",
       padding: "0 12px 0 0",
       color: "#FFFFFF",
-      maxWidthwidth: "89%"
+      width:'auto',
+      maxWidthwidth: "50%"
     }
   },
 

@@ -84,12 +84,19 @@ TEMPLATES = [
     },
 ]
 
+# Configure webpack
 WEBPACK_LOADER = {
     'DEFAULT': {
         'BUNDLE_DIR_NAME': 'bundles/',
-        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.dev.json'),
     }
 }
+
+# Change to prod.json when app is deployed
+if DEPLOYED:
+    WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = os.path.join(BASE_DIR, 'webpack-stats.prod.json')
+else:
+    WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = os.path.join(BASE_DIR, 'webpack-stats.dev.json')
+
 
 WSGI_APPLICATION = 'test_series.wsgi.application'
 
@@ -175,6 +182,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATICFILES_DIRS = [
     os.path.join(PROJECT_ROOT, 'static'),
 ]
+
+# Add assets folder created by npm run build, when DEPLOYED
+if DEPLOYED:
+    STATICFILES_DIRS += os.path.join(BASE_DIR, 'assets')
 
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/

@@ -36,3 +36,25 @@
 3. Visit localhost:8000/home/ on browser
    - Login using super admin credentials (for viewing admin dashboard).
    - Login using student credentials (for viewing student dashboard).
+
+
+## Deployment of Django + React App
+
+### Initial setup on server
+1. Deploy django app
+   - Create virtual env and active it
+   - Install python packages in venv by running pip install -r requirements
+   - Configure apache, follow https://www.digitalocean.com/community/tutorials/how-to-serve-django-applications-with-apache-and-mod_wsgi-on-ubuntu-14-04
+2. Check if the django app is running smoothly
+   - Open http://PublicIP/admin/ and see if the admin page is loading smoothly
+   - If css does not load on page, remove /static settings from wsgi.py file.
+3. Turn on production settings
+   - sudo nano test_series/settings.py, and turn DEPLOYED = True
+4. Deploy React App
+   - Install node and npm globally
+   - cd frontend
+   - Install node_modules by running npm install
+   - Make production build by running npm run build (this will create an assets folder having bundles)
+   - Restart apache2 service, sudo service apache2 restart
+5. Read integration of react with django using django-webpack-loader
+   - https://www.techiediaries.com/django-webpack-react/

@@ -85,17 +85,20 @@ TEMPLATES = [
 ]
 
 # Configure webpack
-WEBPACK_LOADER = {
-    'DEFAULT': {
-        'BUNDLE_DIR_NAME': 'bundles/',
-    }
-}
-
-# Change to prod.json when app is deployed
 if DEPLOYED:
-    WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = os.path.join(BASE_DIR, 'webpack-stats.prod.json')
+    WEBPACK_LOADER = {
+        'DEFAULT': {
+            'BUNDLE_DIR_NAME': 'bundles/',
+            'STATS_FILE': 'webpack-stats.prod.json'
+        }
+    }
 else:
-    WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = os.path.join(BASE_DIR, 'webpack-stats.dev.json')
+    WEBPACK_LOADER = {
+        'DEFAULT': {
+            'BUNDLE_DIR_NAME': 'bundles/',
+            'STATS_FILE': 'webpack-stats.dev.json'
+        }
+    }
 
 
 WSGI_APPLICATION = 'test_series.wsgi.application'
@@ -179,9 +182,16 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Extra places for collectstatic to find static files.
-STATICFILES_DIRS = [
-    os.path.join(PROJECT_ROOT, 'static'),
-]
+if DEPLOYED:
+    # Add assets folder created by npm run build, when DEPLOYED
+    STATICFILES_DIRS = [
+        os.path.join(PROJECT_ROOT, 'static'),
+        os.path.join(BASE_DIR, 'assets')
+    ]
+else:
+    STATICFILES_DIRS = [
+        os.path.join(PROJECT_ROOT, 'static')
+    ]
 
 # Add assets folder created by npm run build, when DEPLOYED
 if DEPLOYED:

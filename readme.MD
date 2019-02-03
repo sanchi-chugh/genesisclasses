@@ -1,4 +1,4 @@
-## Website for genesis classes.  
+## Website for genesis classes
   
 ### Installation
 1. Create a virtual environment (python 3).  
@@ -42,7 +42,7 @@
 
 ### Initial setup on server
 1. Deploy django app
-   - Create virtual env and active it
+   - Create virtual env and activate it
    - Install python packages in venv by running pip install -r requirements
    - Configure apache, follow https://www.digitalocean.com/community/tutorials/how-to-serve-django-applications-with-apache-and-mod_wsgi-on-ubuntu-14-04
 2. Check if the django app is running smoothly
@@ -52,9 +52,31 @@
    - sudo nano test_series/settings.py, and turn DEPLOYED = True
 4. Deploy React App
    - Install node and npm globally
-   - cd frontend
    - Install node_modules by running npm install
+   - cd frontend
+   - Again do npm install
    - Make production build by running npm run build (this will create an assets folder having bundles)
    - Restart apache2 service, sudo service apache2 restart
 5. Read integration of react with django using django-webpack-loader
    - https://www.techiediaries.com/django-webpack-react/
+   - Production changes are already done in test_series/settings.py
+6. Turn on WSGIPassAuthorization in /etc/apache2/apache2.conf
+   - sudo nano /etc/apache2/apache2.conf
+   - Add WSGIPassAuthorization on at the end of apache2.conf file (Otherwise authorization header will be stripped out by mod_wsgi)
+7. At the end do sudo service apache2 restart
+
+### Make website live
+1. Stash any modified changes
+   - sudo git stash
+2. Pull the changes
+   - cd genesisclasses/
+   - git pull origin master
+3. Changes to django
+   - Activate environment
+   - Migrate using python manage.py migrate
+4. Changes to React
+   - Install new node_modules using npm install
+   - cd frontend
+   - Again do npm install
+   - npm run build to get new build in assets folder
+5. At the end do sudo service apache2 restart

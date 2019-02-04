@@ -193,10 +193,6 @@ else:
         os.path.join(PROJECT_ROOT, 'static')
     ]
 
-# Add assets folder created by npm run build, when DEPLOYED
-if DEPLOYED:
-    STATICFILES_DIRS += os.path.join(BASE_DIR, 'assets')
-
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

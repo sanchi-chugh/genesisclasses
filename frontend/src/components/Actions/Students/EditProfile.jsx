@@ -9,6 +9,7 @@ import {
 } from "react-bootstrap";
 
 import axios from 'axios';
+import moment from 'moment';
 
 import { Card } from "../../../components/Card/Card.jsx";
 import { FormInputs } from "../../../components/FormInputs/FormInputs.jsx";
@@ -17,6 +18,7 @@ import Button from "../../../components/CustomButton/CustomButton.jsx";
 import { Checkbox, Menu, Dropdown, Icon} from 'antd';
 
 import '../../../../node_modules/antd/dist/antd.css'; 
+import { LinearProgress } from "@material-ui/core";
 
 class AddStudents extends Component {
 
@@ -24,8 +26,6 @@ class AddStudents extends Component {
     super();
     this.state = {
       centres:[],
-      centreName:'Select Centre',
-      centreId:'',
       preview:'',
       courses:[],
       formData:{
@@ -41,13 +41,15 @@ class AddStudents extends Component {
         city:'',
         state:'',
         pinCode:'',
-        image:'',
+        image:null,
         file:null,
         course:[],
-        clear:false
+        clear:false,
+        centreName:'Select Centre',
+        centreId:''
       },
-      addingStudent:false,
-      studentAdded:false
+      updatingStudent:false,
+      studentUpdated:false
     };
   }
 
@@ -81,23 +83,24 @@ class AddStudents extends Component {
 
   setOldData(){
     this.setState({
-      // centreId:this.props.location.data.centre.id,
-      // centreName:this.props.location.data.centre.location,
+      preview:this.props.location.data.image,
       formData:{
         ...this.state.formData,
         first_name:this.props.location.data.first_name,
         last_name:this.props.location.data.last_name,
         email:this.props.location.data.email,
         contact_number:this.props.location.data.contact_number,
-        endAccessDate:this.props.location.data.endAccessDate,
+        centreId:this.props.location.data.centre.id,
+        centreName:this.props.location.data.centre.location,
+        endAccessDate:moment(new Date(this.props.location.data.endAccessDate)).format("YYYY-MM-DD"),
         father_name:this.props.location.data.father_name,
         gender:this.props.location.data.gender,
-        dateOfBirth:this.props.location.data.dateOfBirth,
+        dateOfBirth:this.props.location.data.dateOfBirth === null ? null : moment(new Date(this.props.location.data.dateOfBirth)).format("YYYY-MM-DD"),
         address:this.props.location.data.address,
         city:this.props.location.data.city,
         state:this.props.location.data.state,
         pinCode:this.props.location.data.pinCode,
-        image:this.props.location.data.file,
+        image:this.props.location.data.image,
         file:null,
         course:this.props.location.data.course.map(item=>{
           return item.id
@@ -106,9 +109,9 @@ class AddStudents extends Component {
     })
   }
 
-  handleAdd(e){
+  handleEdit(e){
     e.preventDefault();
-    this.setState({ addingStudent: true }, () => {
+    this.setState({ updatingStudent: true }, () => {
       var formData = new FormData();
       formData.append('first_name',this.state.formData.first_name)
       formData.append('last_name',this.state.formData.last_name)
@@ -116,7 +119,7 @@ class AddStudents extends Component {
       formData.append('email',this.state.formData.email)
       formData.append('endAccessDate',this.state.formData.endAccessDate)
       formData.append('course',this.state.formData.course.join(','))
-      formData.append('centre',this.state.centreId)
+      formData.append('centre',this.state.formData.centreId)
       formData.append('father_name',this.state.formData.father_name)
       formData.append('gender',this.state.formData.gender)
       formData.append('dateOfBirth',this.state.formData.dateOfBirth)
@@ -124,24 +127,29 @@ class AddStudents extends Component {
       formData.append('city',this.state.formData.city)
       formData.append('state',this.state.formData.state)
       formData.append('pinCode',this.state.formData.pinCode)
-      console.log(formData)
-      if(this.state.formData.file !== null){
+      if(this.state.formData.clear){
+        formData.append('image','')
+      }else if(this.state.formData.file !== null){
         formData.append('image',this.state.formData.file,this.state.formData.file.name)
       }else{
         formData.append('image','')
       }
-      axios.post('/api/users/students/add/', formData, {
+      axios.patch(`/api/users/students/edit/${this.props.location.data.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState({ addingStudent: false, studentAdded:true }))
-      .catch((err) => this.setState({ addingStudent: false }, () => console.log(err)))
+      .then((res) => this.setState(this.props.history.goBack(),{ updatingStudent: false, studentUpdated:true },this.props.handleClick('tr','Added Successfully')))
+      .catch((err) => this.setState({ updatingStudent: false }, () => console.log(err)))
     });
   }
 
   handleSelect(item){
-    this.setState({centreName:item.location, centreId:item.id})
+    this.setState({ formData:{
+      ...this.state.formData,
+      centreName:item.location, 
+      centreId:item.id
+    }})
   }
   
   handleFormDataChange(e) {
@@ -167,9 +175,14 @@ class AddStudents extends Component {
           preview:URL.createObjectURL(e.target.files[0]),
           formData: {
           ...this.state.formData,
-          file : file
+          file : file,
+          image:URL.createObjectURL(e.target.files[0])
       }});
       }
+    }else if(e.target.name==='clear'){
+      this.setState({ 
+        clear: !e.target.checked
+      });
     }else{
       this.setState({ formData: {
         ...this.state.formData,
@@ -200,7 +213,15 @@ class AddStudents extends Component {
               <Card
                 title="Edit Profile"
                 content={
-                  <form onSubmit={(event)=>this.handleAdd(event)}>
+                  <form onSubmit={(event)=>this.handleEdit(event)}>
+                    <LinearProgress
+                        style={
+                            this.state.updatingStudent ? 
+                            {visibility: 'visible'} :
+                            {visibility: 'hidden'}
+                            }
+                        color="primary"
+                        />
                     <FormInputs
                       ncols={["col-md-6", "col-md-6"]}
                       proprieties={[
@@ -261,7 +282,7 @@ class AddStudents extends Component {
                         <div>
                         <Dropdown overlay={menu}>
                             <a className="ant-dropdown-link" style={{marginLeft:8}}>
-                                {this.state.centreName} 
+                                {this.state.formData.centreName} 
                             <Icon type="down" />
                             </a>
                         </Dropdown>
@@ -366,18 +387,34 @@ class AddStudents extends Component {
                         }
                       ]}
                     />
-                    <FormInputs
-                      ncols={["col-md-12"]}
-                      proprieties={[
-                        {
-                          label: "Profile Image",
-                          type: "file",
-                          bsClass: "form-control",
-                          name:'image',
-                          onChange:this.handleFormDataChange.bind(this)
+                    <ControlLabel>IMAGE</ControlLabel><br/>
+                        {   this.state.formData.image === null ? 
+                              <Col  md={4}>
+                                  <p>No Image Available</p>
+                              </Col>:
+                            <Row md={12}>
+                              <Col xs={4}>
+                                  <a href={this.state.formData.image} target="_blank">{this.state.formData.image.split('/')[4]}</a> 
+                              </Col>
+                              <Col xs={4}>
+                                  <Checkbox onChange={this.handleFormDataChange.bind(this)} name="clear" >CLEAR</Checkbox><br/>
+                              </Col>
+                            </Row>
                         }
-                      ]}
-                    />
+                      <FormControl
+                          type="file"
+                          placeholder="Image"
+                          name='image'
+                          onChange={this.handleFormDataChange.bind(this)}
+                      /> <br/>
+                      <LinearProgress
+                        style={
+                            this.state.updatingStudent ? 
+                            {visibility: 'visible'} :
+                            {visibility: 'hidden'}
+                            }
+                        color="primary"
+                        />
                     <Button bsStyle="success" pullRight fill type="submit">
                       EDIT PROFILE
                     </Button>
@@ -389,7 +426,7 @@ class AddStudents extends Component {
             <Col md={4}>
               <UserCard
                 bgImage="https://ununsplash.imgix.net/photo-1431578500526-4d9613015464?fit=crop&fm=jpg&h=300&q=75&w=400"
-                avatar={this.state.formData.file === null ? "https://scc.rhul.ac.uk/files/2018/06/placeholder.png" : this.state.preview}
+                avatar={this.state.formData.file === null && (this.state.formData.image === null || this.state.formData.image === "") ? "https://scc.rhul.ac.uk/files/2018/06/placeholder.png" : this.state.preview}
                 name={this.state.formData.first_name + ' ' + this.state.formData.last_name}
                 userName={this.state.formData.email}
               />

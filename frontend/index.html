@@ -39,5 +39,19 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   <script type="text/javascript" src="http://localhost:3000/static/js/bundle.js"></script>
+  <script>
+    Userback = window.Userback || {};
+    Userback.access_token = '4315|5823|gNEVE7Kkx4eap6ym0oGR1jOEz2U1ce4L8o5tHhfwAxPcmaba40';
+
+    (function(id) {
+        if (document.getElementById(id)) {return;}
+        var s = document.createElement('script');
+        s.id = id;
+        s.async = 1;
+        s.src = 'https://static.userback.io/widget/v1.js';
+        var parent_node = document.head || document.body;
+        parent_node.appendChild(s);
+    })('userback-sdk');
+  </script>
 </body>
 </html>

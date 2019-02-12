@@ -314,11 +314,11 @@ class Parser():
                         optionBufferFlushed = False
                         if optionCount == 2:
                             test['sections'][sectionCount]['questions'][quesCount]['options'] = []
-                            test['sections'][sectionCount]['questions'][quesCount]['options'].append({'option':optionBufferText})
+                            test['sections'][sectionCount]['questions'][quesCount]['options'].append(optionBufferText)
                             optionBufferText = ''
 
                         elif optionCount > 2:
-                            test['sections'][sectionCount]['questions'][quesCount]['options'].append({'option':optionBufferText})
+                            test['sections'][sectionCount]['questions'][quesCount]['options'].append(optionBufferText)
                             optionBufferText = ''
 
                         isQuestion, isOption, isCorrectAnswer, isExplanation, isMarks, isNegative, isPassage, isQuestionType = (
@@ -416,14 +416,14 @@ class Parser():
                         questionBufferText = ''
                         test['sections'][sectionCount]['questions'][quesCount]['options'] = []
                         # Option not provided Case:
-                        test['sections'][sectionCount]['questions'][quesCount]['options'].append({"option":"1"})
-                        test['sections'][sectionCount]['questions'][quesCount]['options'].append({"option":"2"})
-                        test['sections'][sectionCount]['questions'][quesCount]['options'].append({"option":"3"})
-                        test['sections'][sectionCount]['questions'][quesCount]['options'].append({"option":"4"})
+                        test['sections'][sectionCount]['questions'][quesCount]['options'].append("1")
+                        test['sections'][sectionCount]['questions'][quesCount]['options'].append("2")
+                        test['sections'][sectionCount]['questions'][quesCount]['options'].append("3")
+                        test['sections'][sectionCount]['questions'][quesCount]['options'].append("4")
                         optionBufferFlushed = True
                     elif optionBufferFlushed == False:
                         optionBufferFlushed = True
-                        test['sections'][sectionCount]['questions'][quesCount]['options'].append({'option': optionBufferText})
+                        test['sections'][sectionCount]['questions'][quesCount]['options'].append(optionBufferText)
                         optionBufferText = ''
                     if len(line) and questionTypeBufferFlushed == False:
                         for regexp in regexps['questionType']:
@@ -611,8 +611,8 @@ class Parser():
                             marksFloat = float(marksBufferText)
                             test['sections'][sectionCount]['questions'][quesCount]['marks'] = marksFloat
                         except ValueError:
-                            message_arr.append('Marks error encountered at ' + str(totalQuesCount) +
-                                'Marks must be an integral or decimal value, not string.')
+                            message_arr.append('Marks error encountered at ' + str(totalQuesCount) + '.' +
+                                ' Marks must be an integral or decimal value, not string.')
                             test['sections'][sectionCount]['questions'][quesCount]['marks'] = ''
                         marksBufferText = ''
                     if len(line) and negativeBufferFlushed == False:
@@ -704,20 +704,20 @@ class Parser():
             return {
                     "status" : "error",
                     "message" : [msg,],
-                    "test":test
-                    }
+                    "test": test
+                }
 
         if len(message_arr) > 0:
             # If doc format is incorrect, return error msgs
             return {
                 "status" : "error",
                 "message" : message_arr,
-                "test":test
+                "test": test
             }
 
         return {
             "status" : "success",
             "message" : "Document Parsed",
-            "test":test
+            "test": test
         }
 

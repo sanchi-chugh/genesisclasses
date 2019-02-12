@@ -59,15 +59,21 @@ def set_optional_fields(fields_arr, data):
     return dictV
 
 # Helper func to check if the field is bool or not
+# Converts string of ('true', 'false') into boolean value
 def check_for_bool(fields_arr, data):
+    bool_dict = {}
     wrong_fields = []
     for field in fields_arr:
-        if data[field] not in (True, False):
+        if data[field] == 'false':
+            bool_dict[field] = False
+        elif data[field] == 'true':
+            bool_dict[field] = True
+        elif data[field] not in (True, False):
             wrong_fields.append(field)
     if len(wrong_fields) == 0:
-        return (True, '')
-    return (False, Response({"status": "error",
-        "message": "Incorrect field type. Please provide bool value in \"" + '", "'.join(wrong_fields) + "\""},
+        return (bool_dict, True, '')
+    return ({}, False, Response({"status": "error",
+        "message": "Incorrect field type. Please provide bool ('true' or 'false') in \"" + '", "'.join(wrong_fields) + "\""},
         status=HTTP_400_BAD_REQUEST))
 
 # Helper function to check whether date field data is correct or not
@@ -1129,9 +1135,10 @@ def validate_test_info(data, super_admin):
         return {}, False, result
 
     # Return if active is not a bool field
-    valid, result = check_for_bool(['active'], data)
-    if not valid:
-        return result
+    bool_dict, check_pass, result = check_for_bool(['active'], data)
+    if not check_pass:
+        return {}, False, result
+    active = bool_dict['active']
 
     # Make courses array
     courses = data['course'].split(',')
@@ -1215,7 +1222,7 @@ def validate_test_info(data, super_admin):
             status=HTTP_400_BAD_REQUEST))
 
     dictV = {'endtime': endtime, 'startTime': startTime, 'subject': subjectObj, 'unit': unitObj,
-             'courses_arr': courses_arr, 'categories_arr': categories_arr}
+             'courses_arr': courses_arr, 'categories_arr': categories_arr, 'active': active}
     return dictV, True, Response({"status": "successful"})
 
 # Parse questions from doc
@@ -1231,11 +1238,16 @@ class AddTestInfoView(CreateAPIView):
         super_admin = get_super_admin(self.request.user)
         data = request.data
 
+        # Return if title is missing
+        check_pass, result = fields_check(['title'], data)
+        if not check_pass:
+            return result
+
         # Do not form another test with the same title
         testObjs = self.model.objects.filter(title=data['title'], super_admin=super_admin)
         if(len(testObjs) != 0):
             return Response({
-                "status": "error", "message": "Test with the same title already exists"},
+                "status": "error", "message": "Test with the same title already exists."},
                 status=HTTP_400_BAD_REQUEST)
 
         # Validate and get required values
@@ -1264,7 +1276,7 @@ class AddTestInfoView(CreateAPIView):
             subject=dictV['subject'],
             unit=dictV['unit'],
             doc=op_dict['doc'],
-            active=data['active'],
+            active=dictV['active'],
         )
 
         # Add courses and categories to the test
@@ -1298,6 +1310,11 @@ class EditTestInfoView(UpdateAPIView):
         super_admin = get_super_admin(self.request.user)
         data = request.data
 
+        # Return if title is missing
+        check_pass, result = fields_check(['title'], data)
+        if not check_pass:
+            return result
+
         # Do not form another test with the same title
         testObjs = Test.objects.filter(title=data['title'], super_admin=super_admin)
         if len(testObjs) != 0 and testObj not in testObjs:
@@ -1324,7 +1341,7 @@ class EditTestInfoView(UpdateAPIView):
         testObj.startTime = dictV['startTime']
         testObj.subject = dictV['subject']
         testObj.unit = dictV['unit']
-        testObj.active = data['active']
+        testObj.active = dictV['active']
         testObj.save()
 
         return Response({'status': 'successful'})
@@ -1661,7 +1678,7 @@ class EditPassageView(UpdateAPIView):
 def multi_correct_error(question, data):
     if question.questionType in ('passage', 'scq'):
         quesCorrectOptions = Option.objects.filter(question=question, correct=True)
-        if len(quesCorrectOptions) > 0 and data['correct'] == True:
+        if len(quesCorrectOptions) > 0 and data['correct'] in (True, 'true'):
             return (False, Response({'status': 'error', 
                 'message': 'Multiple correct options are NOT allowed in "' + question.questionType + '" type questions.'},
                 status=HTTP_400_BAD_REQUEST))
@@ -1688,19 +1705,20 @@ class AddOptionView(CreateAPIView):
                 'status': 'error', 'message': 'Adding options is NOT allowed in integer type questions.'},
                 status=HTTP_400_BAD_REQUEST)
 
+        # Return if correct is not a bool field or a string ('true', 'false')
+        bool_dict, valid, result = check_for_bool(['correct'], data)
+        if not valid:
+            return result
+        correct = bool_dict['correct']
+
         # Return if correct answers for passage, scq type ques > 1
         valid, result = multi_correct_error(question, data)
         if not valid:
             return result
 
-        # Return if correct is not a bool field
-        valid, result = check_for_bool(['correct'], data)
-        if not valid:
-            return result
-
         self.model.objects.create(
             optionText=data['optionText'],
-            correct=data['correct'],
+            correct=correct,
             question=question,
         )
 
@@ -1725,17 +1743,20 @@ class EditOptionView(UpdateAPIView):
         if not check_pass:
             return result
 
-        # Return if correct is not a bool field
-        valid, result = check_for_bool(['correct'], data)
+        # Return if correct is not a bool field or a string ('true', 'false')
+        bool_dict, valid, result = check_for_bool(['correct'], data)
         if not valid:
             return result
+        correct = bool_dict['correct']
 
         # Return if correct answers for passage, scq type ques > 1
         valid, result = multi_correct_error(option.question, data)
         if not valid:
             return result
 
-        self.partial_update(request, *args, **kwargs)
+        option.optionText = data['optionText']
+        option.correct = correct
+        option.save()
 
         return Response({ "status": "successful" })
 

@@ -541,10 +541,12 @@ class Option(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        # Return error if option is added in integer type question
         if self.question.questionType == 'integer':
+            # Return error if option is added in integer type question
             raise ValidationError('Integer type questions do not require options.')
-        elif self.question.questionType == 'passage':
+        elif (self.question.questionType == 'passage' and self.correct == True and 
+              Option.objects.filter(question=self.question, correct=True)):
+            # Return error if more than one correct option is there in passage type question
             raise ValidationError('Passage type questions can\'t have more than one correct option.')
 
         super().save(*args, **kwargs)

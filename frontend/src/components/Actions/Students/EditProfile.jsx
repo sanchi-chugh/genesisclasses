@@ -315,7 +315,7 @@ class AddStudents extends Component {
                       </Col>
                     </Row>
                     <FormInputs
-                      ncols={["col-md-4", "col-md-4", "col-md-4"]}
+                      ncols={["col-md-4", "col-md-4"]}
                       proprieties={[
                         {
                           label: "Father Name",
@@ -324,15 +324,6 @@ class AddStudents extends Component {
                           placeholder: "Father Name",
                           name:'father_name',
                           value:this.state.formData.father_name,
-                          onChange:this.handleFormDataChange.bind(this)
-                        },
-                        {
-                          label: "Gender",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Gender",
-                          name:'gender',
-                          value:this.state.formData.gender,
                           onChange:this.handleFormDataChange.bind(this)
                         },
                         {
@@ -345,6 +336,22 @@ class AddStudents extends Component {
                           onChange:this.handleFormDataChange.bind(this)
                         }
                       ]}
+                      contents={
+                          <Col md={4}>
+                            <FormGroup>
+                                <ControlLabel>Gender</ControlLabel>
+                                <FormControl 
+                                  componentClass="select" 
+                                  value={this.state.formData.gender} 
+                                  onChange={this.handleFormDataChange.bind(this)} 
+                                  name="gender">
+                                    <option value=''>Choose Gender...</option>
+                                    <option value='male'>Male</option>
+                                    <option value='female'>Female</option>   
+                                </FormControl>  
+                            </FormGroup>
+                          </Col>
+                      }
                     />
                     <FormInputs
                       ncols={["col-md-12"]}

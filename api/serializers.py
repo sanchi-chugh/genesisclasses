@@ -3,6 +3,7 @@ from api.models import *
 from django.utils.timezone import localtime
 from django.shortcuts import get_object_or_404
 from test_series.settings import DOMAIN
+import datetime
 
 # ---------SUPERADMIN VIEW SERIALIZERS-----------
 
@@ -184,7 +185,7 @@ class CentreSerializer(serializers.ModelSerializer):
 class StudentUserSerializer(serializers.ModelSerializer):
     centre = NestedCentreSerializer()
     course = NestedCourseSerializer(many=True)
-    dateOfBirth = serializers.DateField(format='%b %d, %Y')
+    dateOfBirth = serializers.SerializerMethodField()
     endAccessDate = serializers.DateField(format='%b %d, %Y')
     email = serializers.SerializerMethodField()
     viewResults = serializers.SerializerMethodField()
@@ -197,6 +198,22 @@ class StudentUserSerializer(serializers.ModelSerializer):
 
     def get_viewResults(self, obj):
         return DOMAIN + 'api/results/students/' + str(obj.pk) + '/'
+
+    def get_dateOfBirth(self, obj):
+        if self.context['request'].method == 'PUT' and 'dateOfBirth' in self.context['request'].data:
+            # If request is PUT, then accept empty string as null value for date field
+            if self.context['request'].data['dateOfBirth'] == '':
+                obj.dateOfBirth = None
+                obj.save()
+                return obj.dateOfBirth
+            obj.dateOfBirth = self.context['request'].data['dateOfBirth']
+            obj.save()
+            return obj.dateOfBirth
+        # In other requests, do default behaviour
+        dateOfBirth = obj.dateOfBirth
+        if dateOfBirth is None:
+            return None
+        return datetime.datetime.strptime(str(dateOfBirth), '%Y-%m-%d').strftime('%b %d, %Y')
 
 class BulkStudentsSerializer(serializers.ModelSerializer):
     course = serializers.SlugRelatedField(

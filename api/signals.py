@@ -19,6 +19,8 @@ def create_user_profile(sender, instance, **kwargs):
             profile[0].name = instance.username
     elif instance.type_of_user == 'student':
         # Set a default centre, so that creation of obj from django admin dashboard is possible
+        if len(Student.objects.filter(user=instance)):
+            return
         centre = Centre.objects.all().order_by('pk')[0]
         endAccessDate = datetime.date.today() + datetime.timedelta(days=365)
         endAccessDate_str = endAccessDate.strftime('%Y-%m-%d')

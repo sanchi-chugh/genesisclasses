@@ -126,7 +126,7 @@ class AddStudents extends Component {
       if(this.state.formData.dateOfBirth !== null && this.state.formData.dateOfBirth !== '')
         formData.append('dateOfBirth',this.state.formData.dateOfBirth)
       else
-        formData.append('dateOfBirth',null)
+        formData.append('dateOfBirth','')
       formData.append('address',this.state.formData.address)
       formData.append('city',this.state.formData.city)
       formData.append('state',this.state.formData.state)
@@ -136,7 +136,7 @@ class AddStudents extends Component {
       }else if(this.state.formData.file !== null){
         formData.append('image',this.state.formData.file,this.state.formData.file.name)
       }
-      axios.patch(`/api/users/students/edit/${this.props.location.data.id}/`, formData, {
+      axios.put(`/api/users/students/edit/${this.props.location.data.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,
         },

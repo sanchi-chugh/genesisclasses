@@ -20,7 +20,12 @@ export class FormInputs extends Component {
         </div>
       );
     }
-    return <Row>{row}</Row>;
+    return (
+          <Row>
+            {row}
+            {this.props.contents}
+          </Row>
+    );
   }
 }
 

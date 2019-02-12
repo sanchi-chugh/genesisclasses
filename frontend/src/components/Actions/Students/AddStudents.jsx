@@ -5,7 +5,8 @@ import {
   Col,
   FormGroup,
   ControlLabel,
-  FormControl
+  FormControl,
+  Form
 } from "react-bootstrap";
 
 import axios from 'axios';
@@ -263,38 +264,47 @@ class AddStudents extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <FormInputs
-                      ncols={["col-md-4", "col-md-4", "col-md-4"]}
-                      proprieties={[
-                        {
-                          label: "Father Name",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Father Name",
-                          name:'father_name',
-                          value:this.state.formData.father_name,
-                          onChange:this.handleFormDataChange.bind(this)
-                        },
-                        {
-                          label: "Gender",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Gender",
-                          name:'gender',
-                          value:this.state.formData.gender,
-                          onChange:this.handleFormDataChange.bind(this)
-                        },
-                        {
-                          label: "Date Of Birth",
-                          type: "date",
-                          bsClass: "form-control",
-                          placeholder: "Date Of Birth",
-                          name:'dateOfBirth',
-                          value:this.state.formData.dateOfBirth,
-                          onChange:this.handleFormDataChange.bind(this)
+                    <div>
+                      <FormInputs
+                        ncols={["col-md-4", "col-md-4"]}
+                        proprieties={[
+                          {
+                            label: "Father Name",
+                            type: "text",
+                            bsClass: "form-control",
+                            placeholder: "Father Name",
+                            name:'father_name',
+                            value:this.state.formData.father_name,
+                            onChange:this.handleFormDataChange.bind(this)
+                          },
+                          {
+                            label: "Date Of Birth",
+                            type: "date",
+                            bsClass: "form-control",
+                            placeholder: "Date Of Birth",
+                            name:'dateOfBirth',
+                            value:this.state.formData.dateOfBirth,
+                            onChange:this.handleFormDataChange.bind(this)
+                          }
+                        ]}
+                        contents={
+                            <Col md={4}>
+                              <FormGroup>
+                                  <ControlLabel>Gender</ControlLabel>
+                                  <FormControl 
+                                    componentClass="select" 
+                                    value={this.state.formData.gender} 
+                                    onChange={this.handleFormDataChange.bind(this)} 
+                                    name="gender">
+                                      <option value=''>Choose Gender...</option>
+                                      <option value='male'>Male</option>
+                                      <option value='female'>Female</option>   
+                                  </FormControl>  
+                              </FormGroup>
+                            </Col>
                         }
-                      ]}
-                    />
+                      />
+                    </div>
                     <FormInputs
                       ncols={["col-md-12"]}
                       proprieties={[
@@ -326,7 +336,7 @@ class AddStudents extends Component {
                           type: "text",
                           bsClass: "form-control",
                           placeholder: "State",
-                          name:'',
+                          name:'state',
                           value:this.state.formData.state,
                           onChange:this.handleFormDataChange.bind(this)
                         },

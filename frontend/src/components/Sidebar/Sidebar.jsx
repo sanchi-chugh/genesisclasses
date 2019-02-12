@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 import HeaderLinks from "../Header/HeaderLinks.jsx";
 
 import imagine from "../../assets/img/sidebar-3.jpg";
-import logo from "../../assets/img/reactlogo.png";
+import logo from "../../assets/img/logo.png";
 
 import dashboardRoutes from "../../routes/dashboard.jsx";
 
@@ -38,20 +38,7 @@ class Sidebar extends Component {
       >
         <div className="sidebar-background" style={sidebarBackground} />
         <div className="logo">
-          <a
-            href="https://www.creative-tim.com"
-            className="simple-text logo-mini"
-          >
-            <div className="logo-img">
-              <img src={logo} alt="logo_image" />
-            </div>
-          </a>
-          <a
-            href="https://www.creative-tim.com"
-            className="simple-text logo-normal"
-          >
-            Creative Tim
-          </a>
+          <img src={logo} alt="logo_image" style={{width:"100%",maxHeight:"50%"}} />
         </div>
         <div className="sidebar-wrapper">
           <ul className="nav">

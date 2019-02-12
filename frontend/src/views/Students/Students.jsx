@@ -80,13 +80,12 @@ class Students extends Component {
     this.props.history.push('/students/add')
   }
 
-  downloadCSV(obj){
-    const old = this
-    this.props.history.push({pathname:'/students/edit',state:old.state})
-  }
-
   handleEditButton(obj){
     this.props.history.push({pathname:'/students/edit',data:obj})
+  }
+
+  handleViewButton(obj){
+    this.props.history.push({pathname:'/students/info',data:obj})
   }
 
   renderCentres(cell, row, enumObject, rowIndex) {
@@ -126,7 +125,7 @@ class Students extends Component {
       <div>
         <Grid> 
           <Row>
-           <Button bsSize="small" style={{width:'180px'}} bsStyle="primary" onClick={this.downloadCSV.bind(this,row)}>
+           <Button bsSize="small" style={{width:'180px'}} bsStyle="primary" onClick={this.handleViewButton.bind(this,row)}>
             <Glyphicon glyph="list-alt" /> VIEW
            </Button>
           </Row>

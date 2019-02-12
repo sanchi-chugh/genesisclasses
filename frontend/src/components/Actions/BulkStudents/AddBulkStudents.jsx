@@ -81,6 +81,7 @@ class AddBulkStudents extends Component {
                             <FormGroup>
                                 {this.props.courses.map((props)=>{
                                     return(<Checkbox 
+                                                style={{marginLeft:8}}
                                                 inline
                                                 value={props.id}
                                                 name='course'

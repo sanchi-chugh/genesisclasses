@@ -326,7 +326,7 @@ class AddStudents extends Component {
                           type: "text",
                           bsClass: "form-control",
                           placeholder: "State",
-                          name:'',
+                          name:'state',
                           value:this.state.formData.state,
                           onChange:this.handleFormDataChange.bind(this)
                         },

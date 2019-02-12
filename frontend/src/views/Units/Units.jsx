@@ -184,8 +184,8 @@ class Units extends Component {
       formData.append('title',this.state.formData.title)
       formData.append('subject',this.state.formData.subject)
       formData.append('description',this.state.formData.description)
-      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : formData.append('image',this.state.formData.image)
-      axios.put(`/api/units/edit/${this.state.id}/`, formData, {
+      this.state.clear ? formData.append('image','') : (this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : console.log("debug") )
+      axios.patch(`/api/units/edit/${this.state.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },

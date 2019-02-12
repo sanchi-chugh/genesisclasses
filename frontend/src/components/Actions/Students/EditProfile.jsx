@@ -93,14 +93,14 @@ class AddStudents extends Component {
         centreId:this.props.location.data.centre.id,
         centreName:this.props.location.data.centre.location,
         endAccessDate:moment(new Date(this.props.location.data.endAccessDate)).format("YYYY-MM-DD"),
-        father_name:this.props.location.data.father_name,
-        gender:this.props.location.data.gender,
+        father_name:this.props.location.data.father_name === null ? '' : this.props.location.data.father_name,
+        gender:this.props.location.data.gender === null ? '' : this.props.location.data.gender,
         dateOfBirth:this.props.location.data.dateOfBirth === null ? null : moment(new Date(this.props.location.data.dateOfBirth)).format("YYYY-MM-DD"),
-        address:this.props.location.data.address,
-        city:this.props.location.data.city,
-        state:this.props.location.data.state,
-        pinCode:this.props.location.data.pinCode,
-        image:this.props.location.data.image,
+        address:this.props.location.data.address === null ? '' : this.props.location.data.address,
+        city:this.props.location.data.city === null ? '' : this.props.location.data.city,
+        state:this.props.location.data.state === null ? '' : this.props.location.data.state,
+        pinCode:this.props.location.data.pinCode === null ? '' : this.props.location.data.pinCode,
+        image:this.props.location.data.image === null ? '' : this.props.location.data.image,
         file:null,
         course:this.props.location.data.course.map(item=>{
           return item.id
@@ -110,6 +110,7 @@ class AddStudents extends Component {
   }
 
   handleEdit(e){
+    console.log('test'+'as' + this.state.formData.dateOfBirth +'end')
     e.preventDefault();
     this.setState({ updatingStudent: true }, () => {
       var formData = new FormData();
@@ -122,7 +123,10 @@ class AddStudents extends Component {
       formData.append('centre',this.state.formData.centreId)
       formData.append('father_name',this.state.formData.father_name)
       formData.append('gender',this.state.formData.gender)
-      formData.append('dateOfBirth',this.state.formData.dateOfBirth)
+      if(this.state.formData.dateOfBirth !== null && this.state.formData.dateOfBirth !== '')
+        formData.append('dateOfBirth',this.state.formData.dateOfBirth)
+      else
+        formData.append('dateOfBirth',null)
       formData.append('address',this.state.formData.address)
       formData.append('city',this.state.formData.city)
       formData.append('state',this.state.formData.state)
@@ -131,15 +135,13 @@ class AddStudents extends Component {
         formData.append('image','')
       }else if(this.state.formData.file !== null){
         formData.append('image',this.state.formData.file,this.state.formData.file.name)
-      }else{
-        formData.append('image','')
       }
       axios.patch(`/api/users/students/edit/${this.props.location.data.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState(this.props.history.goBack(),{ updatingStudent: false, studentUpdated:true },this.props.handleClick('tr','Added Successfully')))
+      .then((res) => this.setState(this.props.history.goBack(),{ updatingStudent: false, studentUpdated:true },this.props.handleClick('tr','Updated Successfully')))
       .catch((err) => this.setState({ updatingStudent: false }, () => console.log(err)))
     });
   }
@@ -181,7 +183,10 @@ class AddStudents extends Component {
       }
     }else if(e.target.name==='clear'){
       this.setState({ 
-        clear: !e.target.checked
+        formData:{
+          ...this.state.formData,
+          clear: e.target.checked
+        }
       });
     }else{
       this.setState({ formData: {
@@ -372,7 +377,7 @@ class AddStudents extends Component {
                           type: "text",
                           bsClass: "form-control",
                           placeholder: "State",
-                          name:'',
+                          name:'state',
                           value:this.state.formData.state,
                           onChange:this.handleFormDataChange.bind(this)
                         },

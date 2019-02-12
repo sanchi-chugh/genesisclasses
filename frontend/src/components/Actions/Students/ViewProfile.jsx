@@ -3,19 +3,18 @@ import {
   Grid,
   Row,
   Col,
-  FormGroup,
-  ControlLabel,
-  FormControl
+  Badge
 } from "react-bootstrap";
 
 import { Card } from "../../../components/Card/Card.jsx";
-import { FormInputs } from "../../../components/FormInputs/FormInputs.jsx";
 import { UserCard } from "../../../components/UserCard/UserCard.jsx";
-import Button from "../../../components/CustomButton/CustomButton.jsx";
-
-import avatar from "../../../assets/img/faces/face-3.jpg";
 
 class ViewProfile extends Component {
+
+  componentDidMount(){
+    console.log(this.props.location.data)
+  }
+
   render() {
     return (
       <div className="content">
@@ -23,143 +22,55 @@ class ViewProfile extends Component {
           <Row>
             <Col md={8}>
               <Card
-                title="Edit Profile"
+                title="Profile Information"
                 content={
-                  <form>
-                    <FormInputs
-                      ncols={["col-md-5", "col-md-3", "col-md-4"]}
-                      proprieties={[
-                        {
-                          label: "Company (disabled)",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Company",
-                          defaultValue: "Creative Code Inc.",
-                          disabled: true
-                        },
-                        {
-                          label: "Username",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Username",
-                          defaultValue: "michael23"
-                        },
-                        {
-                          label: "Email address",
-                          type: "email",
-                          bsClass: "form-control",
-                          placeholder: "Email"
-                        }
-                      ]}
-                    />
-                    <FormInputs
-                      ncols={["col-md-6", "col-md-6"]}
-                      proprieties={[
-                        {
-                          label: "First name",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "First name",
-                          defaultValue: "Mike"
-                        },
-                        {
-                          label: "Last name",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Last name",
-                          defaultValue: "Andrew"
-                        }
-                      ]}
-                    />
-                    <FormInputs
-                      ncols={["col-md-12"]}
-                      proprieties={[
-                        {
-                          label: "Adress",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Home Adress",
-                          defaultValue:
-                            "Bld Mihail Kogalniceanu, nr. 8 Bl 1, Sc 1, Ap 09"
-                        }
-                      ]}
-                    />
-                    <FormInputs
-                      ncols={["col-md-4", "col-md-4", "col-md-4"]}
-                      proprieties={[
-                        {
-                          label: "City",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "City",
-                          defaultValue: "Mike"
-                        },
-                        {
-                          label: "Country",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Country",
-                          defaultValue: "Andrew"
-                        },
-                        {
-                          label: "Postal Code",
-                          type: "number",
-                          bsClass: "form-control",
-                          placeholder: "ZIP Code"
-                        }
-                      ]}
-                    />
-
-                    <Row>
-                      <Col md={12}>
-                        <FormGroup controlId="formControlsTextarea">
-                          <ControlLabel>About Me</ControlLabel>
-                          <FormControl
-                            rows="5"
-                            componentClass="textarea"
-                            bsClass="form-control"
-                            placeholder="Here can be your description"
-                            defaultValue="Lamborghini Mercy, Your chick she so thirsty, I'm in that two seat Lambo."
-                          />
-                        </FormGroup>
-                      </Col>
+                  <Grid>
+                    <Row xs={8} style={{margin:12}}>
+                      <b><Col md={3}>NAME</Col></b>
+                      <Col md={5}>{this.props.location.data.first_name+' '+this.props.location.data.last_name}</Col>
                     </Row>
-                    <Button bsStyle="info" pullRight fill type="submit">
-                      Update Profile
-                    </Button>
-                    <div className="clearfix" />
-                  </form>
+                    <Row xs={8} style={{margin:12}}>
+                      <b><Col md={3}>EMAIL</Col></b>
+                      <Col md={5}>{this.props.location.data.email}</Col>
+                    </Row>
+                    <Row xs={8} style={{margin:12}}>
+                      <b><Col md={3}>CONTACT NUMBER</Col></b>
+                      <Col md={5}>{this.props.location.data.contact_number}</Col>
+                    </Row>
+                    <Row xs={8} style={{margin:12}}>
+                      <b><Col md={3}>CENTRE</Col></b>
+                      <Col md={5}>{this.props.location.data.centre.location}</Col>
+                    </Row>
+                    <Row xs={8} style={{margin:12}}>
+                      <b><Col md={3}>COURSES</Col></b>
+                      <Col md={5}>{this.props.location.data.course.map(item => {return (<Badge style={{marginRight:2}}>{item.title}</Badge>)})}</Col>
+                    </Row>
+                    <Row xs={8} style={{margin:12}}>
+                      <b><Col md={3}>GENDER</Col></b>
+                      <Col md={5}>{this.props.location.data.gender === null ? '...' : this.props.location.data.gender }</Col>
+                    </Row>
+                    <Row xs={8} style={{margin:12}}>
+                      <b><Col md={3}>FATHER'S NAME</Col></b>
+                      <Col md={5}>{this.props.location.data.father_name === null ? '...' : this.props.location.data.father_name }</Col>
+                    </Row>
+                    <Row xs={8} style={{margin:12}}>
+                      <b><Col md={3}>DATE OF BIRTH</Col></b>
+                      <Col md={5}>{this.props.location.data.dateOfBirth === null ? '...' : this.props.location.data.dateOfBirth }</Col>
+                    </Row>
+                    <Row xs={8} style={{margin:12}}>
+                      <b><Col md={3}>ADDRESS</Col></b>
+                      <Col md={5}>{this.props.location.data.address === null ? '...' : this.props.location.data.address }</Col>
+                    </Row>
+                  </Grid>
                 }
               />
             </Col>
             <Col md={4}>
               <UserCard
                 bgImage="https://ununsplash.imgix.net/photo-1431578500526-4d9613015464?fit=crop&fm=jpg&h=300&q=75&w=400"
-                avatar={avatar}
-                name="Mike Andrew"
-                userName="michael24"
-                description={
-                  <span>
-                    "Lamborghini Mercy
-                    <br />
-                    Your chick she so thirsty
-                    <br />
-                    I'm in that two seat Lambo"
-                  </span>
-                }
-                socials={
-                  <div>
-                    <Button simple>
-                      <i className="fa fa-facebook-square" />
-                    </Button>
-                    <Button simple>
-                      <i className="fa fa-twitter" />
-                    </Button>
-                    <Button simple>
-                      <i className="fa fa-google-plus-square" />
-                    </Button>
-                  </div>
-                }
+                avatar={this.props.location.data.image === null || this.props.location.data.image === "" ? "https://scc.rhul.ac.uk/files/2018/06/placeholder.png" : this.props.location.data.image}
+                name={this.props.location.data.first_name + ' ' + this.props.location.data.last_name}
+                userName={this.props.location.data.email}
               />
             </Col>
           </Row>

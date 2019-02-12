@@ -108,7 +108,7 @@ class Units extends Component {
   }
 
   handleHideEditModal() {
-    this.setState({ show: false, updatingUnit:false, unitUpdated:false, value:''});
+    this.setState({ show: false, updatingUnit:false, unitUpdated:false, value:'',clear:false});
   }
 
   handleHideAddModal() {
@@ -184,8 +184,8 @@ class Units extends Component {
       formData.append('title',this.state.formData.title)
       formData.append('subject',this.state.formData.subject)
       formData.append('description',this.state.formData.description)
-      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : formData.append('image','')
-      axios.put(`/api/units/edit/${this.state.id}/`, formData, {
+      this.state.clear ? formData.append('image','') : (this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : console.log("debug") )
+      axios.patch(`/api/units/edit/${this.state.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
@@ -255,13 +255,13 @@ class Units extends Component {
         let file = e.target.files[0]
         this.setState({ formData: {
           ...this.state.formData,
-          file : file
+          file : file,
       }});
       }
     }
     else if(e.target.name==='clear'){
       this.setState({ 
-        clear: !e.target.checked
+        clear: e.target.checked
       });
     }else{
       this.setState({ formData: {

@@ -13,7 +13,7 @@ export class Card extends Component {
         <div className={"header" + (this.props.hCenter ? " text-center" : "")}>
           <div>
             <Row>
-              <Col md={9}>
+              <Col md={this.props.downloadButton ? 9 : 11}>
                 <h4 className="title">{this.props.title}</h4>
               </Col>
               {this.props.downloadButton ? <Col md={2}>

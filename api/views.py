@@ -16,6 +16,7 @@ from django.core.validators import validate_email
 from django.core.validators import ValidationError
 from test_series.settings import DOMAIN
 from .paginators import *
+from .docparser import *
 import datetime
 import json
 import uuid
@@ -1227,7 +1228,10 @@ def validate_test_info(data, super_admin):
 
 # Parse questions from doc
 def parse_doc_ques(testObj):
-    pass
+    doc_path = testObj.doc.url
+    parser = Parser(doc_path[1:])
+    result = parser.parse()
+    print(result)
 
 # Add info of a test from superadmin dashboard
 class AddTestInfoView(CreateAPIView):

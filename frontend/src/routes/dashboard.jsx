@@ -12,6 +12,7 @@ import Categories from "../views/Categories/Categories";
 import Units from "../views/Units/Units";
 import BulkStudents from "../views/BulkStudents/BulkStudents";
 import Students from "../layouts/Students/Students";
+import Sections from "../views/Sections/Sections";
 
 const dashboardRoutes = [
   {
@@ -25,6 +26,12 @@ const dashboardRoutes = [
     name: "Students",
     icon: "pe-7s-user",
     component: Students
+  },
+  {
+    path: "/section",
+    name: "Sections",
+    icon: "pe-7s-culture",
+    component: Sections
   },
   {
     path: "/course",

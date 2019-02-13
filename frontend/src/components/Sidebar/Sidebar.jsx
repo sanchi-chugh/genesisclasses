@@ -37,8 +37,8 @@ class Sidebar extends Component {
         data-image={imagine}
       >
         <div className="sidebar-background" style={sidebarBackground} />
-        <div className="logo">
-          <img src={logo} alt="logo_image" style={{width:"100%",maxHeight:"50%"}} />
+        <div className="logo" style={{padding:10}}>
+          <img src={logo} alt="logo_image" style={{width:"100%",maxHeight:"50%",borderRadius:20}} />
         </div>
         <div className="sidebar-wrapper">
           <ul className="nav">

@@ -21,6 +21,7 @@ import datetime
 import json
 import uuid
 import os
+import shutil
 
 # Helper func to get super admin of a user
 def get_super_admin(user):
@@ -1351,6 +1352,15 @@ class AddTestInfoView(CreateAPIView):
         op_dict = set_optional_fields(['doc'], data)
 
         if op_dict['doc']:
+            # Only .doc or .docx extensions are allowed
+            file_name = str(op_dict['doc'])
+            extension = file_name.split(".")[-1].lower()
+            print(extension)
+            if extension not in ('doc', 'docx'):
+                return Response({
+                    "status": "error", "message": "Uploaded doc must be of \".doc\" or \".docx\" format."},
+                    status=HTTP_400_BAD_REQUEST)
+
             # If docs directory does not exist, then make one
             directory = 'media/docs/'
             if not os.path.exists(directory):
@@ -1379,18 +1389,35 @@ class AddTestInfoView(CreateAPIView):
         # Parse questions from doc
         if op_dict['doc']:
             try:
+                # Convert from doc to docx as pandoc can only convert a .docx file
+                file_path = testObj.doc.url[1:]
+                if file_path.endswith('.doc'):
+                    subprocess.call(['soffice', '--headless', '--convert-to', 'docx', '--outdir', 'media/docs/', file_path])
+                    os.remove(file_path)    # Remove .doc file
+                    testObj.doc = testObj.doc.name.replace('.doc', '.docx')     # Set testObj doc as .docx file
+                    testObj.save()
+
                 parsed, msg = parse_doc_ques(testObj)
                 if not parsed:
+                    # Remove doc and its html
+                    doc_path = testObj.doc.url[1:]
+                    html_dir_path = doc_path.replace('.docx', '')
+                    shutil.rmtree(html_dir_path)
+                    os.remove(doc_path)
                     testObj.delete()
                     return Response({"status": "error", "message": msg},
                         status=HTTP_400_BAD_REQUEST)
+
             except Exception:
-                msg = """
-                    There was an unexpected error in the doc.
-                    Check if the doc format is correct or contact the developer.
-                """
+                msg = ('There was an unexpected error in the doc.' +
+                       ' Check if the doc format is correct or contact the developer.')
+                # Remove doc and its html
+                doc_path = testObj.doc.url[1:]
+                html_dir_path = doc_path.replace('.docx', '')
+                shutil.rmtree(html_dir_path)
+                os.remove(doc_path)
                 testObj.delete()
-                return Response({"status": "error", "message": msg},
+                return Response({"status": "error", "message": msg.strip()},
                     status=HTTP_400_BAD_REQUEST)
 
         return Response({"status": "successful"})

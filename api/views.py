@@ -16,6 +16,7 @@ from django.core.validators import validate_email
 from django.core.validators import ValidationError
 from test_series.settings import DOMAIN
 from .paginators import *
+from .docparser import *
 import datetime
 import json
 import uuid
@@ -59,15 +60,21 @@ def set_optional_fields(fields_arr, data):
     return dictV
 
 # Helper func to check if the field is bool or not
+# Converts string of ('true', 'false') into boolean value
 def check_for_bool(fields_arr, data):
+    bool_dict = {}
     wrong_fields = []
     for field in fields_arr:
-        if data[field] not in (True, False):
+        if data[field] == 'false':
+            bool_dict[field] = False
+        elif data[field] == 'true':
+            bool_dict[field] = True
+        elif data[field] not in (True, False):
             wrong_fields.append(field)
     if len(wrong_fields) == 0:
-        return (True, '')
-    return (False, Response({"status": "error",
-        "message": "Incorrect field type. Please provide bool value in \"" + '", "'.join(wrong_fields) + "\""},
+        return (bool_dict, True, '')
+    return ({}, False, Response({"status": "error",
+        "message": "Incorrect field type. Please provide bool ('true' or 'false') in \"" + '", "'.join(wrong_fields) + "\""},
         status=HTTP_400_BAD_REQUEST))
 
 # Helper function to check whether date field data is correct or not
@@ -1129,9 +1136,10 @@ def validate_test_info(data, super_admin):
         return {}, False, result
 
     # Return if active is not a bool field
-    valid, result = check_for_bool(['active'], data)
-    if not valid:
-        return result
+    bool_dict, check_pass, result = check_for_bool(['active'], data)
+    if not check_pass:
+        return {}, False, result
+    active = bool_dict['active']
 
     # Make courses array
     courses = data['course'].split(',')
@@ -1215,12 +1223,103 @@ def validate_test_info(data, super_admin):
             status=HTTP_400_BAD_REQUEST))
 
     dictV = {'endtime': endtime, 'startTime': startTime, 'subject': subjectObj, 'unit': unitObj,
-             'courses_arr': courses_arr, 'categories_arr': categories_arr}
+             'courses_arr': courses_arr, 'categories_arr': categories_arr, 'active': active}
     return dictV, True, Response({"status": "successful"})
 
 # Parse questions from doc
 def parse_doc_ques(testObj):
-    pass
+    doc_path = testObj.doc.url
+    parser = Parser(doc_path[1:])
+    result = parser.parse()
+
+    if not result:
+        # Return error if pandoc was unable to convert doc to html
+        # TODO: Figure out the cause of this unexpected error
+        msg = """
+            There was some unexpected error while parsing the doc, please try again.
+            If the same failure occurs repeatedly, then check your internet connection and try again later.
+        """
+        return False, msg
+
+    if result['status'] == 'error':
+        # Return detailed error messages if doc format is incorrect
+        errors = '<br>'.join(result['message'])
+        msg = ('<b>Error parsing doc, the following errors are found -<br><br></b>' + errors +
+            '<br><br><br><br> <b>In case of question not found error, please check if the following rules are followed -</b><br>' +
+            '<br>-> Question is of the format <b>Q21.</b> (i.e. (Q)(ques number)(dot))<br>' +
+            '<br>-> Options in the <b>previous question</b> are provided in manner -</b> <br>1. <br>2. <br>3. <br>4. <br>' +
+            '<br>-> <b>Previous question</b> has the following keys specified: </b>' +
+            '<br>Question Type:<br>Answer:<br>Marks:<br>Negative:<br>Explanation:<br>(Please check that there is colon ":" after every key.)')
+        return False, msg
+
+    test = result['test']
+    sections = test['sections']
+    for section in sections:
+        sectionObj = Section.objects.create(
+            title=section['section'],
+            test=testObj,
+        )
+        # Make passage objs for this section
+        # Indices of passageObjs are same as in original passages array
+        passages = section['passages']
+        passageObjs = []
+        for passageText in passages:
+            passageObj = Passage.objects.create(
+                paragraph=passageText,
+                section=sectionObj,
+            )
+            passageObjs.append(passageObj)
+        # Make question objs for this section
+        questions = section['questions']
+        for ques in questions:
+            questionType = ques['questionType']
+            # Make question objs according to questionType
+            if questionType == 'integer':
+                Question.objects.create(
+                    questionType=questionType,
+                    section=sectionObj,
+                    questionText=ques['question'],
+                    intAnswer=int(ques['answer'][0]),
+                    explanation=ques['explanation'],
+                    marksPositive=ques['marks'],
+                    marksNegative=ques['negative'],
+                )
+            else:
+                if questionType in ('mcq', 'scq'):
+                    quesObj = Question.objects.create(
+                        questionType=questionType,
+                        section=sectionObj,
+                        questionText=ques['question'],
+                        explanation=ques['explanation'],
+                        marksPositive=ques['marks'],
+                        marksNegative=ques['negative'],
+                    )
+                elif questionType == 'passage':
+                    quesObj = Question.objects.create(
+                        questionType=questionType,
+                        section=sectionObj,
+                        questionText=ques['question'],
+                        passage=passageObjs[ques['passage']],   # Get passage obj from index number
+                        explanation=ques['explanation'],
+                        marksPositive=ques['marks'],
+                        marksNegative=ques['negative'],
+                    )
+                # Make option objs if question type is not integer
+                options = ques['options']
+                answers = ques['answer']
+                optionNumber = 1
+                for optionText in options:
+                    # See if option is correct or not
+                    correct = False
+                    if optionNumber in answers:
+                        correct = True
+                    Option.objects.create(
+                        optionText=optionText,
+                        correct=correct,
+                        question=quesObj,
+                    )
+                    optionNumber += 1
+    return True, ''
 
 # Add info of a test from superadmin dashboard
 class AddTestInfoView(CreateAPIView):
@@ -1231,11 +1330,16 @@ class AddTestInfoView(CreateAPIView):
         super_admin = get_super_admin(self.request.user)
         data = request.data
 
+        # Return if title is missing
+        check_pass, result = fields_check(['title'], data)
+        if not check_pass:
+            return result
+
         # Do not form another test with the same title
         testObjs = self.model.objects.filter(title=data['title'], super_admin=super_admin)
         if(len(testObjs) != 0):
             return Response({
-                "status": "error", "message": "Test with the same title already exists"},
+                "status": "error", "message": "Test with the same title already exists."},
                 status=HTTP_400_BAD_REQUEST)
 
         # Validate and get required values
@@ -1264,7 +1368,7 @@ class AddTestInfoView(CreateAPIView):
             subject=dictV['subject'],
             unit=dictV['unit'],
             doc=op_dict['doc'],
-            active=data['active'],
+            active=dictV['active'],
         )
 
         # Add courses and categories to the test
@@ -1275,9 +1379,19 @@ class AddTestInfoView(CreateAPIView):
         # Parse questions from doc
         if op_dict['doc']:
             try:
-                parse_doc_ques(testObj)
+                parsed, msg = parse_doc_ques(testObj)
+                if not parsed:
+                    testObj.delete()
+                    return Response({"status": "error", "message": msg},
+                        status=HTTP_400_BAD_REQUEST)
             except Exception:
+                msg = """
+                    There was an unexpected error in the doc.
+                    Check if the doc format is correct or contact the developer.
+                """
                 testObj.delete()
+                return Response({"status": "error", "message": msg},
+                    status=HTTP_400_BAD_REQUEST)
 
         return Response({"status": "successful"})
 
@@ -1297,6 +1411,11 @@ class EditTestInfoView(UpdateAPIView):
         testObj = get_object_or_404(Test, pk=test_id)
         super_admin = get_super_admin(self.request.user)
         data = request.data
+
+        # Return if title is missing
+        check_pass, result = fields_check(['title'], data)
+        if not check_pass:
+            return result
 
         # Do not form another test with the same title
         testObjs = Test.objects.filter(title=data['title'], super_admin=super_admin)
@@ -1324,7 +1443,7 @@ class EditTestInfoView(UpdateAPIView):
         testObj.startTime = dictV['startTime']
         testObj.subject = dictV['subject']
         testObj.unit = dictV['unit']
-        testObj.active = data['active']
+        testObj.active = dictV['active']
         testObj.save()
 
         return Response({'status': 'successful'})
@@ -1661,7 +1780,7 @@ class EditPassageView(UpdateAPIView):
 def multi_correct_error(question, data):
     if question.questionType in ('passage', 'scq'):
         quesCorrectOptions = Option.objects.filter(question=question, correct=True)
-        if len(quesCorrectOptions) > 0 and data['correct'] == True:
+        if len(quesCorrectOptions) > 0 and data['correct'] in (True, 'true'):
             return (False, Response({'status': 'error', 
                 'message': 'Multiple correct options are NOT allowed in "' + question.questionType + '" type questions.'},
                 status=HTTP_400_BAD_REQUEST))
@@ -1688,19 +1807,20 @@ class AddOptionView(CreateAPIView):
                 'status': 'error', 'message': 'Adding options is NOT allowed in integer type questions.'},
                 status=HTTP_400_BAD_REQUEST)
 
+        # Return if correct is not a bool field or a string ('true', 'false')
+        bool_dict, valid, result = check_for_bool(['correct'], data)
+        if not valid:
+            return result
+        correct = bool_dict['correct']
+
         # Return if correct answers for passage, scq type ques > 1
         valid, result = multi_correct_error(question, data)
         if not valid:
             return result
 
-        # Return if correct is not a bool field
-        valid, result = check_for_bool(['correct'], data)
-        if not valid:
-            return result
-
         self.model.objects.create(
             optionText=data['optionText'],
-            correct=data['correct'],
+            correct=correct,
             question=question,
         )
 
@@ -1725,17 +1845,20 @@ class EditOptionView(UpdateAPIView):
         if not check_pass:
             return result
 
-        # Return if correct is not a bool field
-        valid, result = check_for_bool(['correct'], data)
+        # Return if correct is not a bool field or a string ('true', 'false')
+        bool_dict, valid, result = check_for_bool(['correct'], data)
         if not valid:
             return result
+        correct = bool_dict['correct']
 
         # Return if correct answers for passage, scq type ques > 1
         valid, result = multi_correct_error(option.question, data)
         if not valid:
             return result
 
-        self.partial_update(request, *args, **kwargs)
+        option.optionText = data['optionText']
+        option.correct = correct
+        option.save()
 
         return Response({ "status": "successful" })
 

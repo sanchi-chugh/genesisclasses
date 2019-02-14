@@ -40,8 +40,7 @@ class Parser():
         # Change image urls to absolute urls
         for img in soup.find_all('img'):
             try:
-                imgs = img['src'].replace('.' , '' , 1)
-                img['src'] = settings.DOMAIN + imgs[1:]
+                img['src'] = settings.DOMAIN + img['src'].replace(settings.MEDIA_ROOT, 'media')
             except:
                 continue
 

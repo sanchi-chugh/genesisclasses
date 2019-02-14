@@ -14,9 +14,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.core.validators import validate_email
 from django.core.validators import ValidationError
-from test_series.settings import DOMAIN
+from test_series.settings import DOMAIN, MEDIA_ROOT
 from .paginators import *
 from .docparser import *
+from pathlib import Path
 import datetime
 import json
 import uuid
@@ -358,6 +359,7 @@ class BulkStudentsViewSet(viewsets.ReadOnlyModelViewSet):
 # Add bulk students and save the list in a csv
 class AddBulkStudentsView(CreateAPIView):
     model = BulkStudentsCSV
+    serializer_class = BulkStudentsSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
     def post(self, request, *args, **kwargs):
@@ -393,13 +395,13 @@ class AddBulkStudentsView(CreateAPIView):
                 status=HTTP_400_BAD_REQUEST)
 
         # Make studentCSVs directory if it does not exist
-        directory = 'media/studentCSVs/'
+        directory = MEDIA_ROOT + '/studentCSVs/'
         if not os.path.exists(directory):
             os.makedirs(directory)
 
         # Create a unique filename
         filename = str(uuid.uuid4()) + '.csv'
-        csvFile = open('media/studentCSVs/' + filename, 'w')
+        csvFile = open(directory + filename, 'w')
         csvFile.write('Username,Password\n')
 
         # Create bulk students
@@ -463,7 +465,7 @@ class DownloadStudentDataView(APIView):
         super_admin = get_super_admin(self.request.user)
 
         # Make directory having all csv of student data of an admin
-        directory = 'media/allStudentCSV/'
+        directory = MEDIA_ROOT + '/allStudentCSV/'
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -533,7 +535,7 @@ class DownloadStudentDataView(APIView):
             )
 
         csvFile.close()
-        absolute_path = DOMAIN + path
+        absolute_path = DOMAIN + 'media/allStudentCSV/student_data.csv'
         return Response({'status': 'successful', 'csvFile': absolute_path})
 
 # Shows list of centres (permitted to a superadmin only)
@@ -1229,8 +1231,8 @@ def validate_test_info(data, super_admin):
 
 # Parse questions from doc
 def parse_doc_ques(testObj):
-    doc_path = testObj.doc.url
-    parser = Parser(doc_path[1:])
+    doc_path = MEDIA_ROOT + '/' + testObj.doc.name
+    parser = Parser(doc_path)
     result = parser.parse()
 
     if not result:
@@ -1355,14 +1357,13 @@ class AddTestInfoView(CreateAPIView):
             # Only .doc or .docx extensions are allowed
             file_name = str(op_dict['doc'])
             extension = file_name.split(".")[-1].lower()
-            print(extension)
             if extension not in ('doc', 'docx'):
                 return Response({
                     "status": "error", "message": "Uploaded doc must be of \".doc\" or \".docx\" format."},
                     status=HTTP_400_BAD_REQUEST)
 
             # If docs directory does not exist, then make one
-            directory = 'media/docs/'
+            directory = MEDIA_ROOT + '/docs/'
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
@@ -1390,17 +1391,26 @@ class AddTestInfoView(CreateAPIView):
         if op_dict['doc']:
             try:
                 # Convert from doc to docx as pandoc can only convert a .docx file
-                file_path = testObj.doc.url[1:]
+                file_path = MEDIA_ROOT + '/' + testObj.doc.name
+
                 if file_path.endswith('.doc'):
-                    subprocess.call(['soffice', '--headless', '--convert-to', 'docx', '--outdir', 'media/docs/', file_path])
+                    # If a docx file with the same name already exists, then rename it
+                    if(Path(file_path.replace('.doc', '.docx')).exists()):
+                        file_name_path = file_path.replace('.doc', '')
+                        new_file_path = file_name_path + '_' + str(uuid.uuid4())[:8]
+                        while (Path(new_file_path + '.docx')).exists():
+                            new_file_path = file_name_path + '_' + str(uuid.uuid4())[:8]
+                        os.rename(file_path, new_file_path + '.doc')    # Rename the file
+                        file_path = new_file_path + '.doc'      # Take the renamed file path
+                    subprocess.call(['soffice', '--headless', '--convert-to', 'docx', '--outdir', MEDIA_ROOT + '/docs', file_path])
                     os.remove(file_path)    # Remove .doc file
-                    testObj.doc = testObj.doc.name.replace('.doc', '.docx')     # Set testObj doc as .docx file
+                    testObj.doc = 'docs/' + file_path.split('/')[-1].replace('.doc', '.docx')     # Set testObj doc as new .docx file
                     testObj.save()
 
                 parsed, msg = parse_doc_ques(testObj)
                 if not parsed:
                     # Remove doc and its html
-                    doc_path = testObj.doc.url[1:]
+                    doc_path = MEDIA_ROOT + '/' + testObj.doc.name
                     html_dir_path = doc_path.replace('.docx', '')
                     shutil.rmtree(html_dir_path)
                     os.remove(doc_path)
@@ -1412,7 +1422,7 @@ class AddTestInfoView(CreateAPIView):
                 msg = ('There was an unexpected error in the doc.' +
                        ' Check if the doc format is correct or contact the developer.')
                 # Remove doc and its html
-                doc_path = testObj.doc.url[1:]
+                doc_path = MEDIA_ROOT + '/' + testObj.doc.name
                 html_dir_path = doc_path.replace('.docx', '')
                 shutil.rmtree(html_dir_path)
                 os.remove(doc_path)

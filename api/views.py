@@ -14,7 +14,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.core.validators import validate_email
 from django.core.validators import ValidationError
-from test_series.settings import DOMAIN
+from test_series.settings import DOMAIN, MEDIA_ROOT
 from .paginators import *
 from .docparser import *
 import datetime
@@ -463,7 +463,7 @@ class DownloadStudentDataView(APIView):
         super_admin = get_super_admin(self.request.user)
 
         # Make directory having all csv of student data of an admin
-        directory = 'media/allStudentCSV/'
+        directory = MEDIA_ROOT + '/allStudentCSV/'
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -533,7 +533,7 @@ class DownloadStudentDataView(APIView):
             )
 
         csvFile.close()
-        absolute_path = DOMAIN + path
+        absolute_path = DOMAIN + 'media/allStudentCSV/student_data.csv'
         return Response({'status': 'successful', 'csvFile': absolute_path})
 
 # Shows list of centres (permitted to a superadmin only)

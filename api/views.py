@@ -17,6 +17,7 @@ from django.core.validators import ValidationError
 from test_series.settings import DOMAIN, MEDIA_ROOT
 from .paginators import *
 from .docparser import *
+from pathlib import Path
 import datetime
 import json
 import uuid
@@ -1230,8 +1231,8 @@ def validate_test_info(data, super_admin):
 
 # Parse questions from doc
 def parse_doc_ques(testObj):
-    doc_path = testObj.doc.url
-    parser = Parser(doc_path[1:])
+    doc_path = MEDIA_ROOT + '/' + testObj.doc.name
+    parser = Parser(doc_path)
     result = parser.parse()
 
     if not result:
@@ -1356,14 +1357,13 @@ class AddTestInfoView(CreateAPIView):
             # Only .doc or .docx extensions are allowed
             file_name = str(op_dict['doc'])
             extension = file_name.split(".")[-1].lower()
-            print(extension)
             if extension not in ('doc', 'docx'):
                 return Response({
                     "status": "error", "message": "Uploaded doc must be of \".doc\" or \".docx\" format."},
                     status=HTTP_400_BAD_REQUEST)
 
             # If docs directory does not exist, then make one
-            directory = 'media/docs/'
+            directory = MEDIA_ROOT + '/docs/'
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
@@ -1391,17 +1391,26 @@ class AddTestInfoView(CreateAPIView):
         if op_dict['doc']:
             try:
                 # Convert from doc to docx as pandoc can only convert a .docx file
-                file_path = testObj.doc.url[1:]
+                file_path = MEDIA_ROOT + '/' + testObj.doc.name
+
                 if file_path.endswith('.doc'):
-                    subprocess.call(['soffice', '--headless', '--convert-to', 'docx', '--outdir', 'media/docs/', file_path])
+                    # If a docx file with the same name already exists, then rename it
+                    if(Path(file_path.replace('.doc', '.docx')).exists()):
+                        file_name_path = file_path.replace('.doc', '')
+                        new_file_path = file_name_path + '_' + str(uuid.uuid4())[:8]
+                        while (Path(new_file_path + '.docx')).exists():
+                            new_file_path = file_name_path + '_' + str(uuid.uuid4())[:8]
+                        os.rename(file_path, new_file_path + '.doc')    # Rename the file
+                        file_path = new_file_path + '.doc'      # Take the renamed file path
+                    subprocess.call(['soffice', '--headless', '--convert-to', 'docx', '--outdir', MEDIA_ROOT + '/docs', file_path])
                     os.remove(file_path)    # Remove .doc file
-                    testObj.doc = testObj.doc.name.replace('.doc', '.docx')     # Set testObj doc as .docx file
+                    testObj.doc = 'docs/' + file_path.split('/')[-1].replace('.doc', '.docx')     # Set testObj doc as new .docx file
                     testObj.save()
 
                 parsed, msg = parse_doc_ques(testObj)
                 if not parsed:
                     # Remove doc and its html
-                    doc_path = testObj.doc.url[1:]
+                    doc_path = MEDIA_ROOT + '/' + testObj.doc.name
                     html_dir_path = doc_path.replace('.docx', '')
                     shutil.rmtree(html_dir_path)
                     os.remove(doc_path)
@@ -1413,7 +1422,7 @@ class AddTestInfoView(CreateAPIView):
                 msg = ('There was an unexpected error in the doc.' +
                        ' Check if the doc format is correct or contact the developer.')
                 # Remove doc and its html
-                doc_path = testObj.doc.url[1:]
+                doc_path = MEDIA_ROOT + '/' + testObj.doc.name
                 html_dir_path = doc_path.replace('.docx', '')
                 shutil.rmtree(html_dir_path)
                 os.remove(doc_path)

@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import re
 import os
-import sys
 import subprocess
 from pynliner import Pynliner
 from test_series import settings
@@ -11,38 +10,41 @@ class Parser():
         self.directory = slice_filepath
 
     def get_html(self):
-        self.directory = self.directory.replace('media/', '', 1)
-        path = self.directory.replace('.docx' , '.html')
-        folder_name = path.strip('.html')
-        html_file = folder_name.replace('docs/', '')
-            
-        os.makedirs('./media/' + folder_name)
+        folder_path = self.directory.replace('.docx', '')
+        html_file_name = folder_path.split('/')[-1].replace('docs/', '') + '.html'
 
+        os.makedirs(folder_path)    # Make folder in media/docs/ for html file and media file
+
+        # Extract html and media files in mathjax format
         p = subprocess.Popen(
-            "pandoc --extract-media ./media/{} {}/{} -s --mathjax -o ./media/{}/{}.html".format(
-                folder_name, settings.MEDIA_ROOT, self.directory, folder_name, html_file),
+            "pandoc --extract-media {} {} -s --mathjax -o {}/{}".format(
+                folder_path, self.directory, folder_path, html_file_name),
             stdout=subprocess.PIPE, shell=True)
         (_, _) = p.communicate()
 
-        name = path.replace('docs/', '', 1)
-        for _, _, files in os.walk('media/'):
-            if name in files:
-                return 'media/' + folder_name + '/'  + html_file + '.html'
+        # See if the file exists, if yes, return the files path
+        for _, _, files in os.walk(settings.MEDIA_ROOT):
+            if html_file_name in files:
+                return folder_path + '/' + html_file_name
 
         return None
 
     def parse(self):
-        html_path = self.get_html()
-        if not html_path:
+        html_path = self.get_html()     # Convert docx to html format
+        if not html_path:   # If some error in extracting
             return None
+
         html_doc  = Pynliner().from_string(open(html_path, encoding="utf8").read()).run()
         soup = BeautifulSoup(html_doc, 'html.parser')
+
+        # Change image urls to absolute urls
         for img in soup.find_all('img'):
             try:
                 imgs = img['src'].replace('.' , '' , 1)
                 img['src'] = settings.DOMAIN + imgs[1:]
             except:
                 continue
+
         body = soup.body
         paragraphs = body.contents
 

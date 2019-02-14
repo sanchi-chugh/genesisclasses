@@ -358,6 +358,7 @@ class BulkStudentsViewSet(viewsets.ReadOnlyModelViewSet):
 # Add bulk students and save the list in a csv
 class AddBulkStudentsView(CreateAPIView):
     model = BulkStudentsCSV
+    serializer_class = BulkStudentsSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
     def post(self, request, *args, **kwargs):
@@ -393,13 +394,13 @@ class AddBulkStudentsView(CreateAPIView):
                 status=HTTP_400_BAD_REQUEST)
 
         # Make studentCSVs directory if it does not exist
-        directory = 'media/studentCSVs/'
+        directory = MEDIA_ROOT + '/studentCSVs/'
         if not os.path.exists(directory):
             os.makedirs(directory)
 
         # Create a unique filename
         filename = str(uuid.uuid4()) + '.csv'
-        csvFile = open('media/studentCSVs/' + filename, 'w')
+        csvFile = open(directory + filename, 'w')
         csvFile.write('Username,Password\n')
 
         # Create bulk students

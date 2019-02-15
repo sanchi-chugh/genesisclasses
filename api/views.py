@@ -146,6 +146,77 @@ class DashboardHomeView(APIView):
         dictV['coursePieChartDetails'] = coursesData
         return Response({"status": "successful", "details": dictV})
 
+# Return data for centre pie chart (number of students centre wise)
+class CentrePieChartView(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, *args, **kwargs):
+        params_dict = self.request.GET
+
+        # Get optional parameters
+        op_dict = set_optional_fields(['start_date', 'end_date'], params_dict)
+
+        # Get parameters in a list
+        params_list = []
+        if op_dict['start_date']:
+            params_list.append('start_date')
+        if op_dict['end_date']:
+            params_list.append('end_date')
+
+        # Return if date format is incorrect
+        valid_date, result = check_for_date(params_list, params_dict)
+        if not valid_date:
+            return result
+
+        # Get parameters
+        start_date = None
+        end_date = None
+        if 'start_date' in params_list:
+            start_date = op_dict['start_date']
+        if 'end_date' in params_list:
+            end_date = op_dict['end_date']
+
+        # Get start_date and end_date according to provided data
+        if not start_date and not end_date:
+            # Get start_date and end_date acc to current date
+            curr_date = datetime.datetime.today().strftime('%Y-%m-%d')
+            curr_date_yr = curr_date.split('-')[0]
+            start_date = curr_date_yr + '-01-01'    # Jan 1 of the ongoing yr
+            end_date = curr_date_yr + '-12-31'    # Dec 31 of the ongoing yr
+        elif start_date and not end_date:
+            # If only start_date given, set end_date one year ahead
+            start_date_arr = start_date.split('-')
+            start_date_arr[0] = str(int(start_date_arr[0]) + 1)
+            end_date = '-'.join(start_date_arr)
+        elif not start_date and end_date:
+            # If only end_date given, set start_date one year before start_date
+            end_date_arr = end_date.split('-')
+            end_date_arr[0] = str(int(end_date_arr[0]) - 1)
+            start_date = '-'.join(end_date_arr)
+        else:
+            # If both start date and end date are provided
+            if start_date > end_date:
+                # Error if start_date is greater than end_date
+                return Response({
+                    "status": "error", "message": "End date must come after the Start date."},
+                    status=HTTP_400_BAD_REQUEST)
+        
+        # Get centre pie chart data according to start_date and end_data
+        super_admin = get_super_admin(self.request.user)
+        centreObjs = Centre.objects.filter(super_admin=super_admin)
+        studentCentreData = CentrePieChartSerializer(
+            centreObjs, many=True, context={'start_date': start_date, 'end_date': end_date}).data
+
+        # Add start_date and end_date to result
+        dictV = {}
+        dictV['pieChartData'] = studentCentreData
+        dictV['start_date'] = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%b %d %Y')
+        dictV['end_date'] = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%b %d %Y')
+        dictV['total_students'] = Student.objects.filter(
+            centre__super_admin=super_admin, joiningDate__gte=start_date, joiningDate__lte=end_date).count()
+
+        return Response({"status": "successful", "detail": dictV})
+
 # Shows list of students (permitted to a superadmin only)
 class StudentUserViewSet(viewsets.ReadOnlyModelViewSet):
     model = Student

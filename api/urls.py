@@ -4,6 +4,9 @@ from api.views import *
 
 urlpatterns = [
     # -------------------SUPER ADMIN ENDPOINTS--------------------
+    # Endpoint for dashboard home
+    path('dashboard/home/details/', DashboardHomeView.as_view()),
+
     # Endpoints for centres
     path('centres/', CentreViewSet.as_view({'get': 'list'})),
     path('centres/add/', AddCentreView.as_view()),

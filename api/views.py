@@ -171,12 +171,12 @@ class AddStudentUserView(CreateAPIView):
         # Search for missing fields
         check_pass, result = fields_check([
             'first_name', 'last_name', 'contact_number', 
-            'email', 'centre', 'course', 'endAccessDate'], data)
+            'email', 'centre', 'course', 'endAccessDate', 'joiningDate'], data)
         if not check_pass:
             return result
 
-        # Return if endAccessDate is in incorrect date format
-        valid_date, result = check_for_date(['endAccessDate'], data)
+        # Return if endAccessDate or joiningDate is in incorrect date format
+        valid_date, result = check_for_date(['endAccessDate', 'joiningDate'], data)
         if not valid_date:
             return result
 
@@ -250,6 +250,7 @@ class AddStudentUserView(CreateAPIView):
         # Add info to corresponding student obj
         student, _ = self.model.objects.get_or_create(user=user)
         student.endAccessDate = data['endAccessDate']
+        student.joiningDate = data['joiningDate']
         student.first_name = data['first_name']
         student.last_name = data['last_name']
         student.contact_number = contact_number
@@ -295,12 +296,12 @@ class EditStudentUserView(UpdateAPIView):
         # Search for missing fields
         check_pass, result = fields_check([
             'first_name', 'last_name', 'contact_number', 
-            'email', 'centre', 'course', 'endAccessDate'], data)
+            'email', 'centre', 'course', 'endAccessDate', 'joiningDate'], data)
         if not check_pass:
             return result
 
-        # Return if endAccessDate is in incorrect date format
-        valid_date, result = check_for_date(['endAccessDate'], data)
+        # Return if endAccessDate or joiningDate is in incorrect date format
+        valid_date, result = check_for_date(['endAccessDate', 'joiningDate'], data)
         if not valid_date:
             return result
 
@@ -401,12 +402,12 @@ class AddBulkStudentsView(CreateAPIView):
 
         # Search for missing fields
         check_pass, result = fields_check([
-            'number', 'endAccessDate', 'centre', 'course'], data)
+            'number', 'endAccessDate', 'joiningDate', 'centre', 'course'], data)
         if not check_pass:
             return result
 
-        # Return if endAccessDate is in incorrect date format
-        valid_date, result = check_for_date(['endAccessDate'], data)
+        # Return if endAccessDate or joiningDate is in incorrect date format
+        valid_date, result = check_for_date(['endAccessDate', 'joiningDate'], data)
         if not valid_date:
             return result
 
@@ -467,9 +468,10 @@ class AddBulkStudentsView(CreateAPIView):
             user = User.objects.create(username=username, type_of_user="student")
             user.set_password(password)
 
-            # Set corresponding student courses, centres and endAccessDate
+            # Set corresponding student courses, centres, endAccessDate and joiningDate
             studentObj = Student.objects.get(user=user)
             studentObj.endAccessDate = data['endAccessDate']
+            studentObj.joiningDate = data['joiningDate']
             studentObj.centre = centre
             studentObj.course.set(courses_arr)
             studentObj.save()
@@ -505,7 +507,7 @@ class DownloadStudentDataView(APIView):
 
         path = directory + 'student_data.csv'
         csvFile = open(path, 'w')
-        csvFile.write('Name,Contact Number,email,Centre,Courses Enrolled,App Access End Date,'
+        csvFile.write('Name,Contact Number,email,Centre,Courses Enrolled,Student Joining Date,App Access End Date,'
             'Gender,Date of Birth,Father\'s Name,Address,City,State,Pin Code\n')
 
         centres = Centre.objects.filter(super_admin=super_admin)
@@ -539,6 +541,8 @@ class DownloadStudentDataView(APIView):
                 dateOfBirth = datetime.datetime.strptime(str(student.dateOfBirth), '%Y-%m-%d').strftime('%b %d %Y')
             
             endAccessDate = datetime.datetime.strptime(str(student.endAccessDate), '%Y-%m-%d').strftime('%b %d %Y')
+
+            joiningDate = datetime.datetime.strptime(str(student.joiningDate), '%Y-%m-%d').strftime('%b %d %Y')
             
             father_name = ''
             if student.father_name:
@@ -562,10 +566,10 @@ class DownloadStudentDataView(APIView):
 
             csvFile.write(
                 name.replace(',', '|') + ',' + contact_number.replace(',', '|') + ',' + email.replace(',', '|') +
-                ',' + centre.replace(',', '|')  + ',' + courses.replace(',', '|') + ',' + endAccessDate.replace(',', '|')  +
-                ',' + gender.replace(',', '|') + ',' + dateOfBirth.replace(',', '|')  + ',' + father_name.replace(',', '|')  +
-                ',' + address.replace(',', '|') + ',' + city.replace(',', '|')  + ',' +  state.replace(',', '|')  +
-                ',' + pinCode.replace(',', '|') + '\n'
+                ',' + centre.replace(',', '|')  + ',' + courses.replace(',', '|') + ',' + joiningDate.replace(',', '|') +
+                ',' + endAccessDate.replace(',', '|')  + ',' + gender.replace(',', '|') + ',' + dateOfBirth.replace(',', '|')  +
+                ',' + father_name.replace(',', '|')  + ',' + address.replace(',', '|') + ',' + city.replace(',', '|')  +
+                ',' + state.replace(',', '|')  + ',' + pinCode.replace(',', '|') + '\n'
             )
 
         csvFile.close()

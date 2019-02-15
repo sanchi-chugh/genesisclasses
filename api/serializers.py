@@ -187,6 +187,7 @@ class StudentUserSerializer(serializers.ModelSerializer):
     course = NestedCourseSerializer(many=True)
     dateOfBirth = serializers.SerializerMethodField()
     endAccessDate = serializers.DateField(format='%b %d, %Y')
+    joiningDate = serializers.DateField(format='%b %d, %Y')
     email = serializers.SerializerMethodField()
     viewResults = serializers.SerializerMethodField()
     class Meta:

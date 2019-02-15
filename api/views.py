@@ -327,7 +327,7 @@ class EditStudentUserView(UpdateAPIView):
             studentObj.save()
 
         # Remove previous image from system
-        if studentObj.image:
+        if studentObj.image and 'image' in data:
             os.remove(studentObj.image.file.name)
             studentObj.image = None
             studentObj.save()
@@ -804,7 +804,7 @@ class EditSubjectView(UpdateAPIView):
                     status=HTTP_400_BAD_REQUEST)
 
         # Remove previous image from system
-        if subject.image:
+        if subject.image and 'image' in data:
             os.remove(subject.image.file.name)
             subject.image = None
             subject.save()
@@ -980,7 +980,7 @@ class EditUnitView(UpdateAPIView):
                 status=HTTP_400_BAD_REQUEST)
 
         # Remove previous image from system
-        if unit.image:
+        if unit.image and 'image' in data:
             os.remove(unit.image.file.name)
             unit.image = None
             unit.save()
@@ -1100,7 +1100,7 @@ class EditTestCategoryView(UpdateAPIView):
                 status=HTTP_400_BAD_REQUEST)
 
         # Remove previous image from system
-        if category.image:
+        if category.image and 'image' in data:
             os.remove(category.image.file.name)
             category.image = None
             category.save()
@@ -2181,12 +2181,13 @@ class CentreSpecificTestResultCSVView(APIView):
             }).data
         
         # Make directory having test result csv(s)
-        directory = 'media/studentResultCSVs/'
+        directory = MEDIA_ROOT + '/studentResultCSVs/'
         if not os.path.exists(directory):
             os.makedirs(directory)
 
         # Make csv and return the link of this csv in response
-        path = directory + testObj.title.replace(' ', '_') + '_result_data.csv'
+        csv_name = testObj.title.replace(' ', '_') + '_result_data.csv'
+        path = directory + csv_name
         csvFile = open(path, 'w')
         csvFile.write('Student Name,Contact Number,email,Centre,Courses Enrolled,Rank,'
             'Percentile,Percentage,Total Marks,Marks Obtained,Total Questions,Number of correct answers,'
@@ -2212,7 +2213,7 @@ class CentreSpecificTestResultCSVView(APIView):
                 )
 
         csvFile.close()
-        absolute_path = DOMAIN + path
+        absolute_path = DOMAIN + 'media/studentResultCSVs/' + csv_name
         return Response({'status': 'successful', 'csvFile': absolute_path})
 
 

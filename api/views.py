@@ -112,6 +112,40 @@ class SubjectChoiceView(viewsets.ReadOnlyModelViewSet):
         return self.model.objects.filter(super_admin=super_admin).order_by('title')
 
 # -------------------SUPER ADMIN VIEWS-------------------------
+# Shows details for superadmin dashboard home page
+class DashboardHomeView(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, *args, **kwargs):
+        dictV = {}
+        super_admin = get_super_admin(self.request.user)
+        today_date = datetime.datetime.today().strftime('%Y-%m-%d')
+
+        # Data to be shown on top of dashboard
+        dictV['studentsWithAccess'] = Student.objects.filter(centre__super_admin=super_admin, endAccessDate__gte=today_date).count()
+        dictV['totalStudentsTillDate'] = Student.objects.filter(centre__super_admin=super_admin).count()
+        dictV['activeTests'] = Test.objects.filter(super_admin=super_admin, active=True).count()
+        dictV['inactiveTests'] = Test.objects.filter(super_admin=super_admin, active=False).count()
+        dictV['courses'] = Course.objects.filter(super_admin=super_admin).count()
+        dictV['centres'] = Centre.objects.filter(super_admin=super_admin).count()
+
+        # Course Pie Chart details
+        courseObjs = Course.objects.filter(super_admin=super_admin)
+        coursesData = CoursePieChartSerializer(courseObjs, many=True).data
+
+        # Get total number of subjects in all courses (may include duplicates)
+        totalSubjs = 0
+        for course in coursesData:
+            totalSubjs += len(course['subjects'])
+
+        # Add area to be covered by this course in the pie chart
+        for course in coursesData:
+            course['subjects_number'] = len(course['subjects'])
+            course['percentage_area'] = round((len(course['subjects'])/totalSubjs)*100, 2)
+
+        dictV['coursePieChartDetails'] = coursesData
+        return Response({"status": "successful", "details": dictV})
+
 # Shows list of students (permitted to a superadmin only)
 class StudentUserViewSet(viewsets.ReadOnlyModelViewSet):
     model = Student

@@ -488,6 +488,20 @@ class CentreSpecificStudentResultSerializer(serializers.ModelSerializer):
     def get_sectionalResult(self, obj):
         return DOMAIN + 'api/results/students/{}/tests/{}/'.format(obj.student.id, obj.test.id)
 
+class CoursePieChartSerializer(serializers.ModelSerializer):
+    subjects = serializers.SerializerMethodField()
+    class Meta:
+        model = Course
+        exclude = ['id', 'super_admin']
+
+    def get_subjects(self, obj):
+        course_subjs = []
+        subjects = Subject.objects.filter(super_admin=obj.super_admin)
+        for subj in subjects:
+            if obj in subj.course.all():
+                course_subjs.append(subj.title)
+        return course_subjs
+
 # Currently being used in complete profile view
 class StudentSerializer(serializers.ModelSerializer):
     course = NestedCourseSerializer(read_only=True)

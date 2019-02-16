@@ -111,6 +111,7 @@ class NestedQuestionSerializer(serializers.ModelSerializer):
         correctOptions = Option.objects.filter(question=obj, correct=True).order_by('pk')
         return [option.optionText for option in correctOptions]
 
+# Used as both a nested serializer and a main serializer in TopperDetailsView
 class NestedStudentSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     course = serializers.SlugRelatedField(
@@ -502,6 +503,28 @@ class CoursePieChartSerializer(serializers.ModelSerializer):
             if obj in subj.course.all():
                 course_subjs.append(subj.title)
         return course_subjs
+
+class CentrePieChartSerializer(serializers.ModelSerializer):
+    students_number = serializers.SerializerMethodField()
+    percentage_area = serializers.SerializerMethodField()
+    class Meta:
+        model = Centre
+        exclude = ['id', 'super_admin']
+
+    def get_students_number(self, obj):
+        context = self.context
+        studentObjs = Student.objects.filter(
+            centre=obj, joiningDate__gte=context['start_date'], joiningDate__lte=context['end_date'])
+        return studentObjs.count()
+
+    def get_percentage_area(self, obj):
+        context = self.context
+        all_students = Student.objects.filter(
+            centre__super_admin=obj.super_admin, joiningDate__gte=context['start_date'],
+            joiningDate__lte=context['end_date']).count()
+        centre_students = Student.objects.filter(
+            centre=obj, joiningDate__gte=context['start_date'], joiningDate__lte=context['end_date']).count()
+        return round((centre_students/all_students)*100, 2)
 
 # Currently being used in complete profile view
 class StudentSerializer(serializers.ModelSerializer):

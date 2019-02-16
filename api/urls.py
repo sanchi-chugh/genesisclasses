@@ -7,6 +7,7 @@ urlpatterns = [
     # Endpoint for dashboard home
     path('dashboard/home/details/', DashboardHomeView.as_view()),   # General details + Course Pie Chart
     path('dashboard/home/centrePieChartDetails/', CentrePieChartView.as_view()),   # Centre wise student pie chart
+    path('dashboard/home/topperDetails/', TopperDetailsView.as_view()),     # Overall topper details
 
     # Endpoints for centres
     path('centres/', CentreViewSet.as_view({'get': 'list'})),

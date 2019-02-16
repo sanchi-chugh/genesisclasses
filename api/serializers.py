@@ -111,6 +111,7 @@ class NestedQuestionSerializer(serializers.ModelSerializer):
         correctOptions = Option.objects.filter(question=obj, correct=True).order_by('pk')
         return [option.optionText for option in correctOptions]
 
+# Used as both a nested serializer and a main serializer in TopperDetailsView
 class NestedStudentSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     course = serializers.SlugRelatedField(

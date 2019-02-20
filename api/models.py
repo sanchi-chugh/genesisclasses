@@ -151,12 +151,15 @@ class Student(models.Model):
         upload_to='profileimgs/',
         validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])],
     )
+    # Student under a super_admin = Student under the centre of a super_admin
     centre = models.ForeignKey(
         Centre,
         on_delete=models.CASCADE,
     )
     # Student will be able to access the app till end date only
     endAccessDate = models.DateField()
+    # Student joining date
+    joiningDate = models.DateField(default=timezone.now)
 
     def __str__(self):
         return str(self.first_name)

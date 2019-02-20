@@ -24,7 +24,7 @@ class ViewProfile extends Component {
               <Card
                 title="Profile Information"
                 content={
-                  <Grid>
+                  <Grid fluid>
                     <Row xs={8} style={{margin:12}}>
                       <b><Col md={3}>NAME</Col></b>
                       <Col md={5}>{this.props.location.data.first_name+' '+this.props.location.data.last_name}</Col>

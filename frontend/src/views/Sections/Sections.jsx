@@ -47,7 +47,7 @@ class Sections extends Component {
   }
 
   fetchSections(){
-    axios.get("/api/sections/", {
+    axios.get(`/api/sections/${this.props.match.params.id}`, {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }

@@ -8,24 +8,6 @@ import datetime
 # ---------SUPERADMIN VIEW SERIALIZERS-----------
 
 # -------------- Helper Functions ---------------
-# Helper function to get validity of a question
-def get_validity_of_ques(obj):
-    # Int ques is valid iff it has a valid ans in range 0-9
-    if obj.questionType == 'integer':
-        if obj.intAnswer:
-            return True
-        else:
-            return False
-    
-    # mcq, scq and passage ques are valid iff they have at least one correct option
-    options = Option.objects.filter(question=obj, correct=True)
-    if len(options) == 0:
-        return False
-    # Passage question must have a passage
-    if obj.questionType == 'passage' and not obj.passage:
-        return False
-    return True
-
 # Get absolute question number according to test (ques numbers are saved section wise)
 def get_test_ques_number(obj):
     # Ques number = Questions of all sections (of the same test) before this ques's sec + quesNumber
@@ -315,7 +297,6 @@ class TestSectionSerializer(serializers.ModelSerializer):
 class TestQuestionSerializer(serializers.ModelSerializer):
     questionDetail = serializers.SerializerMethodField()
     passage = serializers.SerializerMethodField()
-    valid = serializers.SerializerMethodField()
     quesNumber = serializers.SerializerMethodField()
     class Meta:
         model = Question
@@ -329,9 +310,6 @@ class TestQuestionSerializer(serializers.ModelSerializer):
             return DOMAIN + 'api/tests/sections/questions/passages/' + str(obj.passage.pk) + '/'
         return None
 
-    def get_valid(self, obj):
-        return get_validity_of_ques(obj)
-
     def get_quesNumber(self, obj):
         return get_test_ques_number(obj)
 
@@ -340,16 +318,12 @@ class TestQuestionDetailsSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field='title',
     )
-    valid = serializers.SerializerMethodField()
     options = NestedOptionSerializer(many=True)
     passage = serializers.SerializerMethodField()
     quesNumber = serializers.SerializerMethodField()
     class Meta:
         model = Question
         exclude = []
-
-    def get_valid(self, obj):
-        return get_validity_of_ques(obj)
     
     def get_passage(self, obj):
         if obj.passage and obj.questionType == 'passage':

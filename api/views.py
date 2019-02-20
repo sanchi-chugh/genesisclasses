@@ -1527,6 +1527,7 @@ def parse_doc_ques(testObj):
                     explanation=ques['explanation'],
                     marksPositive=ques['marks'],
                     marksNegative=ques['negative'],
+                    valid=True,     # Integer ques is valid as it does not require options
                 )
             else:
                 if questionType in ('mcq', 'scq'):
@@ -1721,6 +1722,35 @@ class EditTestInfoView(UpdateAPIView):
         testObj.startTime = dictV['startTime']
         testObj.subject = dictV['subject']
         testObj.unit = dictV['unit']
+        testObj.save()
+
+        # Make sure test is meaningful for the student before making it active
+        error_msg = "Therefore, test remains INACTIVE. Rest changes are saved."
+        if dictV['active']:
+            # Error if the test does not have any sections
+            sectionObjs = Section.objects.filter(test=testObj)
+            if not sectionObjs.count():
+                return Response({
+                    "status": "error", "message": "There are no sections present in this test. " + error_msg},
+                    status=HTTP_400_BAD_REQUEST)
+  
+            for section in sectionObjs:
+                # Error if any section is empty
+                questionObjs = Question.objects.filter(section=section)
+                if not questionObjs.count():
+                    return Response({"status": "error",
+                        "message": ("No questions are present in section number " + str(section.sectionNumber) +
+                                    " of this test. " + error_msg)},
+                        status=HTTP_400_BAD_REQUEST)
+
+                # Error if there is any invalid question in the test
+                for ques in questionObjs:
+                    if not ques.valid:
+                        return Response({"status": "error", "message": (
+                            "Question number " + str(ques.quesNumber) + " of section number " + str(section.sectionNumber) +
+                            " of this test is INVALID. Please correct it, then only this test can become active. " + error_msg
+                            )}, status=HTTP_400_BAD_REQUEST)
+
         testObj.active = dictV['active']
         testObj.save()
 
@@ -1966,6 +1996,7 @@ class AddQuestionDetailsView(CreateAPIView):
                 explanation=op_dict['explanation'],
                 marksPositive=marksPositive,
                 marksNegative=marksNegative,
+                valid=True,     # Integer ques is valid as it does not require options
             )
         elif questionType == 'passage':
             passage_id = data['passage']

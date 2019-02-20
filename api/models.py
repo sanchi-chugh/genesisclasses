@@ -10,6 +10,7 @@ from django.core.validators import (
 )
 import datetime
 
+# -------------- Helper Functions ------------------
 # If more than one correct ans, set ques type as mcq
 def set_mcq_scq(questionObj):
     if questionObj.questionType not in ('mcq', 'scq'):
@@ -23,6 +24,46 @@ def set_mcq_scq(questionObj):
         questionObj.questionType = 'mcq'
     return questionObj
 
+# Set validity of a question
+def set_validity_of_ques(questionObj):
+    valid = True
+
+    # mcq, scq and passage ques are valid iff they have at least one correct option
+    options = Option.objects.filter(question=questionObj, correct=True)
+    if len(options) == 0:
+        valid = False
+
+    # Passage question must have a passage
+    if questionObj.questionType == 'passage' and not questionObj.passage:
+        valid = False
+    
+    questionObj.valid = valid
+    return questionObj
+
+# See if the test can be active
+def get_test_validity(testObj, active=False):
+    # If test is already inactive, then no need to turn it to active mode
+    if not active:
+        return False
+
+    # Not valid if the test does not have any sections
+    sectionObjs = Section.objects.filter(test=testObj)
+    if not sectionObjs.count():
+        return False
+
+    for section in sectionObjs:
+        # Not valid if any section is empty
+        questionObjs = Question.objects.filter(section=section)
+        if not questionObjs.count():
+            return False
+
+        # Error if there is any invalid question in the test
+        for ques in questionObjs:
+            if not ques.valid:
+                return False
+    return True
+
+# --------------------- MODELS ----------------------
 class CustomUserManager(UserManager):
     def create_user(self, username, email, password=None):
         """
@@ -318,6 +359,10 @@ class SectionQuerySet(models.QuerySet):
                 secObj.save()
         super(SectionQuerySet, self).delete(*args, **kwargs)
 
+        # Set test inactive if test has no sections left
+        sectionObj.test.active = get_test_validity(sectionObj.test, sectionObj.test.active)
+        sectionObj.test.save()
+
 # Section Model : Each test will have one or more section
 # section will contain questions.
 class Section(models.Model):
@@ -339,16 +384,29 @@ class Section(models.Model):
         # Use default section number if test contains no sections
         testSectionObjs = Section.objects.filter(test=self.test)
         if len(testSectionObjs) == 0:
-            return super().save(*args, **kwargs)
+            super().save(*args, **kwargs)
+            # Set test inactive if new section with no question added
+            self.test.active = get_test_validity(self.test, self.test.active)
+            self.test.save()
+            return
 
         # Auto increment the section number before saving next section
         self.sectionNumber = testSectionObjs.order_by('-sectionNumber')[0].sectionNumber + 1
         super().save(*args, **kwargs)
 
+        # Set test inactive if new section with no question added
+        self.test.active = get_test_validity(self.test, self.test.active)
+        self.test.save()
+
     def delete(self, *args, **kwargs):
         # Delete requested section
         missingNum = self.sectionNumber
+        testObj = self.test
         super(Section, self).delete(*args,**kwargs)
+
+        # Set test inactive if no section left in test
+        testObj.active = get_test_validity(testObj, testObj.active)
+        testObj.save()
 
         # Auto arrange section number of all sections after deleting a section
         nextSecObjs = Section.objects.filter(
@@ -389,10 +447,6 @@ class QuestionQuerySet(models.QuerySet):
             for quesObj in nextQuesObjs:
                 quesObj.quesNumber = quesObj.quesNumber - 1
                 quesObj.save()
-            
-            quesObjs = Question.objects.filter(section=questionObj.section).order_by('quesNumber')
-            for ques in quesObjs:
-                print(ques.questionText, ques.quesNumber)
 
         # Set total marks and ques count in associated test and section obj
         testObj = questionObj.section.test
@@ -404,6 +458,10 @@ class QuestionQuerySet(models.QuerySet):
         sectionObj.totalQuestions -= quesCount
         sectionObj.save()
         super(QuestionQuerySet, self).delete(*args, **kwargs)
+
+        # Set test inactive if section has no questions left
+        testObj.active = get_test_validity(testObj, testObj.active)
+        testObj.save()
 
 # Test Question Model : Each Question will have maximum 6 options 
 # with +ve & -ve marks along with a correct response and explanation(optional).
@@ -438,6 +496,8 @@ class Question(models.Model):
     marksNegative = models.FloatField(default=1.0)
     # Numbering done separately for every section
     quesNumber = models.IntegerField(default=1)
+    # Checks validity of a question
+    valid = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         # Maintain integrity of questions
@@ -475,7 +535,11 @@ class Question(models.Model):
         # Use default ques number if section contains no question
         sectionQuesObjs = Question.objects.filter(section=self.section)
         if len(sectionQuesObjs) == 0:
-            return super().save(*args, **kwargs)
+            super().save(*args, **kwargs)
+            # Set test inactive if new ques with no options added
+            testObj.active = get_test_validity(testObj, testObj.active)
+            testObj.save()
+            return
 
         # Auto increment the question number before saving next question
         if self.questionType != 'passage':
@@ -495,6 +559,10 @@ class Question(models.Model):
             self.quesNumber = lastPassageQuesNum + 1
         super().save(*args, **kwargs)
 
+        # Set test inactive if new ques with no options added
+        testObj.active = get_test_validity(testObj, testObj.active)
+        testObj.save()
+
     def delete(self, *args, **kwargs):
         # Decrease question count and total marks of the 
         # associated test and section before deleting question
@@ -510,6 +578,10 @@ class Question(models.Model):
         # Delete requested question
         missingNum = self.quesNumber
         super(Question, self).delete(*args,**kwargs)
+
+        # Set test inactive if section has no questions left
+        testObj.active = get_test_validity(testObj, testObj.active)
+        testObj.save()
 
         # Auto arrange ques number of all questions after deleting a ques
         nextQuesObjs = Question.objects.filter(
@@ -531,6 +603,12 @@ class OptionQuerySet(models.QuerySet):
         super(OptionQuerySet, self).delete(*args, **kwargs)
         for questionObj in questionObjs:
             set_mcq_scq(questionObj).save()
+            set_validity_of_ques(questionObj).save()
+
+        # Set test inactive if ques becomes invalid
+        testObj = questionObj.section.test
+        testObj.active = get_test_validity(testObj, testObj.active)
+        testObj.save()
 
 # Every question (mcq, scq and passage) can have more than one option
 class Option(models.Model):
@@ -547,17 +625,31 @@ class Option(models.Model):
         if self.question.questionType == 'integer':
             # Return error if option is added in integer type question
             raise ValidationError('Integer type questions do not require options.')
-        elif (self.question.questionType == 'passage' and self.correct == True and 
-              Option.objects.filter(question=self.question, correct=True)):
-            # Return error if more than one correct option is there in passage type question
-            raise ValidationError('Passage type questions can\'t have more than one correct option.')
+        elif self.question.questionType == 'passage' and self.correct == True:
+            correctOptions = Option.objects.filter(question=self.question, correct=True)
+            if self not in correctOptions and len(correctOptions):
+                # Return error if more than one correct option is there in passage type question
+                raise ValidationError('Passage type questions can\'t have more than one correct option.')
 
         super().save(*args, **kwargs)
         set_mcq_scq(self.question).save()
+        set_validity_of_ques(self.question).save()
+
+        # Set test inactive if ques becomes invalid
+        testObj = self.question.section.test
+        testObj.active = get_test_validity(testObj, testObj.active)
+        testObj.save()
 
     def delete(self, *args, **kwargs):
+        testObj = self.question.section.test
         super(Option, self).delete(*args, **kwargs)
+
         set_mcq_scq(self.question).save()
+        set_validity_of_ques(self.question).save()
+
+        # Set test inactive if ques becomes invalid
+        testObj.active = get_test_validity(testObj, testObj.active)
+        testObj.save()
 
     def __str__(self):
         return self.optionText + ' (' + str(self.question) + ')'

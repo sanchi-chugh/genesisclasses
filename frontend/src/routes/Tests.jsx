@@ -1,7 +1,7 @@
 import Tests from "../views/Tests/Tests";
 import EditTest from "../components/Actions/Tests/EditTests";
 import ViewTest from "../components/Actions/Tests/ViewTests";
-import AddTest from "../components/Actions/Tests/AddTests";
+import AddTest from "../components/Actions/Tests/AddTest";
 import Sections from "../views/Sections/Sections";
 
 var testsRoutes = [

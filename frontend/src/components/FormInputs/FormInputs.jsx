@@ -4,7 +4,7 @@ import { FormGroup, ControlLabel, FormControl, Row } from "react-bootstrap";
 function FieldGroup({ label, ...props }) {
   return (
     <FormGroup>
-      <ControlLabel>{label}</ControlLabel>
+      <ControlLabel className='form-input'>{label}</ControlLabel>
       <FormControl {...props} />
     </FormGroup>
   );

@@ -62,11 +62,11 @@ class ViewTest extends Component {
                     </Row>
                     <Row xs={12} style={{margin:12}}>
                       <b><Col md={4}>UNIT</Col></b>
-                      <Col md={8}>{this.props.location.data.unit.title === null ? '...' : this.props.location.data.unit.title.toUpperCase() }</Col>
+                      <Col md={8}>{this.props.location.data.unit === null ? '...' : this.props.location.data.unit.title.toUpperCase() }</Col>
                     </Row>
                     <Row xs={12} style={{margin:12}}>
                       <b><Col md={4}>SUBJECT</Col></b>
-                      <Col md={8}>{this.props.location.data.subject.title === null ? '...' : this.props.location.data.subject.title.toUpperCase() }</Col>
+                      <Col md={8}>{this.props.location.data.subject === null ? '...' : this.props.location.data.subject.title.toUpperCase() }</Col>
                     </Row>
                     <Row xs={12} style={{margin:12}}>
                       <b><Col md={4}>COURSES</Col></b>

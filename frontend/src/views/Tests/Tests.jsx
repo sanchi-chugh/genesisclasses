@@ -14,6 +14,7 @@ import Card from "../../components/Card/Card.jsx";
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 import "../../../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css";
+import DeleteTest from "../../components/Actions/Tests/DeleteTests";
 // import DeleteTest from "../../components/Actions/Tests/DeleteTests";
 // import AddTests from "../../components/Actions/Tests/AddTests";
 // import EditTest from "../../components/Actions/Tests/EditTests";
@@ -127,7 +128,7 @@ class Tests extends Component {
   }
 
   handleHideDeleteModal() {
-    this.setState({ show2: false, deletingTest:false, testDeleted:false, transferData:false,transferTo:'Select Test', test:null});
+    this.setState({ show2: false, deletingTest:false, testDeleted:false});
   }
 
   handleAdd(){
@@ -153,30 +154,17 @@ class Tests extends Component {
 
   handleDelete = () => {
     this.setState({ deletingTest: true }, () => {
-      if(this.state.transferData){
-        const data = { "test" : this.state.test };
-        axios.delete(`/api/tests/delete/${this.state.id}/`, data , {
-            headers: {
-              Authorization: `Token ${localStorage.token}`
-            },
-          })
-          .then((res) => {
-            this.setState({ deletingTests: false, testDeleted:true, transferData:false},this.this.fetchTests(`?page=${this.state.page}`,(this.state.page-1)*10))
-          })
-          .catch((err) => this.setState({ deletingTests: false }, () => console.log(err)))
-      }else{
-        axios.delete(`/api/tests/delete/${this.state.id}/`,{
-            headers: {
-              Authorization: `Token ${localStorage.token}`
-            },
-          })
-          .then((res) => {
-            this.setState({ deletingTest: false,testDeleted:true, transferData:false},this.fetchTests(`?page=${this.state.page}`,(this.state.page-1)*10))
-          })
-          .catch((err) => this.setState({ deletingTest: false }, () => console.log(err)))
-       }
+      axios.delete(`/api/tests/delete/${this.state.id}/`,{
+        headers: {
+          Authorization: `Token ${localStorage.token}`
+        },
+      })
+      .then((res) => {
+        this.setState({ deletingTest: false,testDeleted:true},this.fetchTests(`?page=${this.state.page}`,(this.state.page-1)*10))
+      })
+      .catch((err) => this.setState({ deletingTest: false }, () => console.log(err)))
     });
-  } 
+  }
 
   handleEdit() {
     this.setState({ updatingTest: true }, () => {
@@ -230,15 +218,17 @@ class Tests extends Component {
   }
 
   handleShowDeleteModal(obj){
-    this.fetchSubjectsTests(obj.subject.id);
     this.setState({ id: obj.id},()=>{
       this.setState({show2:true})
     })
   }
 
-  handleShowAddModal(){
-    console.log(this.props)
-    this.setState({show3:true})
+  handleAddButton(obj){
+    this.props.history.push({pathname:'/tests/add'})
+  }
+
+  handleEditButton(obj){
+    this.props.history.push({pathname:`/tests/edit/${obj.id}`})
   }
 
   handleFormDataChange(e) {
@@ -279,31 +269,6 @@ class Tests extends Component {
     }
   }
 
-  toggleTransferData(e){
-    this.setState({transferData: !this.state.transferData})
-  }
-
-  handleSelect(item){
-    this.setState({transferTo:item.title, test:item.id})
-  }
-
-  handleSelectSubject(item){
-    this.setState({
-      subject:item.title,
-      formData:{
-        ...this.state.formData,
-        subject:item.id
-      }
-    })
-    this.toggleDropdown()
-  }
-
-  toggleDropdown(){
-    this.setState({
-      dropdown:!this.state.dropdown
-    })
-  }
-
   renderCourses(cell, row, enumObject, rowIndex) {
       return (
         <Row md={12}>
@@ -320,7 +285,7 @@ class Tests extends Component {
   renderSubjects(cell, row, enumObject, rowIndex) {
     return (
         <Row md={12}>
-            <Col md={6}><div>{row.subject.title} ({row.unit.title})</div></Col>
+            <Col md={6}><div>{row.subject !== null ? row.subject.title : ''} { row.unit !== null ? ' ('+row.unit.title+')' : '...'}</div></Col>
         </Row>
     )
   }
@@ -352,10 +317,10 @@ class Tests extends Component {
           <Row>
             <ButtonToolbar>
               <ButtonGroup>
-                <Button bsSize="small" style={{width:'80px'}} bsStyle="info" >
+                <Button bsSize="small" style={{width:'80px'}} bsStyle="info" onClick={this.handleEditButton.bind(this,row)}>
                   <Glyphicon glyph="edit" /> EDIT
                 </Button>
-                <Button bsSize="small" style={{width:'80px'}} bsStyle="danger">
+                <Button bsSize="small" style={{width:'80px'}} bsStyle="danger" onClick={this.handleShowDeleteModal.bind(this,row)} >
                   <Glyphicon glyph="trash" /> DELETE
                 </Button>
               </ButtonGroup>
@@ -384,7 +349,7 @@ class Tests extends Component {
               <Card
                 title="Tests"
                 addButton={true}
-                handleShowAddModal={this.handleShowAddModal.bind(this)}
+                handleShowAddModal={this.handleAddButton.bind(this)}
                 ctTableFullWidth
                 ctTableResponsive
                 content={
@@ -400,12 +365,20 @@ class Tests extends Component {
                                   page: this.state.page} }>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
                         <TableHeaderColumn dataField='title'>Test</TableHeaderColumn>
-                        <TableHeaderColumn dataField='typeOfTest' dataFormat={this.renderSubjects.bind(this)}>Type Of Test</TableHeaderColumn>
+                        <TableHeaderColumn dataField='typeOfTest' dataFormat={this.renderTypeOfTest.bind(this)}>Type Of Test</TableHeaderColumn>
                         <TableHeaderColumn width={100} dataField='duration'>Duration</TableHeaderColumn>
                         <TableHeaderColumn dataField='test' dataFormat={this.renderSubjects.bind(this)}>Subjects</TableHeaderColumn>
                         <TableHeaderColumn dataField='id' dataFormat={this.renderCourses.bind(this)}>Courses</TableHeaderColumn>
                         <TableHeaderColumn dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
                     </BootstrapTable>
+                    <DeleteTest
+                      show={this.state.show2}
+                      onHide={this.handleHideDeleteModal.bind(this)}
+                      testDeleted={this.state.testDeleted}
+                      deletingTest={this.state.deletingTest}
+                      handleDelete={this.handleDelete.bind(this)}
+                      id={this.state.id}
+                    />
                     {/* <EditTest 
                       show={this.state.show} 
                       onHide={this.handleHideEditModal.bind(this)} 

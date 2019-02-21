@@ -26,6 +26,11 @@ export class Card extends Component {
                   <Glyphicon glyph="plus-sign" /> ADD
                 </Button>
               </Col> :''}
+              {this.props.activeButton ? <Col md={1}>
+                <Button bsSize="small" bsStyle="success" onClick={this.props.handleShowAddModal}>
+                  <Glyphicon glyph="plus-sign" /> ADD
+                </Button>
+              </Col> :''}
             </Row>
           </div>
           <p className="category">{this.props.category}</p>

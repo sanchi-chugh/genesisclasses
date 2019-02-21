@@ -33,9 +33,6 @@ class Sections extends Component {
           sectionUpdated:false,
           sectionDeleted:false,
           deletingSection:false,
-          transferData:false,
-          transferTo:'Select Section',
-          section:null,
           sectionAdded:false,
           addingSection:false,
 
@@ -47,11 +44,12 @@ class Sections extends Component {
   }
 
   fetchSections(){
-    axios.get(`/api/sections/${this.props.match.params.id}`, {
+    axios.get(`/api/tests/sections/${this.props.match.params.id}/`, {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
     }).then(res => {
+          console.log(res)
           const data = res.data.map(item => {
           item.sno = res.data.indexOf(item) + 1;
           return item;
@@ -69,13 +67,13 @@ class Sections extends Component {
   }
 
   handleHideDeleteModal() {
-    this.setState({ show2: false, deletingSection:false, sectionDeleted:false, transferData:false,transferTo:'Select Section', section:null});
+    this.setState({ show2: false, deletingSection:false, sectionDeleted:false});
   }
 
   handleAdd(){
     this.setState({ addingSection: true }, () => {
-      const data = {location:this.state.value}
-      axios.post('/api/sections/add/', data, {
+      const data = {title:this.state.value,test:this.props.match.params.id}
+      axios.post('/api/tests/sections/add/', data, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
@@ -87,35 +85,22 @@ class Sections extends Component {
 
   handleDelete = () => {
     this.setState({ deletingSection: true }, () => {
-      if(this.state.transferData){
-        const data = {data:{ "section" : this.state.section }};
-        axios.delete(`/api/sections/delete/${this.state.id}/`, data , {
-            headers: {
-              Authorization: `Token ${localStorage.token}`
-            },
-          })
-          .then((res) => {
-            this.setState({ deletingSection: false, sectionDeleted:true, transferData:false},this.fetchSections())
-          })
-          .catch((err) => this.setState({ deletingSection: false }, () => console.log(err)))
-      }else{
-        axios.delete(`/api/sections/delete/${this.state.id}/`,{
-            headers: {
-              Authorization: `Token ${localStorage.token}`
-            },
-          })
-          .then((res) => {
-            this.setState({ deletingSection: false,sectionDeleted:true, transferData:false},this.fetchSections())
-          })
-          .catch((err) => this.setState({ deletingSection: false }, () => console.log(err)))
-      }
+      axios.delete(`/api/tests/sections/delete/${this.state.id}/`,{
+        headers: {
+          Authorization: `Token ${localStorage.token}`
+        },
+      })
+      .then((res) => {
+        this.setState({ deletingSection: false,sectionDeleted:true},this.fetchSections())
+      })
+      .catch((err) => this.setState({ deletingSection: false }, () => console.log(err)))
     });
   } 
 
   handleEdit() {
     this.setState({ updatingSection: true }, () => {
-      const data = {location:this.state.value}
-      axios.put(`/api/sections/edit/${this.state.id}/`, data, {
+      const data = {title:this.state.value}
+      axios.put(`/api/tests/sections/edit/${this.state.id}/`, data, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
@@ -125,8 +110,12 @@ class Sections extends Component {
     });
   }
 
+  handleViewButton(obj){
+    this.props.history.push({pathname:'/students/info',data:obj})
+  }
+
   handleShowEditModal(obj){
-    this.setState({ id: obj.id , value: obj.location},()=>{
+    this.setState({ id: obj.id , value: obj.title},()=>{
       this.setState({show:true})
     })
   }
@@ -144,31 +133,28 @@ class Sections extends Component {
   handleTextChange(e) {
     this.setState({ value: e.target.value });
   }
-
-  toggleTransferData(e){
-    this.setState({transferData: !this.state.transferData})
-  }
-
-  handleSelect(item){
-    this.setState({transferTo:item.location, section:item.id})
-  }
-
+  
   renderColumn(cell, row, enumObject, rowIndex) {
     return (
       <div>
-        <Grid> 
-          <Col>
+        <Grid fluid> 
+          <Row>
+           <Button bsSize="small" style={{width:'160px'}} bsStyle="primary" onClick={this.handleViewButton.bind(this,row)}>
+            <Glyphicon glyph="list-alt" /> VIEW QUESTIONS
+           </Button>
+          </Row>
+          <Row>
             <ButtonToolbar>
               <ButtonGroup>
-                <Button bsSize="small" bsStyle="primary" onClick={this.handleShowEditModal.bind(this,row)}>
+                <Button bsSize="small" style={{width:'80px'}} bsStyle="primary" onClick={this.handleShowEditModal.bind(this,row)}>
                   <Glyphicon glyph="edit" /> EDIT
                 </Button>
-                <Button bsSize="small" bsStyle="danger" onClick={this.handleShowDeleteModal.bind(this,row)}>
+                <Button bsSize="small" style={{width:'80px'}} bsStyle="danger" onClick={this.handleShowDeleteModal.bind(this,row)}>
                   <Glyphicon glyph="trash" /> DELETE
                 </Button>
               </ButtonGroup>
             </ButtonToolbar>
-          </Col>
+          </Row>
         </Grid>
       </div>
     )
@@ -194,6 +180,8 @@ class Sections extends Component {
                       search>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
                         <TableHeaderColumn dataField='title'>Section</TableHeaderColumn>
+                        <TableHeaderColumn dataField='totalMarks'>Marks</TableHeaderColumn>
+                        <TableHeaderColumn dataField='totalQuestions'>Number Of Questions</TableHeaderColumn>
                         <TableHeaderColumn dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
                     </BootstrapTable>
                     <EditSection 
@@ -211,12 +199,7 @@ class Sections extends Component {
                       sectionDeleted={this.state.sectionDeleted}
                       deletingSection={this.state.deletingSection}
                       handleDelete={this.handleDelete.bind(this)}
-                      transferData={this.state.transferData}
-                      toggle={this.toggleTransferData.bind(this)}
-                      sections={this.state.data}
                       id={this.state.id}
-                      section={this.state.transferTo}
-                      handleSelect={this.handleSelect.bind(this)}
                     />
                     <AddSection
                       show={this.state.show3}

@@ -3,27 +3,13 @@ import { Button,
          Modal } 
          from "react-bootstrap";
 
-import { Checkbox, Menu, Dropdown, Icon } from 'antd';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
-import '../../../../node_modules/antd/dist/antd.css'; 
 
 class DeleteSection extends Component {
 
   render() {
-    const menu = (
-        <Menu>
-          {this.props.sections.map(item =>{
-              if(item.id === this.props.id)
-                return null;
-              return(
-                <Menu.Item key={item.id}>
-                    <p onClick={()=> this.props.handleSelect(item)}>{item.location}</p>
-                </Menu.Item>
-              )
-          })}
-        </Menu>
-      );
+
     return ( 
             <Modal
                 show={this.props.show}
@@ -42,19 +28,7 @@ class DeleteSection extends Component {
                         ?
                         <center><b><p>Deleted Successully</p></b></center>
                         :
-                        <Checkbox onChange={this.props.toggle}>Shift the staff users and students of the section to be deleted to another section.</Checkbox> 
-                    }
-                    {
-                        this.props.transferData ? 
-                        <center>
-                            <Dropdown overlay={menu}>
-                                <a className="ant-dropdown-link">
-                                    {this.props.section} 
-                                <Icon type="down" />
-                                </a>
-                            </Dropdown>
-                        </center>
-                        : null
+                        <center><b><p>Are you sure you want to delete this section. All the questions in this section will be deleted.</p></b></center>                    
                     }
                     <LinearProgress
                         style={

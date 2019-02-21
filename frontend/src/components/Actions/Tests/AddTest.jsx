@@ -30,6 +30,9 @@ class AddTests extends Component {
       centreId:'',
       preview:'',
       courses:[],
+      subjects:[],
+      units:[],
+      categories:[],
       formData:{
         title:'',
         duration:'',
@@ -46,6 +49,9 @@ class AddTests extends Component {
         doc:'',
         file:null,
         course:[],
+        category:[],
+        subject:'',
+        unit:''
       },
       addingTest:false,
       testAdded:false
@@ -53,18 +59,48 @@ class AddTests extends Component {
   }
 
   componentWillMount() {
-    this.fetchCentres();
+    this.fetchCategories();
     this.fetchCourses();
   }
 
-  fetchCentres(){
-    axios.get("/api/centres/", {
+  fetchSubjects(){
+    if(this.state.formData.course.length > 0){
+      axios.get(`/api/subjects/${this.state.formData.course.join(',')}/`, {
+          headers: {
+          Authorization: `Token ${localStorage.token}`
+          }
+      }).then(res => {
+          const data = res.data;
+          this.setState({subjects:data});
+      });
+    }else{
+      this.setState({subjects:[]})
+    }
+  }
+
+  fetchUnits(){
+      if(this.state.formData.subject.trim() !== ''){
+        axios.get(`/api/units/${this.state.formData.subject}/`, {
+            headers: {
+            Authorization: `Token ${localStorage.token}`
+            }
+        }).then(res => {
+            const data = res.data;
+            this.setState({units:data});
+        });
+      }else{
+        this.setState({units:[]})
+    }
+  }
+  
+  fetchCategories(){
+    axios.get("/api/testCategories/", {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
     }).then(res => {
         const data = res.data;
-        this.setState({centres:data});
+        this.setState({categories:data});
     });
   }
 
@@ -89,6 +125,7 @@ class AddTests extends Component {
       formData.append('instructions',this.state.formData.instructions)
       formData.append('endAccessDate',this.state.formData.endAccessDate)
       formData.append('course',this.state.formData.course.join(','))
+      formData.append('category',this.state.formData.category.join(','))
       formData.append('centre',this.state.centreId)
       formData.append('father_name',this.state.formData.father_name)
       formData.append('typeOfTest',this.state.formData.typeOfTest)
@@ -125,6 +162,7 @@ class AddTests extends Component {
     if(e.target.name === 'course' ){
         if(e.target.checked){
           this.state.formData.course.push(e.target.value)
+          this.fetchSubjects();
         }else{
           this.setState({
             formData:{
@@ -135,22 +173,45 @@ class AddTests extends Component {
                 }
               })
             }
+          },this.fetchSubjects.bind(this))
+        }
+    }else if(e.target.name === 'category' ){
+        if(e.target.checked){
+          this.state.formData.category.push(e.target.value)
+        }else{
+          this.setState({
+            formData:{
+              ...this.state.formData,
+              category:this.state.formData.category.filter( (item) => {
+                if(item !== e.target.value){
+                  return item
+                }
+              })
+            }
           })
         }
     }else if(e.target.name === 'doc'){
-      if(e.target.files.length){
-        let file = e.target.files[0]
-        this.setState({ 
-          formData: {
-          ...this.state.formData,
-          file : file
-      }});
+        if(e.target.files.length){
+          let file = e.target.files[0]
+          this.setState({ 
+            formData: {
+            ...this.state.formData,
+            file : file
+        }});
       }
     }else{
-      this.setState({ formData: {
-        ...this.state.formData,
-        [e.target.name] : e.target.value
-    }});
+        if(e.target.name === 'subject'){
+            this.setState({ formData: {
+              ...this.state.formData,
+              [e.target.name] : e.target.value
+          }},this.fetchUnits.bind(this));
+        }else{
+          this.setState({ formData: {
+              ...this.state.formData,
+              [e.target.name] : e.target.value
+          }}
+        );
+      }
     }
   }
 
@@ -222,7 +283,7 @@ class AddTests extends Component {
                         name='instructons'
                         editorClassName={'textarea'}
                         onEditorStateChange={this.onEditorStateChange.bind(this)}
-                      />
+                      /><hr/>
                     </FormGroup>
                     <FormInputs
                       ncols={["col-md-12"]}
@@ -255,6 +316,24 @@ class AddTests extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
+                    <Row>
+                      <Col md={8}>
+                        <ControlLabel className='form-input'>Category *</ControlLabel>
+                        <br/>
+                        <FormGroup>
+                            {this.state.categories.map((props)=>{
+                                return(<Checkbox 
+                                            style={{marginLeft:8}}
+                                            inline
+                                            value={props.id}
+                                            name='category'
+                                            onChange={this.handleFormDataChange.bind(this)}
+                                        >{props.title}</Checkbox>);
+                            })} 
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <hr/>
                     <FormGroup>
                       <ControlLabel  className='form-input'>Start Time</ControlLabel>
                       <Row>
@@ -296,6 +375,36 @@ class AddTests extends Component {
                             />
                         </Col>
                       </Row>
+                    </FormGroup>
+                    <FormGroup>
+                        <ControlLabel  className='form-input'>Subject (Select Course First)</ControlLabel>
+                        <FormControl 
+                          componentClass="select" 
+                          value={this.state.formData.subject} 
+                          onChange={this.handleFormDataChange.bind(this)} 
+                          name="subject">
+                            <option value=''>...</option>
+                            {this.state.subjects.map(item=>{
+                              return(
+                                <option value={item.id}>{item.title.toUpperCase()}</option>
+                              )
+                            })}
+                        </FormControl>  
+                    </FormGroup>
+                    <FormGroup>
+                        <ControlLabel  className='form-input'>Unit (Select Subject First)</ControlLabel>
+                        <FormControl 
+                          componentClass="select" 
+                          value={this.state.formData.unit} 
+                          onChange={this.handleFormDataChange.bind(this)} 
+                          name="unit">
+                            <option value=''>...</option>
+                            {this.state.units.map(item=>{
+                              return(
+                                <option value={item.id}>{item.title.toUpperCase()}</option>
+                              )
+                            })}
+                        </FormControl>  
                     </FormGroup>
                     <FormInputs
                       ncols={["col-md-12"]}

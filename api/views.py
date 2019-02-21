@@ -4,7 +4,7 @@ from rest_framework.generics import UpdateAPIView, ListAPIView, CreateAPIView
 from api.models import Student, Centre, Course, User
 from rest_framework.views import APIView
 from api.models import Student, Centre, Test, Question, Section, Option
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, filters
 from api.utils import parser
 from rest_framework.response import Response
 from django.core.mail import send_mail
@@ -14,6 +14,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.core.validators import validate_email
 from django.core.validators import ValidationError
+from django.db.models import Q
 from test_series.settings import DOMAIN, MEDIA_ROOT
 from .paginators import *
 from .docparser import *
@@ -106,6 +107,9 @@ class SubjectChoiceView(viewsets.ReadOnlyModelViewSet):
     serializer_class = SubjectChoiceSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
     pagination_class = StandardResultsSetPagination
+    # Making endpoint searchable
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('title', 'course__title')
     
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
@@ -355,6 +359,9 @@ class StudentUserViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = StudentUserSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
     pagination_class = StandardResultsSetPagination
+    # Making endpoint searchable
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('centre__location', 'course__title', 'first_name', 'last_name', '=contact_number', 'user__email')
 
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
@@ -587,6 +594,9 @@ class BulkStudentsViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
     pagination_class = StandardResultsSetPagination
     serializer_class = BulkStudentsSerializer
+    # Making endpoint searchable
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('centre__location', 'course__title')
 
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
@@ -1100,6 +1110,9 @@ class UnitViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UnitSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
     pagination_class = StandardResultsSetPagination
+    # Making endpoint searchable
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('title', 'subject__title', 'subject__course__title', 'description')
 
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
@@ -1365,6 +1378,9 @@ class TestInfoViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TestInfoSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
     pagination_class = StandardResultsSetPagination
+    # Making endpoint searchable
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('title', '=typeOfTest', 'category__title', 'subject__title', 'unit__title', 'course__title')
 
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)
@@ -1527,6 +1543,7 @@ def parse_doc_ques(testObj):
                     explanation=ques['explanation'],
                     marksPositive=ques['marks'],
                     marksNegative=ques['negative'],
+                    valid=True,     # Integer ques is valid as it does not require options
                 )
             else:
                 if questionType in ('mcq', 'scq'):
@@ -1721,6 +1738,35 @@ class EditTestInfoView(UpdateAPIView):
         testObj.startTime = dictV['startTime']
         testObj.subject = dictV['subject']
         testObj.unit = dictV['unit']
+        testObj.save()
+
+        # Make sure test is meaningful for the student before making it active
+        error_msg = "Therefore, test remains INACTIVE. Rest changes are saved."
+        if dictV['active']:
+            # Error if the test does not have any sections
+            sectionObjs = Section.objects.filter(test=testObj)
+            if not sectionObjs.count():
+                return Response({
+                    "status": "error", "message": "There are no sections present in this test. " + error_msg},
+                    status=HTTP_400_BAD_REQUEST)
+  
+            for section in sectionObjs:
+                # Error if any section is empty
+                questionObjs = Question.objects.filter(section=section)
+                if not questionObjs.count():
+                    return Response({"status": "error",
+                        "message": ("No questions are present in section number " + str(section.sectionNumber) +
+                                    " of this test. " + error_msg)},
+                        status=HTTP_400_BAD_REQUEST)
+
+                # Error if there is any invalid question in the test
+                for ques in questionObjs:
+                    if not ques.valid:
+                        return Response({"status": "error", "message": (
+                            "Question number " + str(ques.quesNumber) + " of section number " + str(section.sectionNumber) +
+                            " of this test is INVALID. Please correct it, then only this test can become active. " + error_msg
+                            )}, status=HTTP_400_BAD_REQUEST)
+
         testObj.active = dictV['active']
         testObj.save()
 
@@ -1810,6 +1856,9 @@ class QuestionsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TestQuestionSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
     pagination_class = StandardResultsSetPagination
+    # Making endpoint searchable
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('questionText', '=questionType', '=quesNumber')
 
     def get_queryset(self):
         section_id = self.kwargs['pk']
@@ -1966,6 +2015,7 @@ class AddQuestionDetailsView(CreateAPIView):
                 explanation=op_dict['explanation'],
                 marksPositive=marksPositive,
                 marksNegative=marksNegative,
+                valid=True,     # Integer ques is valid as it does not require options
             )
         elif questionType == 'passage':
             passage_id = data['passage']
@@ -2270,6 +2320,9 @@ class StudentTestResultViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = StudentTestResultSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
     pagination_class = StandardResultsSetPagination
+    # Making endpoint searchable
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('test__title')
     
     def get_queryset(self):
         student_id = self.kwargs['pk']
@@ -2297,6 +2350,9 @@ class StudentQuestionResponseView(viewsets.ReadOnlyModelViewSet):
     serializer_class = StudentQuestionResponseSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
     pagination_class = StandardResultsSetPagination
+    # Making endpoint searchable
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('question__questionText', '=question__questionType', '=status')
     
     def get_queryset(self):
         student_id = self.kwargs['stud_pk']
@@ -2362,6 +2418,13 @@ def get_testResultObjs_helper(params_dict, test_id):
     testResultObjs = UserTestResult.objects.filter(
         test__id=test_id, testAttemptDate__gte=start_date, testAttemptDate__lte=end_date)
 
+    # Filter according to search query
+    if 'search' in params_dict:
+        query = params_dict.get('search').strip()
+        if len(query):
+            testResultObjs = testResultObjs.filter(
+                Q(student__first_name__icontains=query) | Q(student__last_name__icontains=query))
+
     # If centre_id is 0 => all centres
     if centre_id != 0:
         testResultObjs = testResultObjs.filter(student__centre__id=centre_id)
@@ -2371,7 +2434,7 @@ def get_testResultObjs_helper(params_dict, test_id):
         testResultObjs = sorted(testResultObjs, key=lambda obj: obj.get_rank(start_date, end_date))
     return (True, testResultObjs)
 
-# Return test results of a particular centre within a particular time frame
+# Return test results of a particular centre within a particular time frame (search allowed)
 class CentreSpecificTestResultView(APIView):
     model = UserTestResult
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
@@ -2456,39 +2519,6 @@ class CentreSpecificTestResultCSVView(APIView):
         csvFile.close()
         absolute_path = DOMAIN + 'media/studentResultCSVs/' + csv_name
         return Response({'status': 'successful', 'csvFile': absolute_path})
-
-
-class TestFromDocView(APIView):
-    def post(self, request, *args, **kwargs):
-
-        test = parser.parse(request.data["doc"])
-        testObj = Test.objects.create(title=request.data['title'],
-                            course=Course.objects.get(pk=request.data['course']),
-                            description=request.data['description'],
-                            super_admin=get_super_admin(request.user))
-        sections = []
-        question_count = [len(test[section]) for section in test]
-        questions = []
-        options = []
-        for section in test:
-            sections.append(Section(title=section, test=testObj))
-        Section.objects.bulk_create(sections)
-        for i in range(len(sections)):
-            for question in test[sections[i].title]:
-                questions.append(Question(section=sections[i], text=question["question"]))
-        Question.objects.bulk_create(questions)
-
-        for i in range(len(sections)):
-            for j in range(len(test[sections[i].title])):
-                question = test[sections[i].title][j]
-                index = j
-                if i > 0:
-                    index += sum(question_count[:i])
-                questionObj = questions[index]
-                for option in question["options"]:
-                    options.append(Option(text=option[0], correct=option[1], question=questionObj))
-        Option.objects.bulk_create(options)
-        return Response({ "id" : testObj.pk })
 
 # Staff user views (not being used yet)
 class GetStaffUsersView(ListAPIView):

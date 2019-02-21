@@ -111,7 +111,7 @@ class Sections extends Component {
   }
 
   handleViewButton(obj){
-    this.props.history.push({pathname:'/students/info',data:obj})
+    this.props.history.push({pathname:`/tests/sections/questions/${obj.id}`})
   }
 
   handleShowEditModal(obj){

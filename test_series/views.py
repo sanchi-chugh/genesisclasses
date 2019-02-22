@@ -19,6 +19,7 @@ from api.serializers import (
     StudentSerializer
 )
 
+# Send profile details of the user
 class UserDetailsView(user_details_view):
     def get(self, request, *args, **kwargs):
         response = super(UserDetailsView, self).get(request, *args, **kwargs)
@@ -27,7 +28,7 @@ class UserDetailsView(user_details_view):
         elif request.user.type_of_user == 'staff':
             profile_serializer = StaffSerializer(request.user.staff)
         else:
-            profile_serializer = StudentSerializer(request.user.student)
+            profile_serializer = StudentSerializer(request.user.student, context={'request': request})
         response.data['profile'] = profile_serializer.data
         response.data['profile']['type'] = request.user.type_of_user
         return response

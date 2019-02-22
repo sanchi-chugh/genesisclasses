@@ -3,6 +3,7 @@ import EditTest from "../components/Actions/Tests/EditTests";
 import ViewTest from "../components/Actions/Tests/ViewTests";
 import AddTest from "../components/Actions/Tests/AddTest";
 import Sections from "../views/Sections/Sections";
+import Questions from "../views/Questions/Questions";
 
 var testsRoutes = [
     { 
@@ -21,7 +22,7 @@ var testsRoutes = [
         path: "/tests/sections/:id", name: "sections", component: Sections //id = testID
     },
     { 
-        path: "/tests/sections/questions/:id", name: "sections", component: Sections //id = sectionId
+        path: "/tests/sections/questions/:id", name: "questions", component: Questions //id = sectionId
     },
 ];
 

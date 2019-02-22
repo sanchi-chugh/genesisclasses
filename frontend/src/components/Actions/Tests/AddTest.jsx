@@ -37,15 +37,9 @@ class AddTests extends Component {
         title:'',
         duration:'',
         instructions: EditorState.createEmpty(),
-        contact_number:'',
-        endAccessDate:'',
-        father_name:'',
         typeOfTest:'',
-        dateOfBirth:'',
-        address:'',
-        city:'',
-        state:'',
         startTime:'',
+        endTime:'',
         doc:'',
         file:null,
         course:[],
@@ -121,25 +115,18 @@ class AddTests extends Component {
       var formData = new FormData();
       formData.append('title',this.state.formData.title)
       formData.append('duration',this.state.formData.duration)
-      formData.append('contact_number',this.state.formData.contact_number)
       formData.append('instructions',this.state.formData.instructions)
-      formData.append('endAccessDate',this.state.formData.endAccessDate)
+      formData.append('description',this.state.formData.description)
       formData.append('course',this.state.formData.course.join(','))
       formData.append('category',this.state.formData.category.join(','))
-      formData.append('centre',this.state.centreId)
-      formData.append('father_name',this.state.formData.father_name)
       formData.append('typeOfTest',this.state.formData.typeOfTest)
-      formData.append('dateOfBirth',this.state.formData.dateOfBirth)
-      formData.append('address',this.state.formData.address)
-      formData.append('city',this.state.formData.city)
-      formData.append('state',this.state.formData.state)
       formData.append('startTime',this.state.formData.startTime)
       if(this.state.formData.file !== null){
         formData.append('doc',this.state.formData.file,this.state.formData.file.name)
       }else{
         formData.append('doc','')
       }
-      axios.post('/api/users/tests/add/', formData, {
+      axios.post('/api/tests/add/', formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,
         },

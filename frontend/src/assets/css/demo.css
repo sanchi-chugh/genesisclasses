@@ -11,6 +11,11 @@
 .all-icons input{
     border: 0;
 }
+.form-input{
+    font-size: 12px !important;
+    color:black !important;
+    font-weight: 500 !important;
+}
 .all-icons .font-icon-detail{
     text-align: center;
     padding: 45px 0px 30px;

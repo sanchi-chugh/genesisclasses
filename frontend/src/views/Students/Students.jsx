@@ -53,7 +53,7 @@ class Students extends Component {
   }
 
   handleHideDeleteModal() {
-    this.setState({ show: false, deletingStudent:false, studentDeleted:false, transferData:false,transferTo:'Select Student', student:null});
+    this.setState({ show: false, deletingStudent:false, studentDeleted:false});
   }
 
   handleDelete = () => {

@@ -2590,55 +2590,62 @@ class CompleteStudentProfileView(UpdateAPIView):
     def put(self, request, *args, **kwargs):
         studentUserObj = request.user
         studentObj = get_object_or_404(Student, user=studentUserObj)
+        complete = studentObj.complete
         data = request.data
 
+        compulsory_fields = ['first_name', 'last_name', 'father_name',
+            'address', 'city', 'state', 'pinCode', 'gender', 'dateOfBirth', 'contact_number']
+
+        if not complete:
+            # In case of first time update
+            compulsory_fields = compulsory_fields + ['password1', 'password2', 'username', 'email']
+
         # Search for missing fields
-        check_pass, result = fields_check([
-            'password1', 'password2', 'username', 'email', 'first_name', 'last_name', 'father_name',
-            'address', 'city', 'state', 'pinCode', 'gender', 'dateOfBirth', 'contact_number'], data)
+        check_pass, result = fields_check(compulsory_fields, data)
         if not check_pass:
             return result
 
-        # Provide available usernames if username chosen by user is already occupied
-        username = data['username']
-        existing = [user['username'] for user in User.objects.values('username')]
-        existing.remove(studentUserObj.username)
+        if not complete:
+            # Provide available usernames if username chosen by user is already occupied
+            username = data['username']
+            existing = [user['username'] for user in User.objects.values('username')]
+            existing.remove(studentUserObj.username)
 
-        if username in existing:
-            available = [studentUserObj.username]
-            while len(available) < 3:
-                tentative = username + uuid.uuid4().hex[:4].lower()
-                if tentative not in existing:
-                    available.append(tentative)
+            if username in existing:
+                available = [studentUserObj.username]
+                while len(available) < 3:
+                    tentative = username + uuid.uuid4().hex[:4].lower()
+                    if tentative not in existing:
+                        available.append(tentative)
 
-            return Response({"status": "error", "message": ("This username is already occupied. " +
-                "Available usernames similar to this are " + ', '.join(available) + " etc or try some other username.")},
-                status=HTTP_400_BAD_REQUEST)
-
-        # Return if password strength weak
-        check_pass, result = check_passwd_strength(data)
-        if not check_pass:
-            return result
-
-        email = data['email']
-
-        # Validate email id
-        try:
-            validate_email(email)
-        except ValidationError:
-            return Response({
-                "status": "error", "message": "Provided email id is invalid."},
-                status=HTTP_400_BAD_REQUEST)
-
-        # Do not form another student with the same email id
-        if email != studentUserObj.email:
-            userObjs = User.objects.filter(email=email, type_of_user='student')
-            if len(userObjs) != 0:
-                return Response({"status": "error", "message": ("A student with the same email id already exists. " +
-                    "Either log in the user with this registered email id or register yourself with some other email id.")},
+                return Response({"status": "error", "message": ("This username is already occupied. " +
+                    "Available usernames similar to this are " + ', '.join(available) + " etc or try some other username.")},
                     status=HTTP_400_BAD_REQUEST)
-            studentUserObj.email = email
-            studentUserObj.save()
+
+            # Return if password strength weak
+            check_pass, result = check_passwd_strength(data)
+            if not check_pass:
+                return result
+
+            email = data['email']
+
+            # Validate email id
+            try:
+                validate_email(email)
+            except ValidationError:
+                return Response({
+                    "status": "error", "message": "Provided email id is invalid."},
+                    status=HTTP_400_BAD_REQUEST)
+
+            # Do not form another student with the same email id
+            if email != studentUserObj.email:
+                userObjs = User.objects.filter(email=email, type_of_user='student')
+                if len(userObjs) != 0:
+                    return Response({"status": "error", "message": ("A student with the same email id already exists. " +
+                        "Either log in the user with this registered email id or register yourself with some other email id.")},
+                        status=HTTP_400_BAD_REQUEST)
+                studentUserObj.email = email
+                studentUserObj.save()
 
         # Validate contact number
         valid_contact = True
@@ -2658,31 +2665,34 @@ class CompleteStudentProfileView(UpdateAPIView):
             studentObj.image = None
             studentObj.save()
 
-        # Update user obj
-        studentUserObj.username = username
-        studentUserObj.email = email
-        studentUserObj.set_password(data['password1'])
-        studentUserObj.save()
+        if not complete:
+            # Update user obj
+            studentUserObj.username = username
+            studentUserObj.email = email
+            studentUserObj.set_password(data['password1'])
+            studentUserObj.save()
 
         # Update student obj
         self.partial_update(request, *args, **kwargs)
 
         # Now profile is complete
+        studentObj = get_object_or_404(Student, user=studentUserObj)
         studentObj.complete = True
         studentObj.save()
 
-        # Send email with the updated credentials
-        subject = 'Genesis Classes Credentials'
-        content = """
-            <p>Hi {}</p>
-            <p>Thanks for updating your profile at {}. Your login credentials are -</p>
-            <p>username: <b>{}</b><br>
-            password: <b>{}</b></p>
-            <p>We hope you have a good learning experience with us. All the Best for your journey ahead!</p>
-            Regards<br>
-            Genesis Classes Team
-        """.format(data['first_name'], DOMAIN, username, data['password1'])
-        send_email(subject, content, [email])
+        if not complete:
+            # Send email with the updated credentials, for first time login only
+            subject = 'Genesis Classes Credentials'
+            content = """
+                <p>Hi {}</p>
+                <p>Thanks for updating your profile at {}. Your login credentials are -</p>
+                <p>username: <b>{}</b><br>
+                password: <b>{}</b></p>
+                <p>We hope you have a good learning experience with us. All the Best for your journey ahead!</p>
+                Regards<br>
+                Genesis Classes Team
+            """.format(data['first_name'], DOMAIN, username, data['password1'])
+            send_email(subject, content, [email])
 
         return Response({'status': 'successful'})
 

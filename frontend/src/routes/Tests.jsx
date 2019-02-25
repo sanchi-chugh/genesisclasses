@@ -4,6 +4,8 @@ import ViewTest from "../components/Actions/Tests/ViewTests";
 import AddTest from "../components/Actions/Tests/AddTest";
 import Sections from "../views/Sections/Sections";
 import Questions from "../views/Questions/Questions";
+import ViewPassage from "../components/Actions/Questions/ViewPassage";
+import ViewQuestion from "../components/Actions/Questions/ViewQuestions";
 
 var testsRoutes = [
     { 
@@ -23,6 +25,12 @@ var testsRoutes = [
     },
     { 
         path: "/tests/sections/questions/:id", name: "questions", component: Questions //id = sectionId
+    },
+    { 
+        path: "/tests/sections/questions/passages/:id", name: "passages", component: ViewPassage //id = passageId
+    },
+    { 
+        path: "/tests/sections/questions/detail/:id", name: "question", component: ViewQuestion //id = questionId
     },
 ];
 

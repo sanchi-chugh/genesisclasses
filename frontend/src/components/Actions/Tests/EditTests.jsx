@@ -444,7 +444,7 @@ class EditTest extends Component {
               />
             </Col>
           </Row>
-        </Grid>>
+        </Grid>
       </div>
     );
   }

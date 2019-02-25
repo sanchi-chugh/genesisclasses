@@ -98,7 +98,7 @@ class Tests extends Component {
         Authorization: `Token ${localStorage.token}`
         }
     }).then(res => {
-          const results = res.data.results.map(item => {
+        const results = res.data.results.map(item => {
           item.sno = res.data.results.indexOf(item) + 1+index;
           return item;
         })

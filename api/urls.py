@@ -117,7 +117,7 @@ urlpatterns = [
 
 
     # -------------------STUDENT APP ENDPOINTS--------------------
-    path('complete-profile/<int:pk>/', CompleteProfileView.as_view()),
+    path('app/profile/update/', CompleteStudentProfileView.as_view()),
 
     # ---------------------COMMON ENDPOINTS-----------------------
     # This is for browsable api login/logout

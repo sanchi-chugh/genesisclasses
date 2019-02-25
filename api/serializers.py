@@ -500,18 +500,22 @@ class CentrePieChartSerializer(serializers.ModelSerializer):
             centre=obj, joiningDate__gte=context['start_date'], joiningDate__lte=context['end_date']).count()
         return round((centre_students/all_students)*100, 2)
 
+# -----------STUDENT VIEW SERIALIZERS-------------
+
 # Currently being used in complete profile view
 class StudentSerializer(serializers.ModelSerializer):
-    course = NestedCourseSerializer(read_only=True)
-    centre = CentreSerializer(read_only=True)
-    user = UserSerializer(read_only=True)
-    user_id = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), source='user', write_only=True)
-    course_id = serializers.PrimaryKeyRelatedField(
-        queryset=Course.objects.all(), source='course', write_only=True)
-    centre_id = serializers.PrimaryKeyRelatedField(
-        queryset=Centre.objects.all(), source='centre', write_only=True)
-
+    endAccessDate = serializers.DateField(format='%b %d, %Y')
+    joiningDate = serializers.DateField(format='%b %d, %Y')
+    dateOfBirth = serializers.DateField(format='%b %d, %Y')
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    centre = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='location',
+    )
     class Meta:
         model = Student
-        fields = '__all__'
+        exclude = ['user']

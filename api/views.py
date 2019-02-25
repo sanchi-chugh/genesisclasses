@@ -7,7 +7,7 @@ from api.models import Student, Centre, Test, Question, Section, Option
 from rest_framework import viewsets, permissions, filters
 from api.utils import parser
 from rest_framework.response import Response
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from .permissions import *
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
@@ -29,7 +29,7 @@ import shutil
 def get_super_admin(user):
     type_of_user = user.type_of_user
     if type_of_user == 'student':
-        super_admin = user.student.super_admin
+        super_admin = user.student.centre.super_admin
     elif type_of_user == 'staff':
         super_admin = user.staff.super_admin
     else:
@@ -98,6 +98,43 @@ def check_for_date(fields_arr, data):
     return (False, Response({"status": "error",
         "message": "Incorrect date format. Please provide \"YYYY-MM-DD\" format in \"" + '", "'.join(wrong_fields) + "\""},
         status=HTTP_400_BAD_REQUEST))
+
+# Helper function to send email
+def send_email(subject, content, recipient_list):
+    email_from = settings.EMAIL_HOST_USER
+    mail = EmailMessage(subject, content, email_from, recipient_list)
+    mail.content_subtype = 'html'
+    mail.send()
+
+# Helper function to validate new password
+def check_passwd_strength(data):
+    # check if passwords match
+    if data['password1'] != data['password2']:
+        return (False, Response({
+            "status": "error", "message": "Provided passwords do NOT match."},
+            status=HTTP_400_BAD_REQUEST))
+
+    password = data['password1']
+
+    # check for length
+    if len(password) < 8:
+        return (False, Response({
+            "status": "error", "message": "Password must be at least 8 characters long."},
+            status=HTTP_400_BAD_REQUEST))
+    
+    # check for digit
+    if not any(char.isdigit() for char in password):
+        return (False, Response({
+            "status": "error", "message": "Password must contain at least 1 digit."},
+            status=HTTP_400_BAD_REQUEST))
+
+    # check for letter
+    if not any(char.isalpha() for char in password):
+        return (False, Response({
+            "status": "error", "message": "Password must contain at least 1 letter."},
+            status=HTTP_400_BAD_REQUEST))
+    
+    return (True, '')
 
 # -------------------VIEWS FOR CHOICEs-------------------------
 # Shows all subjects of superadmin in the format
@@ -456,6 +493,9 @@ class AddStudentUserView(CreateAPIView):
             type_of_user='student',
             username=username,
         )
+        password = uuid.uuid4().hex[:8].lower()
+        user.set_password(password)
+        user.save()
 
         # Add info to corresponding student obj
         student, _ = self.model.objects.get_or_create(user=user)
@@ -481,6 +521,19 @@ class AddStudentUserView(CreateAPIView):
         student.dateOfBirth = op_dict['dateOfBirth']
         student.image = op_dict['image']   
         student.save()
+
+        # Send registration email with username and password
+        subject = "Genesis Classes Registration"
+        content = """
+            <p>Hi {}</p>
+            <p>Congratulations on your enrollment in Genesis Classes. You can login to {} with the following credentials -</p>
+            <p>username: <b>{}</b><br>
+            password: <b>{}</b></p>
+            <p>Please login to complete your profile and enjoy the amazing learning experience.</p>
+            Regards<br>
+            Genesis Classes Team
+        """.format(data['first_name'], DOMAIN, username, password)
+        send_email(subject, content, [email])   # Send mail
 
         return Response({"status": "successful"})
 
@@ -680,6 +733,7 @@ class AddBulkStudentsView(CreateAPIView):
             # Create user of type student
             user = User.objects.create(username=username, type_of_user="student")
             user.set_password(password)
+            user.save()
 
             # Set corresponding student courses, centres, endAccessDate and joiningDate
             studentObj = Student.objects.get(user=user)
@@ -2519,6 +2573,118 @@ class CentreSpecificTestResultCSVView(APIView):
         csvFile.close()
         absolute_path = DOMAIN + 'media/studentResultCSVs/' + csv_name
         return Response({'status': 'successful', 'csvFile': absolute_path})
+
+# ---------------------STUDENT VIEWS-------------------------
+# For filling profile detials on first time student login
+class CompleteStudentProfileView(UpdateAPIView):
+    model = Student
+    serializer_class = StudentSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get_object(self):
+        # Return object (to be used in partial update) if pk not provided in request
+        user = self.request.user
+        studentObj = get_object_or_404(Student, user=user)
+        return studentObj
+
+    def put(self, request, *args, **kwargs):
+        studentUserObj = request.user
+        studentObj = get_object_or_404(Student, user=studentUserObj)
+        data = request.data
+
+        # Search for missing fields
+        check_pass, result = fields_check([
+            'password1', 'password2', 'username', 'email', 'first_name', 'last_name', 'father_name',
+            'address', 'city', 'state', 'pinCode', 'gender', 'dateOfBirth', 'contact_number'], data)
+        if not check_pass:
+            return result
+
+        # Provide available usernames if username chosen by user is already occupied
+        username = data['username']
+        existing = [user['username'] for user in User.objects.values('username')]
+        existing.remove(studentUserObj.username)
+
+        if username in existing:
+            available = [studentUserObj.username]
+            while len(available) < 3:
+                tentative = username + uuid.uuid4().hex[:4].lower()
+                if tentative not in existing:
+                    available.append(tentative)
+
+            return Response({"status": "error", "message": ("This username is already occupied. " +
+                "Available usernames similar to this are " + ', '.join(available) + " etc or try some other username.")},
+                status=HTTP_400_BAD_REQUEST)
+
+        # Return if password strength weak
+        check_pass, result = check_passwd_strength(data)
+        if not check_pass:
+            return result
+
+        email = data['email']
+
+        # Validate email id
+        try:
+            validate_email(email)
+        except ValidationError:
+            return Response({
+                "status": "error", "message": "Provided email id is invalid."},
+                status=HTTP_400_BAD_REQUEST)
+
+        # Do not form another student with the same email id
+        if email != studentUserObj.email:
+            userObjs = User.objects.filter(email=email, type_of_user='student')
+            if len(userObjs) != 0:
+                return Response({"status": "error", "message": ("A student with the same email id already exists. " +
+                    "Either log in the user with this registered email id or register yourself with some other email id.")},
+                    status=HTTP_400_BAD_REQUEST)
+            studentUserObj.email = email
+            studentUserObj.save()
+
+        # Validate contact number
+        valid_contact = True
+        try:
+            _ = int(data['contact_number'])
+        except ValueError:
+            valid_contact = False
+
+        if len(data['contact_number']) != 10 or not valid_contact:
+            return Response({
+                "status": "error", "message": "Provided contact number is invalid. Only 10 digits are allowed."},
+                status=HTTP_400_BAD_REQUEST)
+
+        # Remove previous image from system
+        if studentObj.image and 'image' in data:
+            os.remove(studentObj.image.file.name)
+            studentObj.image = None
+            studentObj.save()
+
+        # Update user obj
+        studentUserObj.username = username
+        studentUserObj.email = email
+        studentUserObj.set_password(data['password1'])
+        studentUserObj.save()
+
+        # Update student obj
+        self.partial_update(request, *args, **kwargs)
+
+        # Now profile is complete
+        studentObj.complete = True
+        studentObj.save()
+
+        # Send email with the updated credentials
+        subject = 'Genesis Classes Credentials'
+        content = """
+            <p>Hi {}</p>
+            <p>Thanks for updating your profile at {}. Your login credentials are -</p>
+            <p>username: <b>{}</b><br>
+            password: <b>{}</b></p>
+            <p>We hope you have a good learning experience with us. All the Best for your journey ahead!</p>
+            Regards<br>
+            Genesis Classes Team
+        """.format(data['first_name'], DOMAIN, username, data['password1'])
+        send_email(subject, content, [email])
+
+        return Response({'status': 'successful'})
 
 # Staff user views (not being used yet)
 class GetStaffUsersView(ListAPIView):

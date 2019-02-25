@@ -16,7 +16,8 @@ import Button from "../../../components/CustomButton/CustomButton.jsx";
 import { Checkbox, Menu, Dropdown, Icon} from 'antd';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { Editor } from 'react-draft-wysiwyg';
-import { EditorState } from 'draft-js';
+import { EditorState, convertToRaw } from 'draft-js';
+import draftToHtml from 'draftjs-to-html';
 
 import '../../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import '../../../../node_modules/antd/dist/antd.css'; 
@@ -25,10 +26,6 @@ class AddTests extends Component {
   constructor() {
     super();
     this.state = {
-      centres:[],
-      centreName:'Select Centre',
-      centreId:'',
-      preview:'',
       courses:[],
       subjects:[],
       units:[],
@@ -45,7 +42,8 @@ class AddTests extends Component {
         course:[],
         category:[],
         subject:'',
-        unit:''
+        unit:'',
+        description:'',
       },
       addingTest:false,
       testAdded:false
@@ -115,12 +113,16 @@ class AddTests extends Component {
       var formData = new FormData();
       formData.append('title',this.state.formData.title)
       formData.append('duration',this.state.formData.duration)
-      formData.append('instructions',this.state.formData.instructions)
+      formData.append('instructions',draftToHtml(convertToRaw(this.state.formData.instructions.getCurrentContent())))
       formData.append('description',this.state.formData.description)
       formData.append('course',this.state.formData.course.join(','))
       formData.append('category',this.state.formData.category.join(','))
       formData.append('typeOfTest',this.state.formData.typeOfTest)
+      formData.append('active',false)
       formData.append('startTime',this.state.formData.startTime)
+      formData.append('endTime',this.state.formData.endTime)
+      formData.append('subject',this.state.formData.subject)
+      formData.append('unit',this.state.formData.unit)
       if(this.state.formData.file !== null){
         formData.append('doc',this.state.formData.file,this.state.formData.file.name)
       }else{

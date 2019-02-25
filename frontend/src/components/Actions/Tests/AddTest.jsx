@@ -423,7 +423,7 @@ class AddTests extends Component {
               />
             </Col>
           </Row>
-        </Grid>>
+        </Grid>
       </div>
     );
   }

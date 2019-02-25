@@ -211,11 +211,11 @@ class Questions extends Component {
   }
 
   handleViewButton(obj){
-    this.props.history.push({pathname:'/questions/view',data:obj})
+    this.props.history.push({pathname:`/tests/sections/questions/detail/${obj.id}`})
   }
 
-  handleSectionButton(obj){
-    this.props.history.push({pathname:`/questions/sections/${obj.id}`})
+  handleViewPassageButton(obj){
+    this.props.history.push({pathname:`/tests/sections/questions/passages/${obj.passage.split('/')[8]}`})
   }
 
   handleShowDeleteModal(obj){
@@ -270,27 +270,6 @@ class Questions extends Component {
     }
   }
 
-  renderCourses(cell, row, enumObject, rowIndex) {
-      return (
-        <Row md={12}>
-          {
-          row.course.map((item)=>{
-            return(
-              <Col md={6}><Badge>{item.title}</Badge></Col>
-            )
-        })}   
-        </Row>
-      )
-    }
-  
-  renderSubjects(cell, row, enumObject, rowIndex) {
-    return (
-        <Row md={12}>
-            <Col md={6}><div>{row.subject !== null ? row.subject.title : ''} { row.unit !== null ? ' ('+row.unit.title+')' : '...'}</div></Col>
-        </Row>
-    )
-  }
-
   renderQuestion(cell, row, enumObject, rowIndex) {
     return (
         <div style={{width:380,wordWrap:'break-word',wordBreak:'normal',whiteSpace:'normal'}}>{renderHTML(row.questionText)}</div>
@@ -309,19 +288,16 @@ class Questions extends Component {
   renderColumn(cell, row, enumObject, rowIndex) {
     return (
       <div>
-        <Grid> 
-          {
-              row.questionType === 'passage' ?
-            <Row>
-                <ButtonToolbar>
-                    <ButtonGroup>
-                        <Button bsSize="small" style={{width:'160px'}} bsStyle="primary" onClick={this.handleViewButton.bind(this,row)}>
-                        <Glyphicon glyph="list-alt" /> VIEW PASSAGE
-                        </Button>
-                    </ButtonGroup>
-                </ButtonToolbar>
-            </Row> : null
-          }
+        <Grid>
+          <Row>
+              <ButtonToolbar>
+                  <ButtonGroup>
+                      <Button bsSize="small" style={{width:'160px'}} bsStyle="primary" onClick={this.handleViewButton.bind(this,row)}>
+                      <Glyphicon glyph="list-alt" /> VIEW QUESTION
+                      </Button>
+                  </ButtonGroup>
+              </ButtonToolbar>
+          </Row>
           <Row>
             <ButtonToolbar>
               <ButtonGroup>
@@ -334,6 +310,18 @@ class Questions extends Component {
               </ButtonGroup>
             </ButtonToolbar>
           </Row>
+          {
+              row.questionType === 'passage' ?
+            <Row>
+                <ButtonToolbar>
+                    <ButtonGroup>
+                        <Button bsSize="small" style={{width:'160px'}} bsStyle="primary" onClick={this.handleViewPassageButton.bind(this,row)}>
+                        <Glyphicon glyph="list-alt" /> VIEW PASSAGE
+                        </Button>
+                    </ButtonGroup>
+                </ButtonToolbar>
+            </Row> : null
+          }
         </Grid>
       </div>
     )

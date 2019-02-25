@@ -388,7 +388,7 @@ class AddStudents extends Component {
               />
             </Col>
           </Row>
-        </Grid>>
+        </Grid>
       </div>
     );
   }

@@ -553,12 +553,20 @@ class PracticeTestsListSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field='title',
     )
+    attempted = serializers.SerializerMethodField()
     class Meta:
         model = Test
         exclude = ['typeOfTest', 'instructions', 'doc', 'active', 'super_admin', 'subject', 'unit', 'category']
 
     def get_detail(self, obj):
         return DOMAIN + 'api/app/tests/' + str(obj.pk) + '/detail/'
+
+    def get_attempted(self, obj):
+        studentObj = self.context['studentObj']
+        result = UserTestResult.objects.filter(student=studentObj, test=obj)
+        if len(result) == 0:
+            return False
+        return True
 
 # For listing units of a particular subject
 class SubjectListSerializer(serializers.ModelSerializer):

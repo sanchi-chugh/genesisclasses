@@ -2742,6 +2742,11 @@ class TestCategoryDetailsViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, IsStudent, )
     pagination_class = StandardResultsSetPagination
 
+    def get_serializer_context(self):
+        user = self.request.user
+        studentObj = get_object_or_404(Student, user=user)
+        return {'studentObj': studentObj}
+
     def get_queryset(self):
         category_id = self.kwargs['pk']
         user = self.request.user
@@ -2831,7 +2836,7 @@ class UnitsListViewSet(viewsets.ModelViewSet):
             raise Http404
 
         subject = subjects[0]
-        units = self.model.objects.filter(subject=subject).order_by('-pk')
+        units = self.model.objects.filter(subject=subject).order_by('pk')
 
         return units
 
@@ -2841,6 +2846,11 @@ class UnitWiseTestsListViewSet(viewsets.ModelViewSet):
     serializer_class = PracticeTestsListSerializer
     permission_classes = (permissions.IsAuthenticated, IsStudent, )
     pagination_class = StandardResultsSetPagination
+
+    def get_serializer_context(self):
+        user = self.request.user
+        studentObj = get_object_or_404(Student, user=user)
+        return {'studentObj': studentObj}
 
     def get_queryset(self):
         unit_id = self.kwargs['pk']

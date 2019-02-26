@@ -502,16 +502,12 @@ class CentrePieChartSerializer(serializers.ModelSerializer):
 
 # -----------STUDENT VIEW SERIALIZERS-------------
 
-# Currently being used in complete profile view
+# Being used in complete profile view
 class StudentSerializer(serializers.ModelSerializer):
     endAccessDate = serializers.DateField(format='%b %d, %Y')
     joiningDate = serializers.DateField(format='%b %d, %Y')
     dateOfBirth = serializers.DateField(format='%b %d, %Y')
-    course = serializers.SlugRelatedField(
-        many=True,
-        read_only=True,
-        slug_field='title',
-    )
+    course = NestedCourseSerializer(many=True)
     centre = serializers.SlugRelatedField(
         read_only=True,
         slug_field='location',
@@ -519,3 +515,75 @@ class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         exclude = ['user']
+
+# For listing upcoming tests
+class UpcomingTestsListSerializer(serializers.ModelSerializer):
+    startTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    endtime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    detail = serializers.SerializerMethodField()
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    class Meta:
+        model = Test
+        exclude = ['instructions', 'typeOfTest', 'doc', 'active', 'super_admin', 'subject', 'unit', 'category']
+
+    def get_detail(self, obj):
+        return DOMAIN + 'api/app/tests/' + str(obj.pk) + '/detail/'
+
+# For listing Categories
+class TestCategoriesListSerializer(serializers.ModelSerializer):
+    tests = serializers.SerializerMethodField()
+    class Meta:
+        model = Category
+        exclude = ['super_admin']
+
+    def get_tests(self, obj):
+        return DOMAIN + 'api/app/tests/practice/category/' + str(obj.pk) + '/'
+
+# For listing practice tests
+class PracticeTestsListSerializer(serializers.ModelSerializer):
+    detail = serializers.SerializerMethodField()
+    startTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    endtime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    attempted = serializers.SerializerMethodField()
+    class Meta:
+        model = Test
+        exclude = ['typeOfTest', 'instructions', 'doc', 'active', 'super_admin', 'subject', 'unit', 'category']
+
+    def get_detail(self, obj):
+        return DOMAIN + 'api/app/tests/' + str(obj.pk) + '/detail/'
+
+    def get_attempted(self, obj):
+        studentObj = self.context['studentObj']
+        result = UserTestResult.objects.filter(student=studentObj, test=obj)
+        if len(result) == 0:
+            return False
+        return True
+
+# For listing units of a particular subject
+class SubjectListSerializer(serializers.ModelSerializer):
+    units = serializers.SerializerMethodField()
+    class Meta:
+        model = Subject
+        exclude = ['course', 'super_admin']
+
+    def get_units(self, obj):
+        return DOMAIN + 'api/app/units/' + str(obj.id) + '/'
+
+# For lisitng tests of a particular unit
+class UnitListSerializer(serializers.ModelSerializer):
+    tests = serializers.SerializerMethodField()
+    class Meta:
+        model = Unit
+        exclude = ['subject']
+
+    def get_tests(self, obj):
+        return DOMAIN + 'api/app/tests/practice/category/unitWise/' + str(obj.pk) + '/'

@@ -286,7 +286,7 @@ class Unit(models.Model):
 class Test(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    startTime = models.DateTimeField(default = timezone.now)
+    startTime = models.DateTimeField(default=timezone.now)
     endtime = models.DateTimeField(blank=True, null=True)
     typeOfTest = models.CharField(
         max_length = 8,

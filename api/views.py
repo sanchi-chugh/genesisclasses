@@ -2590,55 +2590,62 @@ class CompleteStudentProfileView(UpdateAPIView):
     def put(self, request, *args, **kwargs):
         studentUserObj = request.user
         studentObj = get_object_or_404(Student, user=studentUserObj)
+        complete = studentObj.complete
         data = request.data
 
+        compulsory_fields = ['first_name', 'last_name', 'father_name',
+            'address', 'city', 'state', 'pinCode', 'gender', 'dateOfBirth', 'contact_number']
+
+        if not complete:
+            # In case of first time update
+            compulsory_fields = compulsory_fields + ['password1', 'password2', 'username', 'email']
+
         # Search for missing fields
-        check_pass, result = fields_check([
-            'password1', 'password2', 'username', 'email', 'first_name', 'last_name', 'father_name',
-            'address', 'city', 'state', 'pinCode', 'gender', 'dateOfBirth', 'contact_number'], data)
+        check_pass, result = fields_check(compulsory_fields, data)
         if not check_pass:
             return result
 
-        # Provide available usernames if username chosen by user is already occupied
-        username = data['username']
-        existing = [user['username'] for user in User.objects.values('username')]
-        existing.remove(studentUserObj.username)
+        if not complete:
+            # Provide available usernames if username chosen by user is already occupied
+            username = data['username']
+            existing = [user['username'] for user in User.objects.values('username')]
+            existing.remove(studentUserObj.username)
 
-        if username in existing:
-            available = [studentUserObj.username]
-            while len(available) < 3:
-                tentative = username + uuid.uuid4().hex[:4].lower()
-                if tentative not in existing:
-                    available.append(tentative)
+            if username in existing:
+                available = [studentUserObj.username]
+                while len(available) < 3:
+                    tentative = username + uuid.uuid4().hex[:4].lower()
+                    if tentative not in existing:
+                        available.append(tentative)
 
-            return Response({"status": "error", "message": ("This username is already occupied. " +
-                "Available usernames similar to this are " + ', '.join(available) + " etc or try some other username.")},
-                status=HTTP_400_BAD_REQUEST)
-
-        # Return if password strength weak
-        check_pass, result = check_passwd_strength(data)
-        if not check_pass:
-            return result
-
-        email = data['email']
-
-        # Validate email id
-        try:
-            validate_email(email)
-        except ValidationError:
-            return Response({
-                "status": "error", "message": "Provided email id is invalid."},
-                status=HTTP_400_BAD_REQUEST)
-
-        # Do not form another student with the same email id
-        if email != studentUserObj.email:
-            userObjs = User.objects.filter(email=email, type_of_user='student')
-            if len(userObjs) != 0:
-                return Response({"status": "error", "message": ("A student with the same email id already exists. " +
-                    "Either log in the user with this registered email id or register yourself with some other email id.")},
+                return Response({"status": "error", "message": ("This username is already occupied. " +
+                    "Available usernames similar to this are " + ', '.join(available) + " etc or try some other username.")},
                     status=HTTP_400_BAD_REQUEST)
-            studentUserObj.email = email
-            studentUserObj.save()
+
+            # Return if password strength weak
+            check_pass, result = check_passwd_strength(data)
+            if not check_pass:
+                return result
+
+            email = data['email']
+
+            # Validate email id
+            try:
+                validate_email(email)
+            except ValidationError:
+                return Response({
+                    "status": "error", "message": "Provided email id is invalid."},
+                    status=HTTP_400_BAD_REQUEST)
+
+            # Do not form another student with the same email id
+            if email != studentUserObj.email:
+                userObjs = User.objects.filter(email=email, type_of_user='student')
+                if len(userObjs) != 0:
+                    return Response({"status": "error", "message": ("A student with the same email id already exists. " +
+                        "Either log in the user with this registered email id or register yourself with some other email id.")},
+                        status=HTTP_400_BAD_REQUEST)
+                studentUserObj.email = email
+                studentUserObj.save()
 
         # Validate contact number
         valid_contact = True
@@ -2658,33 +2665,241 @@ class CompleteStudentProfileView(UpdateAPIView):
             studentObj.image = None
             studentObj.save()
 
-        # Update user obj
-        studentUserObj.username = username
-        studentUserObj.email = email
-        studentUserObj.set_password(data['password1'])
-        studentUserObj.save()
+        if not complete:
+            # Update user obj
+            studentUserObj.username = username
+            studentUserObj.email = email
+            studentUserObj.set_password(data['password1'])
+            studentUserObj.save()
 
         # Update student obj
         self.partial_update(request, *args, **kwargs)
 
         # Now profile is complete
+        studentObj = get_object_or_404(Student, user=studentUserObj)
         studentObj.complete = True
         studentObj.save()
 
-        # Send email with the updated credentials
-        subject = 'Genesis Classes Credentials'
-        content = """
-            <p>Hi {}</p>
-            <p>Thanks for updating your profile at {}. Your login credentials are -</p>
-            <p>username: <b>{}</b><br>
-            password: <b>{}</b></p>
-            <p>We hope you have a good learning experience with us. All the Best for your journey ahead!</p>
-            Regards<br>
-            Genesis Classes Team
-        """.format(data['first_name'], DOMAIN, username, data['password1'])
-        send_email(subject, content, [email])
+        if not complete:
+            # Send email with the updated credentials, for first time login only
+            subject = 'Genesis Classes Credentials'
+            content = """
+                <p>Hi {}</p>
+                <p>Thanks for updating your profile at {}. Your login credentials are -</p>
+                <p>username: <b>{}</b><br>
+                password: <b>{}</b></p>
+                <p>We hope you have a good learning experience with us. All the Best for your journey ahead!</p>
+                Regards<br>
+                Genesis Classes Team
+            """.format(data['first_name'], DOMAIN, username, data['password1'])
+            send_email(subject, content, [email])
 
         return Response({'status': 'successful'})
+
+# Show all unattempted upcoming tests
+class UpcomingTestsListViewSet(viewsets.ModelViewSet):
+    model = Test
+    serializer_class = UpcomingTestsListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get_queryset(self):
+        user = self.request.user
+        studentObj = get_object_or_404(Student, user=user)
+        super_admin = get_super_admin(user)
+        today = timezone.localtime(timezone.now())
+
+        # User can attempt the test anytime between startTime and endtime
+        upcomingTests = self.model.objects.filter(typeOfTest='upcoming', super_admin=super_admin,
+            active=True, course__in=studentObj.course.all(), startTime__lte=today).distinct().order_by('-pk')
+        upcomingTests = upcomingTests.filter(Q(endtime__gt=today) | Q(endtime=None))
+
+        # Show only unattempted tests
+        upcomingTestResults = UserTestResult.objects.filter(student=studentObj, test__typeOfTest='upcoming')
+        attemptedTests = [testResult.test for testResult in upcomingTestResults]
+
+        unattemptedTests = []
+        for test in upcomingTests:
+            if test not in attemptedTests:
+                unattemptedTests.append(test)
+
+        return unattemptedTests
+
+# List all test categories
+class TestCategoriesListViewSet(viewsets.ModelViewSet):
+    model = Category
+    serializer_class = TestCategoriesListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        categories = self.model.objects.filter(super_admin=super_admin).order_by('pk')
+        return categories
+
+# Get practice tests of a particular test category
+class TestCategoryDetailsViewSet(viewsets.ModelViewSet):
+    model = Test
+    serializer_class = PracticeTestsListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_serializer_context(self):
+        user = self.request.user
+        studentObj = get_object_or_404(Student, user=user)
+        return {'studentObj': studentObj}
+
+    def get_queryset(self):
+        category_id = self.kwargs['pk']
+        user = self.request.user
+        studentObj = get_object_or_404(Student, user=user)
+        super_admin = get_super_admin(user)
+        today = timezone.localtime(timezone.now())
+
+        # User can attempt the test anytime between startTime and endtime
+        practiceTests = self.model.objects.filter(super_admin=super_admin, category__id=category_id, typeOfTest='practice',
+            active=True, course__in=studentObj.course.all(), startTime__lte=today).distinct().order_by('pk')
+        practiceTests = practiceTests.filter(Q(endtime__gt=today) | Q(endtime=None))
+
+        # Get optional parameters
+        params_dict = self.request.GET
+        op_dict = set_optional_fields(['course', 'attempted'], params_dict)
+
+        if op_dict['course']:
+            # Filter according to course
+            course = get_object_or_404(Course, pk=str(op_dict['course']))
+            practiceTests = practiceTests.filter(course=course)
+
+        if op_dict['attempted']:
+            # Return if attempted is not a bool field
+            bool_dict, check_pass, result = check_for_bool(['attempted'], params_dict)
+            if not check_pass:
+                return {}, False, result
+
+            # Filter according to if test is attempted or not
+            practiceTestResults = UserTestResult.objects.filter(student=studentObj, test__typeOfTest='practice')
+            allAttemptedTests = [testResult.test for testResult in practiceTestResults]
+
+            if bool_dict['attempted']:
+                attemptedTests = []
+                for test in practiceTests:
+                    if test in allAttemptedTests:
+                        attemptedTests.append(test)
+                practiceTests = attemptedTests
+            else:
+                unattemptedTests = []
+                for test in practiceTests:
+                    if test not in allAttemptedTests:
+                        unattemptedTests.append(test)
+                practiceTests = unattemptedTests
+
+        return practiceTests
+
+# Get list of all subjects (to be shown under unit wise tests)
+class SubjectListViewSet(viewsets.ModelViewSet):
+    model = Subject
+    serializer_class = SubjectListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get_queryset(self):
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+        subjects = self.model.objects.filter(
+            super_admin=super_admin, course__in=studentObj.course.all()).distinct().order_by('pk')
+
+        # Filter according to course
+        params_dict = self.request.GET
+        op_dict = set_optional_fields(['course'], params_dict)
+
+        if op_dict['course']:
+            course = get_object_or_404(Course, pk=str(op_dict['course']))
+            subjects = subjects.filter(course=course)
+
+        return subjects
+
+# Get list of all units of a particular subject
+class UnitsListViewSet(viewsets.ModelViewSet):
+    model = Unit
+    serializer_class = UnitListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get_queryset(self):
+        subject_id = self.kwargs['pk']
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        # If subject (whose units are required) does not belong 
+        # to course in which student is enrolled, show 404
+        subjects = Subject.objects.filter(super_admin=super_admin,
+            course__in=studentObj.course.all(), pk=subject_id).distinct()
+        if len(subjects) == 0:
+            raise Http404
+
+        subject = subjects[0]
+        units = self.model.objects.filter(subject=subject).order_by('pk')
+
+        return units
+
+# Get list of all tests of a particular unit
+class UnitWiseTestsListViewSet(viewsets.ModelViewSet):
+    model = Test
+    serializer_class = PracticeTestsListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_serializer_context(self):
+        user = self.request.user
+        studentObj = get_object_or_404(Student, user=user)
+        return {'studentObj': studentObj}
+
+    def get_queryset(self):
+        unit_id = self.kwargs['pk']
+        unit = get_object_or_404(Unit, pk=unit_id)
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        # Raise 404 if student does not have access to the subject
+        subjects = Subject.objects.filter(super_admin=super_admin,
+            course__in=studentObj.course.all(), pk=unit.subject.id).distinct()
+        if len(subjects) == 0:
+            raise Http404
+
+        # Get list of tests
+        subject = subjects[0]
+        today = timezone.localtime(timezone.now())
+        practiceTests = self.model.objects.filter(super_admin=super_admin, typeOfTest='practice', active=True,
+            course__in=studentObj.course.all(), subject=subject, unit=unit, startTime__lte=today).distinct().order_by('pk')
+        practiceTests = practiceTests.filter(Q(endtime__gt=today) | Q(endtime=None))
+
+        # Get optional parameter attempted
+        params_dict = self.request.GET
+        op_dict = set_optional_fields(['attempted'], params_dict)
+
+        if op_dict['attempted']:
+            # Return if attempted is not a bool field
+            bool_dict, check_pass, result = check_for_bool(['attempted'], params_dict)
+            if not check_pass:
+                return {}, False, result
+
+            # Filter according to if test is attempted or not
+            practiceTestResults = UserTestResult.objects.filter(student=studentObj, test__typeOfTest='practice')
+            allAttemptedTests = [testResult.test for testResult in practiceTestResults]
+
+            if bool_dict['attempted']:
+                attemptedTests = []
+                for test in practiceTests:
+                    if test in allAttemptedTests:
+                        attemptedTests.append(test)
+                practiceTests = attemptedTests
+            else:
+                unattemptedTests = []
+                for test in practiceTests:
+                    if test not in allAttemptedTests:
+                        unattemptedTests.append(test)
+                practiceTests = unattemptedTests
+
+        return practiceTests
 
 # Staff user views (not being used yet)
 class GetStaffUsersView(ListAPIView):
@@ -2721,20 +2936,3 @@ class AddStaffView(APIView):
             "username": username,
             "password": password,
         })
-
-class CompleteProfileView(UpdateAPIView):
-    serializer_class = StudentSerializer
-
-    def get_queryset(self, *args, **kwargs):
-        return Student.objects.filter(user=self.request.user)
-
-    def put(self, request, *args, **kwargs):
-        print(request.data)
-        response = super(CompleteProfileView, self).put(request,
-                                                    *args,
-                                                    **kwargs)
-        if response.status_code == 200:
-            obj = Student.objects.get(id=kwargs['pk'])
-            obj.complete = True
-            obj.save()
-        return response

@@ -117,7 +117,17 @@ urlpatterns = [
 
 
     # -------------------STUDENT APP ENDPOINTS--------------------
-    path('app/profile/update/', CompleteStudentProfileView.as_view()),
+    # Home Screen Endpoints
+    path('app/profile/update/', CompleteStudentProfileView.as_view()),  # Student updates profile on first time login
+    path('app/tests/upcoming/', UpcomingTestsListViewSet.as_view({'get': 'list'})),    # List all unattempted upcoming tests
+    path('app/tests/categories/', TestCategoriesListViewSet.as_view({'get': 'list'})),  # List all categories in the home screen
+    path('app/tests/practice/category/<int:pk>/', TestCategoryDetailsViewSet.as_view({'get': 'list'})),  # List tests in a category
+
+    # Unit Wise Test Endpoints
+    path('app/subjects/', SubjectListViewSet.as_view({'get': 'list'})),     # List all subjects
+    path('app/units/<int:pk>/', UnitsListViewSet.as_view({'get': 'list'})),     # List all units of a subject
+    path('app/tests/practice/category/unitWise/<int:pk>/', UnitWiseTestsListViewSet.as_view({'get': 'list'})),  # List tests of a unit
+    # path('app/tests/<int:pk>/detail/', TestDetailView.as_view()),     # Test detail view (same for upcoming and practice)
 
     # ---------------------COMMON ENDPOINTS-----------------------
     # This is for browsable api login/logout

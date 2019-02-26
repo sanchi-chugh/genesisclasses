@@ -575,7 +575,7 @@ class UnitListSerializer(serializers.ModelSerializer):
     tests = serializers.SerializerMethodField()
     class Meta:
         model = Unit
-        exclude = []
+        exclude = ['subject']
 
     def get_tests(self, obj):
         return DOMAIN + 'api/app/tests/practice/category/unitWise/' + str(obj.pk) + '/'

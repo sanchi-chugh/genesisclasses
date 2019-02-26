@@ -2826,14 +2826,70 @@ class UnitsListViewSet(viewsets.ModelViewSet):
         # If subject (whose units are required) does not belong 
         # to course in which student is enrolled, show 404
         subjects = Subject.objects.filter(super_admin=super_admin,
-            course__in=studentObj.course.all(), pk=subject_id).distinct().order_by('pk')
+            course__in=studentObj.course.all(), pk=subject_id).distinct()
         if len(subjects) == 0:
             raise Http404
 
         subject = subjects[0]
-        units = self.model.objects.filter(subject=subject)
+        units = self.model.objects.filter(subject=subject).order_by('-pk')
 
         return units
+
+# Get list of all tests of a particular unit
+class UnitWiseTestsListViewSet(viewsets.ModelViewSet):
+    model = Test
+    serializer_class = PracticeTestsListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        unit_id = self.kwargs['pk']
+        unit = get_object_or_404(Unit, pk=unit_id)
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        # Raise 404 if student does not have access to the subject
+        subjects = Subject.objects.filter(super_admin=super_admin,
+            course__in=studentObj.course.all(), pk=unit.subject.id).distinct()
+        if len(subjects) == 0:
+            raise Http404
+
+        # Get list of tests
+        subject = subjects[0]
+        today = timezone.localtime(timezone.now())
+        practiceTests = self.model.objects.filter(super_admin=super_admin, typeOfTest='practice', active=True,
+            course__in=studentObj.course.all(), subject=subject, unit=unit, startTime__lte=today).distinct().order_by('pk')
+        practiceTests = practiceTests.filter(Q(endtime__gt=today) | Q(endtime=None))
+
+        # Get optional parameter attempted
+        params_dict = self.request.GET
+        op_dict = set_optional_fields(['attempted'], params_dict)
+
+        if op_dict['attempted']:
+            # Return if attempted is not a bool field
+            bool_dict, check_pass, result = check_for_bool(['attempted'], params_dict)
+            if not check_pass:
+                return {}, False, result
+
+            # Filter according to if test is attempted or not
+            practiceTestResults = UserTestResult.objects.filter(student=studentObj, test__typeOfTest='practice')
+            allAttemptedTests = [testResult.test for testResult in practiceTestResults]
+
+            if bool_dict['attempted']:
+                attemptedTests = []
+                for test in practiceTests:
+                    if test in allAttemptedTests:
+                        attemptedTests.append(test)
+                practiceTests = attemptedTests
+            else:
+                unattemptedTests = []
+                for test in practiceTests:
+                    if test not in allAttemptedTests:
+                        unattemptedTests.append(test)
+                practiceTests = unattemptedTests
+
+        return practiceTests
 
 # Staff user views (not being used yet)
 class GetStaffUsersView(ListAPIView):

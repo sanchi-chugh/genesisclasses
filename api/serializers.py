@@ -507,11 +507,7 @@ class StudentSerializer(serializers.ModelSerializer):
     endAccessDate = serializers.DateField(format='%b %d, %Y')
     joiningDate = serializers.DateField(format='%b %d, %Y')
     dateOfBirth = serializers.DateField(format='%b %d, %Y')
-    course = serializers.SlugRelatedField(
-        many=True,
-        read_only=True,
-        slug_field='title',
-    )
+    course = NestedCourseSerializer(many=True)
     centre = serializers.SlugRelatedField(
         read_only=True,
         slug_field='location',
@@ -520,14 +516,19 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         exclude = ['user']
 
-# For listing tests
+# For listing upcoming tests
 class UpcomingTestsListSerializer(serializers.ModelSerializer):
     startTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
     endtime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
     detail = serializers.SerializerMethodField()
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
     class Meta:
         model = Test
-        exclude = ['instructions', 'typeOfTest', 'doc', 'active', 'super_admin', 'subject', 'unit', 'category', 'course']
+        exclude = ['instructions', 'typeOfTest', 'doc', 'active', 'super_admin', 'subject', 'unit', 'category']
 
     def get_detail(self, obj):
         return DOMAIN + 'api/app/tests/' + str(obj.pk) + '/detail/'
@@ -541,3 +542,20 @@ class TestCategoriesListSerializer(serializers.ModelSerializer):
 
     def get_tests(self, obj):
         return DOMAIN + 'api/app/tests/practice/category/' + str(obj.pk) + '/'
+
+# For listing practice tests
+class PracticeTestsListSerializer(serializers.ModelSerializer):
+    detail = serializers.SerializerMethodField()
+    startTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    endtime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    class Meta:
+        model = Test
+        exclude = ['typeOfTest', 'instructions', 'doc', 'active', 'super_admin', 'subject', 'unit', 'category']
+
+    def get_detail(self, obj):
+        return DOMAIN + 'api/app/tests/' + str(obj.pk) + '/detail/'

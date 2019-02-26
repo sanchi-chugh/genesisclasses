@@ -2696,6 +2696,34 @@ class CompleteStudentProfileView(UpdateAPIView):
 
         return Response({'status': 'successful'})
 
+# Show all unattempted upcoming tests
+class UpcomingTestsListViewSet(viewsets.ModelViewSet):
+    model = Test
+    serializer_class = UpcomingTestsListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get_queryset(self):
+        user = self.request.user
+        studentObj = get_object_or_404(Student, user=user)
+        super_admin = get_super_admin(user)
+        today = timezone.localtime(timezone.now())
+
+        # User can attempt the test anytime between startTime and endtime
+        upcomingTests = Test.objects.filter(typeOfTest='upcoming', super_admin=super_admin,
+            active=True, course__in=studentObj.course.all(), startTime__lte=today).order_by('-pk')
+        upcomingTests = upcomingTests.filter(Q(endtime__gt=today) | Q(endtime=None))
+
+        # Show only unattempted tests
+        upcomingTestResults = UserTestResult.objects.filter(student=studentObj, test__typeOfTest='upcoming')
+        attemptedTests = [testResult.test for testResult in upcomingTestResults]
+
+        unattemptedTests = []
+        for test in upcomingTests:
+            if test not in attemptedTests:
+                unattemptedTests.append(test)
+
+        return unattemptedTests
+
 # Staff user views (not being used yet)
 class GetStaffUsersView(ListAPIView):
     serializer_class = StaffSerializer

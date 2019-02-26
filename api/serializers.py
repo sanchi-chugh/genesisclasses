@@ -502,7 +502,7 @@ class CentrePieChartSerializer(serializers.ModelSerializer):
 
 # -----------STUDENT VIEW SERIALIZERS-------------
 
-# Currently being used in complete profile view
+# Being used in complete profile view
 class StudentSerializer(serializers.ModelSerializer):
     endAccessDate = serializers.DateField(format='%b %d, %Y')
     joiningDate = serializers.DateField(format='%b %d, %Y')
@@ -519,3 +519,15 @@ class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         exclude = ['user']
+
+# For listing tests
+class UpcomingTestsListSerializer(serializers.ModelSerializer):
+    startTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    endtime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    detail = serializers.SerializerMethodField()
+    class Meta:
+        model = Test
+        exclude = ['instructions', 'typeOfTest', 'doc', 'active', 'super_admin', 'subject', 'unit', 'category', 'course']
+
+    def get_detail(self, obj):
+        return DOMAIN + 'api/app/tests/' + str(obj.pk) + '/detail/'

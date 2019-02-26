@@ -569,3 +569,13 @@ class SubjectListSerializer(serializers.ModelSerializer):
 
     def get_units(self, obj):
         return DOMAIN + 'api/app/units/' + str(obj.id) + '/'
+
+# For lisitng tests of a particular unit
+class UnitListSerializer(serializers.ModelSerializer):
+    tests = serializers.SerializerMethodField()
+    class Meta:
+        model = Unit
+        exclude = []
+
+    def get_tests(self, obj):
+        return DOMAIN + 'api/app/tests/practice/category/unitWise/' + str(obj.pk) + '/'

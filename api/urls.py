@@ -125,6 +125,7 @@ urlpatterns = [
 
     # Unit Wise Test Endpoints
     path('app/subjects/', SubjectListViewSet.as_view({'get': 'list'})),
+    path('app/units/<int:pk>/', UnitsListViewSet.as_view({'get': 'list'})),
     # path('app/tests/<int:pk>/detail/', TestDetailView.as_view()),     # Test detail view (same for upcoming and practice)
 
     # ---------------------COMMON ENDPOINTS-----------------------

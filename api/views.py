@@ -2811,6 +2811,30 @@ class SubjectListViewSet(viewsets.ModelViewSet):
 
         return subjects
 
+# Get list of all units of a particular subject
+class UnitsListViewSet(viewsets.ModelViewSet):
+    model = Unit
+    serializer_class = UnitListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get_queryset(self):
+        subject_id = self.kwargs['pk']
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        # If subject (whose units are required) does not belong 
+        # to course in which student is enrolled, show 404
+        subjects = Subject.objects.filter(super_admin=super_admin,
+            course__in=studentObj.course.all(), pk=subject_id).distinct().order_by('pk')
+        if len(subjects) == 0:
+            raise Http404
+
+        subject = subjects[0]
+        units = self.model.objects.filter(subject=subject)
+
+        return units
+
 # Staff user views (not being used yet)
 class GetStaffUsersView(ListAPIView):
     serializer_class = StaffSerializer

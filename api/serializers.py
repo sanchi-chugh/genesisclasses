@@ -531,3 +531,13 @@ class UpcomingTestsListSerializer(serializers.ModelSerializer):
 
     def get_detail(self, obj):
         return DOMAIN + 'api/app/tests/' + str(obj.pk) + '/detail/'
+
+# For listing Categories
+class TestCategoriesListSerializer(serializers.ModelSerializer):
+    tests = serializers.SerializerMethodField()
+    class Meta:
+        model = Category
+        exclude = ['super_admin']
+
+    def get_tests(self, obj):
+        return DOMAIN + 'api/app/tests/practice/category/' + str(obj.pk) + '/'

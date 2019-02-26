@@ -119,6 +119,8 @@ urlpatterns = [
     # -------------------STUDENT APP ENDPOINTS--------------------
     path('app/profile/update/', CompleteStudentProfileView.as_view()),  # Student updates profile on first time login
     path('app/tests/upcoming/', UpcomingTestsListViewSet.as_view({'get': 'list'})),    # List all unattempted upcoming tests
+    path('app/tests/categories/', TestCategoriesListViewSet.as_view({'get': 'list'})),  # List all categories in the home screen
+    # path('app/tests/practice/category/<int:pk>/', TestCategoryDetailsView.as_view()),    # List all tests in the category
     # path('app/tests/<int:pk>/detail/', TestDetailView.as_view()),     # Test detail view (same for upcoming and practice)
 
     # ---------------------COMMON ENDPOINTS-----------------------

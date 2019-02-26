@@ -2724,6 +2724,17 @@ class UpcomingTestsListViewSet(viewsets.ModelViewSet):
 
         return unattemptedTests
 
+# List all test categories
+class TestCategoriesListViewSet(viewsets.ModelViewSet):
+    model = Category
+    serializer_class = TestCategoriesListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get_queryset(self):
+        super_admin = get_super_admin(self.request.user)
+        categories = Category.objects.filter(super_admin=super_admin).order_by('pk')
+        return categories
+
 # Staff user views (not being used yet)
 class GetStaffUsersView(ListAPIView):
     serializer_class = StaffSerializer
@@ -2759,20 +2770,3 @@ class AddStaffView(APIView):
             "username": username,
             "password": password,
         })
-
-class CompleteProfileView(UpdateAPIView):
-    serializer_class = StudentSerializer
-
-    def get_queryset(self, *args, **kwargs):
-        return Student.objects.filter(user=self.request.user)
-
-    def put(self, request, *args, **kwargs):
-        print(request.data)
-        response = super(CompleteProfileView, self).put(request,
-                                                    *args,
-                                                    **kwargs)
-        if response.status_code == 200:
-            obj = Student.objects.get(id=kwargs['pk'])
-            obj.complete = True
-            obj.save()
-        return response

@@ -2788,6 +2788,29 @@ class TestCategoryDetailsViewSet(viewsets.ModelViewSet):
 
         return practiceTests
 
+# Get list of all subjects (to be shown under unit wise tests)
+class SubjectListViewSet(viewsets.ModelViewSet):
+    model = Subject
+    serializer_class = SubjectListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get_queryset(self):
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+        subjects = self.model.objects.filter(
+            super_admin=super_admin, course__in=studentObj.course.all()).distinct().order_by('pk')
+
+        # Filter according to course
+        params_dict = self.request.GET
+        op_dict = set_optional_fields(['course'], params_dict)
+
+        if op_dict['course']:
+            course = get_object_or_404(Course, pk=str(op_dict['course']))
+            subjects = subjects.filter(course=course)
+
+        return subjects
+
 # Staff user views (not being used yet)
 class GetStaffUsersView(ListAPIView):
     serializer_class = StaffSerializer

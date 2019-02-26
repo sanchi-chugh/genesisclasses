@@ -559,3 +559,13 @@ class PracticeTestsListSerializer(serializers.ModelSerializer):
 
     def get_detail(self, obj):
         return DOMAIN + 'api/app/tests/' + str(obj.pk) + '/detail/'
+
+# For listing units of a particular subject
+class SubjectListSerializer(serializers.ModelSerializer):
+    units = serializers.SerializerMethodField()
+    class Meta:
+        model = Subject
+        exclude = ['course', 'super_admin']
+
+    def get_units(self, obj):
+        return DOMAIN + 'api/app/units/' + str(obj.id) + '/'

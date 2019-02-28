@@ -225,7 +225,7 @@ class Questions extends Component {
   }
 
   handleAddButton(obj){
-    this.props.history.push({pathname:'/questions/add'})
+    this.props.history.push({pathname:`/tests/sections/questions/add/${this.props.match.params.id}`})
   }
 
   handleEditButton(obj){

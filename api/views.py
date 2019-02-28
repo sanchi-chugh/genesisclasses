@@ -12,8 +12,7 @@ from .permissions import *
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
 from rest_framework.status import HTTP_400_BAD_REQUEST
-from django.core.validators import validate_email
-from django.core.validators import ValidationError
+from django.core.validators import validate_email, ValidationError
 from django.db.models import Q
 from test_series.settings import DOMAIN, MEDIA_ROOT
 from .paginators import *
@@ -2960,3 +2959,111 @@ class TestDetailView(APIView):
         testData = TestDetailSerializer(test, context={'request': request}).data
 
         return Response({'status': 'successful', 'detail': testData})
+
+# Store test question responses
+class TestSubmitView(CreateAPIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def post(self, request, *args, **kwargs):
+        test_id = kwargs['pk']
+        data = request.data
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        for responseObj in data:
+            try:
+                question = Question.objects.get(pk=responseObj['question'])
+
+                # Question Response can be saved only once
+                quesResponseObjs  = UserQuestionWiseResponse.objects.filter(question=question, student=studentObj)
+                if len(quesResponseObjs) != 0:
+                    continue
+
+                # In question responseObjs, an array of selected option pk's is recieved
+                if question.questionType == 'mcq':
+                    choices = []
+                    responses = responseObj['response']
+                    for option_id in responses:
+                        option = Option.objects.get(pk=option_id)
+                        choices.append(option)
+                    choices.sort(key=lambda obj: obj.id)
+
+                    # Check status of user's answer
+                    if len(choices) == 0:
+                        status = 'unattempted'
+                    else:
+                        status = 'incorrect'
+                        # User's answer is correct if all options are correct
+                        correctOptionsQuerySet = Option.objects.filter(question=question, correct=True).order_by('pk')
+                        correctOptions = [option for option in correctOptionsQuerySet]
+                        if choices == correctOptions:
+                            status = 'correct'
+
+                    quesResponse = UserQuestionWiseResponse.objects.create(
+                        question=question,
+                        student=studentObj,
+                        isMarkedForReview=responseObj['review'],
+                        status=status,
+                    )
+                    quesResponse.userChoices.set(choices)
+                    quesResponse.save()
+
+                elif question.questionType == 'integer':
+                    responses = responseObj['response']
+
+                    # Check status of user's answer
+                    if len(responses) == 0:
+                        status = 'unattempted'
+                    else:
+                        status = 'incorrect'
+                        # User's answer is correct if intAnswer is user's answer
+                        intAnswer = responses[0]
+                        if intAnswer == question.intAnswer:
+                            status = 'correct'
+                    
+                    quesResponse = UserQuestionWiseResponse.objects.create(
+                        question=question,
+                        student=studentObj,
+                        isMarkedForReview=responseObj['review'],
+                        status=status,
+                        userIntAnswer=intAnswer,
+                    )
+
+                else:
+                    responses = responseObj['response']
+
+                    # Check status of user's answer
+                    choices = []
+                    if len(responses) == 0:
+                        status = 'unattempted'
+                    else:
+                        choice = Option.objects.get(pk=responses[0])
+                        choices.append(choice)
+                        status = 'incorrect'
+                        # User's answer is correct if option is correct
+                        correctOption = Option.objects.get(question=question, correct=True)
+                        if choice == correctOption:
+                            status = 'correct'
+
+                    quesResponse = UserQuestionWiseResponse.objects.create(
+                        question=question,
+                        student=studentObj,
+                        isMarkedForReview=responseObj['review'],
+                        status=status,
+                    )
+                    quesResponse.userChoices.set(choices)
+                    quesResponse.save()
+
+
+            except Question.DoesNotExist:
+                # If question obj does not exist, continue with the next question
+                pass
+
+            except Option.DoesNotExist:
+                # If option obj does not exist, mark as unattempted,
+                # save the response and move on to the next question
+                quesResponse.status = 'unattempted'
+                quesResponse.save()
+
+        return Response({'status': 'successful'})

@@ -778,6 +778,51 @@ class UserQuestionWiseResponse(models.Model):
         choices=(('correct','correct'),('incorrect','incorrect'),('unattempted','unattempted')),
     )
 
+    def save(self, *args, **kwargs):
+        # Do not change anything if the object already exists
+        if self.pk:
+            return super().save(*args, **kwargs)
+
+        # Take already existing section result obj or add a new one
+        sectionResultObjs = UserSectionWiseResult.objects.filter(student=self.student, section=self.question.section)
+        if len(sectionResultObjs) == 0:
+            sectionResultObj = UserSectionWiseResult.objects.create(
+                student=self.student,
+                section=self.question.section,
+            )
+        else:
+            sectionResultObj = sectionResultObjs[0]
+
+        # Take already existing test result obj or add a new one
+        testResultObjs = UserTestResult.objects.filter(student=self.student, test=self.question.section.test)
+        if len(testResultObjs) == 0:
+            testResultObj = UserTestResult.objects.create(
+                student=self.student,
+                test=self.question.section.test,
+            )
+        else:
+            testResultObj = testResultObjs[0]
+
+        # Change marks obtained and number of correct, incorrect and unattempted questions
+        if self.status == 'incorrect':
+            sectionResultObj.incorrect += 1
+            sectionResultObj.marksObtained -= self.question.marksNegative
+            testResultObj.incorrect += 1
+            testResultObj.marksObtained -= self.question.marksNegative
+        elif self.status == 'correct':
+            sectionResultObj.correct += 1
+            sectionResultObj.marksObtained += self.question.marksPositive
+            testResultObj.correct += 1
+            testResultObj.marksObtained += self.question.marksPositive
+        else:
+            sectionResultObj.unattempted += 1
+            testResultObj.unattempted += 1
+
+        sectionResultObj.save()
+        testResultObj.save()
+
+        return super().save(*args, **kwargs)
+
     def __str__(self):
         student = self.student.first_name + ' (' + self.student.user.username + ')'
         section = self.question.section.title + ' - ' + self.question.section.test.title

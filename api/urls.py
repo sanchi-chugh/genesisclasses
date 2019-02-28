@@ -42,13 +42,15 @@ urlpatterns = [
 
     # Endpoints for tests
     path('tests/', TestInfoViewSet.as_view({'get': 'list'})),
+    path('tests/detail/<int:pk>/', TestInfoView.as_view()),
     path('tests/add/', AddTestInfoView.as_view()),
     path('tests/edit/<int:pk>/', EditTestInfoView.as_view()),
     path('tests/delete/<int:pk>/', deleteTest),
 
     # Endpoints for sections
-    # List sections of a partiular test (takes test pk as input)
+    # List sections of a particular test (takes test pk as input)
     path('tests/sections/<int:pk>/', SectionsViewSet.as_view({'get': 'list'})),
+    path('tests/sections/detail/<int:pk>/', SectionsView.as_view()),
     path('tests/sections/add/', AddSectionView.as_view()),    # Add a section
     path('tests/sections/edit/<int:pk>/', EditSectionView.as_view()),   # Edit a section
     path('tests/sections/delete/<int:pk>/', DeleteSectionView),   # Delete a section
@@ -56,7 +58,7 @@ urlpatterns = [
     path('tests/sections/rearrange/<int:pk>/', RearrangeSections.as_view()),
 
     # Endpoints for questions
-    # List ques of a partiular section (takes section pk as input)
+    # List ques of a particular section (takes section pk as input)
     path('tests/sections/questions/<int:pk>/', QuestionsViewSet.as_view({'get': 'list'})),
     path('tests/sections/questions/detail/<int:pk>/', QuestionDetailsView.as_view()),
     path('tests/sections/questions/detail/edit/<int:pk>/', EditQuestionDetailsView.as_view()),
@@ -91,6 +93,7 @@ urlpatterns = [
 
     # Endpoints for students
     path('users/students/', StudentUserViewSet.as_view({'get': 'list'})),
+    path('users/students/detail/<int:pk>/', StudentUserView.as_view()),
     path('users/students/add/', AddStudentUserView.as_view()),
     path('users/students/edit/<int:pk>/', EditStudentUserView.as_view()),
     path('users/students/delete/<int:pk>/', DeleteStudentUser),
@@ -127,7 +130,10 @@ urlpatterns = [
     path('app/subjects/', SubjectListViewSet.as_view({'get': 'list'})),     # List all subjects
     path('app/units/<int:pk>/', UnitsListViewSet.as_view({'get': 'list'})),     # List all units of a subject
     path('app/tests/practice/category/unitWise/<int:pk>/', UnitWiseTestsListViewSet.as_view({'get': 'list'})),  # List tests of a unit
-    # path('app/tests/<int:pk>/detail/', TestDetailView.as_view()),     # Test detail view (same for upcoming and practice)
+
+    # Test Attempt Endpoints (same for upcoming and practice)
+    path('app/tests/<int:pk>/detail/', TestDetailView.as_view()),    # Test detail view
+    path('app/tests/<int:pk>/submit/', TestSubmitView.as_view()),    # For storing responses of the test   
 
     # ---------------------COMMON ENDPOINTS-----------------------
     # This is for browsable api login/logout

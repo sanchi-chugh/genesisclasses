@@ -12,8 +12,7 @@ from .permissions import *
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
 from rest_framework.status import HTTP_400_BAD_REQUEST
-from django.core.validators import validate_email
-from django.core.validators import ValidationError
+from django.core.validators import validate_email, ValidationError
 from django.db.models import Q
 from test_series.settings import DOMAIN, MEDIA_ROOT
 from .paginators import *
@@ -405,6 +404,18 @@ class StudentUserViewSet(viewsets.ReadOnlyModelViewSet):
         centreObjs = Centre.objects.filter(super_admin=super_admin)
         students = self.model.objects.filter(centre__in=centreObjs).order_by('-pk')
         return students
+
+# Shows detail of a student
+class StudentUserView(APIView):
+    model = Student
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        student_id = kwargs['pk']
+        student = get_object_or_404(self.model, centre__super_admin=super_admin, pk=student_id)
+        studentData = StudentUserSerializer(student, context={'request': request}).data
+        return Response({'status': 'successful', 'detail': studentData})
 
 # Adds a student for the requested superadmin
 class AddStudentUserView(CreateAPIView):
@@ -1441,6 +1452,19 @@ class TestInfoViewSet(viewsets.ReadOnlyModelViewSet):
         tests = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
         return tests
 
+# View detailed info of the test under a superadmin
+class TestInfoView(APIView):
+    model = Test
+    serializer_class = TestInfoSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        test_id = kwargs['pk']
+        test = get_object_or_404(self.model, super_admin=super_admin, pk=test_id)
+        testData = TestInfoSerializer(test).data
+        return Response({'status': 'successful', 'detail': testData})
+
 # Helper function for adding and editing test info
 def validate_test_info(data, super_admin):
     # Search for missing fields
@@ -1845,6 +1869,18 @@ class SectionsViewSet(viewsets.ReadOnlyModelViewSet):
         sections = Section.objects.filter(test__id=test_id).order_by('sectionNumber')
         return sections
 
+# View detail of a particular section
+class SectionsView(APIView):
+    model = Section
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        section_id = kwargs['pk']
+        section = get_object_or_404(self.model, pk=section_id)
+        sectionData = TestSectionSerializer(section).data
+        return Response({'status': 'successful', 'detail': sectionData})
+
 # Add a section
 class AddSectionView(CreateAPIView):
     model = Section
@@ -2132,12 +2168,12 @@ class AddPassageView(CreateAPIView):
 
         section = get_object_or_404(Section, pk=int(data['section']))
 
-        self.model.objects.create(
+        passage = self.model.objects.create(
             paragraph=data['paragraph'],
             section=section,
         )
 
-        return Response({ "status": "successful" })
+        return Response({ "status": "successful", "passage": passage.id})
 
 # Edit passage details
 class EditPassageView(UpdateAPIView):
@@ -2574,6 +2610,42 @@ class CentreSpecificTestResultCSVView(APIView):
         absolute_path = DOMAIN + 'media/studentResultCSVs/' + csv_name
         return Response({'status': 'successful', 'csvFile': absolute_path})
 
+# Staff user views (not being used yet)
+class GetStaffUsersView(ListAPIView):
+    serializer_class = StaffSerializer
+    queryset = Staff.objects.all()
+
+class AddStaffView(APIView):
+    def post(self, request, *args, **kwargs):
+        name, email, course, centre = request.data['name'], request.data['email'], request.data['course'], request.data['centre']
+        existing = [x['username'] for x in User.objects.values('username')]
+        user, password = None, ""
+        while True:
+            username = "ST" + uuid.uuid4().hex[:5].upper()
+            password = uuid.uuid4().hex[:8].lower()
+            if username not in existing:
+                user = User.objects.create(username=username, type_of_user="staff", email=email)
+                user.set_password(password)
+                user.save()
+                break
+        user.staff.name = name
+        user.staff.course_id = course
+        user.staff.centre_id = centre
+        user.staff.super_admin = get_super_admin(request.user)
+        user.staff.save()
+        send_mail(
+            'Test Series Staff Account Credentials',
+            'username: %s\n pass: %s' %(username, password),
+            'gurpreetsinghzomato15@gmail.com',
+            [email],
+            fail_silently=False,
+        )
+        return Response({
+            "detail": "successfull",
+            "username": username,
+            "password": password,
+        })
+
 # ---------------------STUDENT VIEWS-------------------------
 # For filling profile detials on first time student login
 class CompleteStudentProfileView(UpdateAPIView):
@@ -2901,38 +2973,134 @@ class UnitWiseTestsListViewSet(viewsets.ModelViewSet):
 
         return practiceTests
 
-# Staff user views (not being used yet)
-class GetStaffUsersView(ListAPIView):
-    serializer_class = StaffSerializer
-    queryset = Staff.objects.all()
+# Get test detail along with all it's questions
+class TestDetailView(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
 
-class AddStaffView(APIView):
+    def get(self, request, *args, **kwargs):
+        test_id = kwargs['pk']
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+        today = timezone.localtime(timezone.now())
+
+        # Raise 404 if student does not have access to the subject
+        tests = Test.objects.filter(super_admin=super_admin, active=True,
+            course__in=studentObj.course.all(), pk=test_id, startTime__lte=today).distinct()
+        tests = tests.filter(Q(endtime__gt=today) | Q(endtime=None))
+        if len(tests) == 0:
+            raise Http404
+
+        # Get details of the test, along with it's questions
+        test = tests[0]
+        testData = TestDetailSerializer(test, context={'request': request}).data
+
+        return Response({'status': 'successful', 'detail': testData})
+
+# Store test question responses
+class TestSubmitView(CreateAPIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
     def post(self, request, *args, **kwargs):
-        name, email, course, centre = request.data['name'], request.data['email'], request.data['course'], request.data['centre']
-        existing = [x['username'] for x in User.objects.values('username')]
-        user, password = None, ""
-        while True:
-            username = "ST" + uuid.uuid4().hex[:5].upper()
-            password = uuid.uuid4().hex[:8].lower()
-            if username not in existing:
-                user = User.objects.create(username=username, type_of_user="staff", email=email)
-                user.set_password(password)
-                user.save()
-                break
-        user.staff.name = name
-        user.staff.course_id = course
-        user.staff.centre_id = centre
-        user.staff.super_admin = get_super_admin(request.user)
-        user.staff.save()
-        send_mail(
-            'Test Series Staff Account Credentials',
-            'username: %s\n pass: %s' %(username, password),
-            'gurpreetsinghzomato15@gmail.com',
-            [email],
-            fail_silently=False,
-        )
-        return Response({
-            "detail": "successfull",
-            "username": username,
-            "password": password,
-        })
+        test_id = kwargs['pk']
+        data = request.data
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        for responseObj in data:
+            try:
+                question = Question.objects.get(pk=responseObj['question'])
+
+                # Question Response can be saved only once
+                quesResponseObjs  = UserQuestionWiseResponse.objects.filter(question=question, student=studentObj)
+                if len(quesResponseObjs) != 0:
+                    continue
+
+                # In question responseObjs, an array of selected option pk's is recieved
+                if question.questionType == 'mcq':
+                    choices = []
+                    responses = responseObj['response']
+                    for option_id in responses:
+                        option = Option.objects.get(pk=option_id)
+                        choices.append(option)
+                    choices.sort(key=lambda obj: obj.id)
+
+                    # Check status of user's answer
+                    if len(choices) == 0:
+                        status = 'unattempted'
+                    else:
+                        status = 'incorrect'
+                        # User's answer is correct if all options are correct
+                        correctOptionsQuerySet = Option.objects.filter(question=question, correct=True).order_by('pk')
+                        correctOptions = [option for option in correctOptionsQuerySet]
+                        if choices == correctOptions:
+                            status = 'correct'
+
+                    quesResponse = UserQuestionWiseResponse.objects.create(
+                        question=question,
+                        student=studentObj,
+                        isMarkedForReview=responseObj['review'],
+                        status=status,
+                    )
+                    quesResponse.userChoices.set(choices)
+                    quesResponse.save()
+
+                elif question.questionType == 'integer':
+                    responses = responseObj['response']
+
+                    # Check status of user's answer
+                    if len(responses) == 0:
+                        status = 'unattempted'
+                    else:
+                        status = 'incorrect'
+                        # User's answer is correct if intAnswer is user's answer
+                        intAnswer = responses[0]
+                        if intAnswer == question.intAnswer:
+                            status = 'correct'
+                    
+                    quesResponse = UserQuestionWiseResponse.objects.create(
+                        question=question,
+                        student=studentObj,
+                        isMarkedForReview=responseObj['review'],
+                        status=status,
+                        userIntAnswer=intAnswer,
+                    )
+
+                else:
+                    responses = responseObj['response']
+
+                    # Check status of user's answer
+                    choices = []
+                    if len(responses) == 0:
+                        status = 'unattempted'
+                    else:
+                        choice = Option.objects.get(pk=responses[0])
+                        choices.append(choice)
+                        status = 'incorrect'
+                        # User's answer is correct if option is correct
+                        correctOption = Option.objects.get(question=question, correct=True)
+                        if choice == correctOption:
+                            status = 'correct'
+
+                    quesResponse = UserQuestionWiseResponse.objects.create(
+                        question=question,
+                        student=studentObj,
+                        isMarkedForReview=responseObj['review'],
+                        status=status,
+                    )
+                    quesResponse.userChoices.set(choices)
+                    quesResponse.save()
+
+
+            except Question.DoesNotExist:
+                # If question obj does not exist, continue with the next question
+                pass
+
+            except Option.DoesNotExist:
+                # If option obj does not exist, mark as unattempted,
+                # save the response and move on to the next question
+                quesResponse.status = 'unattempted'
+                quesResponse.save()
+
+        return Response({'status': 'successful'})

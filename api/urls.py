@@ -42,6 +42,7 @@ urlpatterns = [
 
     # Endpoints for tests
     path('tests/', TestInfoViewSet.as_view({'get': 'list'})),
+    path('tests/detail/<int:pk>/', TestInfoView.as_view()),
     path('tests/add/', AddTestInfoView.as_view()),
     path('tests/edit/<int:pk>/', EditTestInfoView.as_view()),
     path('tests/delete/<int:pk>/', deleteTest),
@@ -49,6 +50,7 @@ urlpatterns = [
     # Endpoints for sections
     # List sections of a particular test (takes test pk as input)
     path('tests/sections/<int:pk>/', SectionsViewSet.as_view({'get': 'list'})),
+    path('tests/sections/detail/<int:pk>/', SectionsView.as_view()),
     path('tests/sections/add/', AddSectionView.as_view()),    # Add a section
     path('tests/sections/edit/<int:pk>/', EditSectionView.as_view()),   # Edit a section
     path('tests/sections/delete/<int:pk>/', DeleteSectionView),   # Delete a section
@@ -91,6 +93,7 @@ urlpatterns = [
 
     # Endpoints for students
     path('users/students/', StudentUserViewSet.as_view({'get': 'list'})),
+    path('users/students/detail/<int:pk>/', StudentUserView.as_view()),
     path('users/students/add/', AddStudentUserView.as_view()),
     path('users/students/edit/<int:pk>/', EditStudentUserView.as_view()),
     path('users/students/delete/<int:pk>/', DeleteStudentUser),

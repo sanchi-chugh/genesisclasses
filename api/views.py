@@ -405,6 +405,18 @@ class StudentUserViewSet(viewsets.ReadOnlyModelViewSet):
         students = self.model.objects.filter(centre__in=centreObjs).order_by('-pk')
         return students
 
+# Shows detail of a student
+class StudentUserView(APIView):
+    model = Student
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        student_id = kwargs['pk']
+        student = get_object_or_404(self.model, centre__super_admin=super_admin, pk=student_id)
+        studentData = StudentUserSerializer(student, context={'request': request}).data
+        return Response({'status': 'successful', 'detail': studentData})
+
 # Adds a student for the requested superadmin
 class AddStudentUserView(CreateAPIView):
     model = Student
@@ -1440,6 +1452,19 @@ class TestInfoViewSet(viewsets.ReadOnlyModelViewSet):
         tests = self.model.objects.filter(super_admin=super_admin).order_by('-pk')
         return tests
 
+# View detailed info of the test under a superadmin
+class TestInfoView(APIView):
+    model = Test
+    serializer_class = TestInfoSerializer
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        test_id = kwargs['pk']
+        test = get_object_or_404(self.model, super_admin=super_admin, pk=test_id)
+        testData = TestInfoSerializer(test).data
+        return Response({'status': 'successful', 'detail': testData})
+
 # Helper function for adding and editing test info
 def validate_test_info(data, super_admin):
     # Search for missing fields
@@ -1844,6 +1869,18 @@ class SectionsViewSet(viewsets.ReadOnlyModelViewSet):
         sections = Section.objects.filter(test__id=test_id).order_by('sectionNumber')
         return sections
 
+# View detail of a particular section
+class SectionsView(APIView):
+    model = Section
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, *args, **kwargs):
+        super_admin = get_super_admin(self.request.user)
+        section_id = kwargs['pk']
+        section = get_object_or_404(self.model, pk=section_id)
+        sectionData = TestSectionSerializer(section).data
+        return Response({'status': 'successful', 'detail': sectionData})
+
 # Add a section
 class AddSectionView(CreateAPIView):
     model = Section
@@ -2131,12 +2168,12 @@ class AddPassageView(CreateAPIView):
 
         section = get_object_or_404(Section, pk=int(data['section']))
 
-        self.model.objects.create(
+        passage = self.model.objects.create(
             paragraph=data['paragraph'],
             section=section,
         )
 
-        return Response({ "status": "successful" })
+        return Response({ "status": "successful", "passage": passage.id})
 
 # Edit passage details
 class EditPassageView(UpdateAPIView):

@@ -2574,6 +2574,42 @@ class CentreSpecificTestResultCSVView(APIView):
         absolute_path = DOMAIN + 'media/studentResultCSVs/' + csv_name
         return Response({'status': 'successful', 'csvFile': absolute_path})
 
+# Staff user views (not being used yet)
+class GetStaffUsersView(ListAPIView):
+    serializer_class = StaffSerializer
+    queryset = Staff.objects.all()
+
+class AddStaffView(APIView):
+    def post(self, request, *args, **kwargs):
+        name, email, course, centre = request.data['name'], request.data['email'], request.data['course'], request.data['centre']
+        existing = [x['username'] for x in User.objects.values('username')]
+        user, password = None, ""
+        while True:
+            username = "ST" + uuid.uuid4().hex[:5].upper()
+            password = uuid.uuid4().hex[:8].lower()
+            if username not in existing:
+                user = User.objects.create(username=username, type_of_user="staff", email=email)
+                user.set_password(password)
+                user.save()
+                break
+        user.staff.name = name
+        user.staff.course_id = course
+        user.staff.centre_id = centre
+        user.staff.super_admin = get_super_admin(request.user)
+        user.staff.save()
+        send_mail(
+            'Test Series Staff Account Credentials',
+            'username: %s\n pass: %s' %(username, password),
+            'gurpreetsinghzomato15@gmail.com',
+            [email],
+            fail_silently=False,
+        )
+        return Response({
+            "detail": "successfull",
+            "username": username,
+            "password": password,
+        })
+
 # ---------------------STUDENT VIEWS-------------------------
 # For filling profile detials on first time student login
 class CompleteStudentProfileView(UpdateAPIView):
@@ -2901,38 +2937,26 @@ class UnitWiseTestsListViewSet(viewsets.ModelViewSet):
 
         return practiceTests
 
-# Staff user views (not being used yet)
-class GetStaffUsersView(ListAPIView):
-    serializer_class = StaffSerializer
-    queryset = Staff.objects.all()
+# Get test detail along with all it's questions
+class TestDetailView(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
 
-class AddStaffView(APIView):
-    def post(self, request, *args, **kwargs):
-        name, email, course, centre = request.data['name'], request.data['email'], request.data['course'], request.data['centre']
-        existing = [x['username'] for x in User.objects.values('username')]
-        user, password = None, ""
-        while True:
-            username = "ST" + uuid.uuid4().hex[:5].upper()
-            password = uuid.uuid4().hex[:8].lower()
-            if username not in existing:
-                user = User.objects.create(username=username, type_of_user="staff", email=email)
-                user.set_password(password)
-                user.save()
-                break
-        user.staff.name = name
-        user.staff.course_id = course
-        user.staff.centre_id = centre
-        user.staff.super_admin = get_super_admin(request.user)
-        user.staff.save()
-        send_mail(
-            'Test Series Staff Account Credentials',
-            'username: %s\n pass: %s' %(username, password),
-            'gurpreetsinghzomato15@gmail.com',
-            [email],
-            fail_silently=False,
-        )
-        return Response({
-            "detail": "successfull",
-            "username": username,
-            "password": password,
-        })
+    def get(self, request, *args, **kwargs):
+        test_id = kwargs['pk']
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+        today = timezone.localtime(timezone.now())
+
+        # Raise 404 if student does not have access to the subject
+        tests = Test.objects.filter(super_admin=super_admin, active=True,
+            course__in=studentObj.course.all(), pk=test_id, startTime__lte=today).distinct()
+        tests = tests.filter(Q(endtime__gt=today) | Q(endtime=None))
+        if len(tests) == 0:
+            raise Http404
+
+        # Get details of the test, along with it's questions
+        test = tests[0]
+        testData = TestDetailSerializer(test, context={'request': request}).data
+
+        return Response({'status': 'successful', 'detail': testData})

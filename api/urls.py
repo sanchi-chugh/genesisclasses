@@ -127,7 +127,9 @@ urlpatterns = [
     path('app/subjects/', SubjectListViewSet.as_view({'get': 'list'})),     # List all subjects
     path('app/units/<int:pk>/', UnitsListViewSet.as_view({'get': 'list'})),     # List all units of a subject
     path('app/tests/practice/category/unitWise/<int:pk>/', UnitWiseTestsListViewSet.as_view({'get': 'list'})),  # List tests of a unit
-    # path('app/tests/<int:pk>/detail/', TestDetailView.as_view()),     # Test detail view (same for upcoming and practice)
+
+    # Test Attempt Endpoints
+    path('app/tests/<int:pk>/detail/', TestDetailView.as_view()),     # Test detail view (same for upcoming and practice)
 
     # ---------------------COMMON ENDPOINTS-----------------------
     # This is for browsable api login/logout

@@ -587,3 +587,93 @@ class UnitListSerializer(serializers.ModelSerializer):
 
     def get_tests(self, obj):
         return DOMAIN + 'api/app/tests/practice/category/unitWise/' + str(obj.pk) + '/'
+
+# Return options of a question
+class OptionDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Option
+        exclude = ['question', 'correct']
+
+# Return question details for attempting the test
+class QuestionDetailSerializer(serializers.ModelSerializer):
+    options = OptionDetailSerializer(many=True)
+    class Meta:
+        model = Question
+        exclude = ['section', 'intAnswer', 'valid', 'explanation']
+
+# Return question details of passage type questions
+class PassageQuestionDetailSerializer(serializers.ModelSerializer):
+    options = OptionDetailSerializer(many=True)
+    class Meta:
+        model = Question
+        exclude = ['section', 'intAnswer', 'valid', 'explanation', 'questionType', 'passage']
+
+# Return passage details along with it's questionss
+class PassageDetailSerializer(serializers.ModelSerializer):
+    questions = serializers.SerializerMethodField()
+    class Meta:
+        model = Passage
+        exclude = ['section', 'id']
+
+    def get_questions(self, obj):
+        questionObjs = Question.objects.filter(questionType='passage', passage=obj).order_by('quesNumber')
+        questionData = PassageQuestionDetailSerializer(questionObjs, many=True).data
+        return questionData
+
+# Return details of the section along with it's questions
+class SectionDetailSerializer(serializers.ModelSerializer):
+    questions = serializers.SerializerMethodField()
+    class Meta:
+        model = Section
+        exclude = ['test']
+
+    def get_questions(self, obj):
+        questionObjs = Question.objects.filter(section=obj).order_by('quesNumber')
+        questionData = QuestionDetailSerializer(questionObjs, many=True).data
+        questions = []
+
+        curr_passage_id = -1
+        for ques in questionData:
+            if ques['questionType'] == 'passage':
+                # Don't show passage type questions individually
+                # Make one passage for PTQ's of the same passage
+                passage_id = ques['passage']
+                if passage_id != curr_passage_id:
+                    passageObj = get_object_or_404(Passage, pk=passage_id)
+                    passageData = PassageDetailSerializer(passageObj).data
+                    passageData['questionType'] = 'passage'
+                    questions.append(passageData)
+                    curr_passage_id = passage_id
+            elif ques['questionType'] == 'integer':
+                # Remove options and passage key if ques is integer type
+                ques.pop('options')
+                ques.pop('passage')
+                questions.append(ques)
+            else:
+                # Remove passage key if ques is not passage type
+                ques.pop('passage')
+                questions.append(ques)
+
+        return questions
+
+# Return details of the test along with it's sections
+class TestDetailSerializer(serializers.ModelSerializer):
+    sections = serializers.SerializerMethodField()
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    category = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    class Meta:
+        model = Test
+        exclude = ['doc', 'typeOfTest', 'active', 'super_admin', 'startTime', 'endtime']
+
+    def get_sections(self, obj):
+        sectionObjs = Section.objects.filter(test=obj).order_by('sectionNumber')
+        sectionData = SectionDetailSerializer(sectionObjs, many=True).data
+        return sectionData

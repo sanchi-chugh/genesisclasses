@@ -32,6 +32,29 @@
     font-size: 13px;
 }
 
+/* .ques-content{
+    
+}
+.ques-card{
+    margin-left: 20% ;
+    width: 60%;
+    height:50%;
+    cursor: pointer;
+    transition-property: box-shadow;
+    transition-duration: 0.05s;
+    transition-timing-function: linear;
+    box-shadow: 5px 5px 5px 5px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(63, 63, 68, 0.1);
+}
+
+.ques-card:hover{
+    box-shadow: 5px 5px 5px 5px rgba(0, 0, 0, 0.1), 0 0 1px 0 rgba(63, 63, 68, 1);
+}
+
+.ques-card:active {
+    box-shadow: 0 2px 0 #000;
+    transform: translateY(10px);
+  } */
+
 #map{
     position:relative;
     width:100%;
@@ -90,6 +113,16 @@
 }
 .fixed-plugin .active .fa-circle-thin{
     color: #00bbff;
+}
+
+.main-panel{
+    min-height: 92%;
+}
+
+.footer-custom{
+    position: absolute;
+    bottom:-50px;
+    width:100%;
 }
 
 .footer-dropdown{

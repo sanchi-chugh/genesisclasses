@@ -41,8 +41,8 @@ class ViewPassage extends Component {
         });
     }
 
-    handleViewButton(){
-
+    handleViewButton(obj){
+        this.props.history.push({pathname:`/tests/sections/questions/detail/${obj.id}`})
     }
 
     renderQuestion(cell, row, enumObject, rowIndex) {

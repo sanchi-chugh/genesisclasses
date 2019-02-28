@@ -13,7 +13,7 @@ import axios from 'axios';
 import { Card } from "../../../components/Card/Card.jsx";
 import { FormInputs } from "../../../components/FormInputs/FormInputs.jsx";
 import Button from "../../../components/CustomButton/CustomButton.jsx";
-import { Checkbox, Menu, Dropdown, Icon} from 'antd';
+import { Checkbox } from 'antd';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { Editor } from 'react-draft-wysiwyg';
 import { EditorState, convertToRaw } from 'draft-js';
@@ -244,7 +244,7 @@ class AddTests extends Component {
                         proprieties={[
                           {
                             label: "Duration (in minutes)*",
-                            type: "text",
+                            type: "number",
                             bsClass: "form-control",
                             placeholder: "Duration of test",
                             name:'duration',
@@ -378,7 +378,7 @@ class AddTests extends Component {
                                 <option value={item.id}>{item.title.toUpperCase()}</option>
                               )
                             })}
-                        </FormControl>  
+                        </FormControl>
                     </FormGroup>
                     <FormGroup>
                         <ControlLabel  className='form-input'>Unit (Select Subject First)</ControlLabel>

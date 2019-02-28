@@ -32,11 +32,13 @@ class ViewQuestion extends Component {
             Authorization: `Token ${localStorage.token}`
             }
         }).then(res => {
-            const options = res.data.details.options.map(item => {
-                item.sno = res.data.details.options.indexOf(item) + 1;
-                return item;
-            })
-            res.data.details.options = options
+            if(res.data.details.questionType !== 'integer'){
+                const options = res.data.details.options.map(item => {
+                    item.sno = res.data.details.options.indexOf(item) + 1;
+                    return item;
+                })
+                res.data.details.options = options
+            }
             const data = res.data
             console.log(data)
             this.setState({data:data});
@@ -88,23 +90,26 @@ class ViewQuestion extends Component {
                     title="Question Information"
                     content={
                         <Grid fluid>
-                        { 
-                            this.state.data.details.questionType === 'passage' ? renderHTML(this.state.data.details.passage.paragraph)  : null   
-                        }
-                        <hr/>
-                        {
-                            renderHTML(this.state.data.details.questionText)
-                        }
-                        <hr/>
-                        <BootstrapTable
-                            condensed pagination
-                            data={this.state.data.details.options}
-                            search>
-                                <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
-                                <TableHeaderColumn width={400} dataField='optionText' dataFormat={this.renderOption.bind(this)}>Option</TableHeaderColumn>
-                                <TableHeaderColumn dataField='correct'>Correct</TableHeaderColumn>
-                                <TableHeaderColumn dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
-                        </BootstrapTable>
+                            { 
+                                this.state.data.details.questionType === 'passage' ? renderHTML(this.state.data.details.passage.paragraph)  : null   
+                            }
+                            <hr/>
+                            {
+                                renderHTML(this.state.data.details.questionText)
+                            }
+                            <hr/>
+                            {
+                                this.state.data.details.questionType !== 'integer' ?
+                                <BootstrapTable
+                                    condensed pagination
+                                    data={this.state.data.details.options}
+                                    search>
+                                        <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
+                                        <TableHeaderColumn width={400} dataField='optionText' dataFormat={this.renderOption.bind(this)}>Option</TableHeaderColumn>
+                                        <TableHeaderColumn dataField='correct'>Correct</TableHeaderColumn>
+                                        <TableHeaderColumn dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
+                                </BootstrapTable> :null
+                            }
                         </Grid>
                     }
                 />

@@ -93,7 +93,7 @@ class NestedQuestionSerializer(serializers.ModelSerializer):
         correctOptions = Option.objects.filter(question=obj, correct=True).order_by('pk')
         return [option.optionText for option in correctOptions]
 
-# Used as both a nested serializer and a main serializer in TopperDetailsView
+# Used as both a nested serializer and a main serializer in TopperDetailsView and TestResultView
 class NestedStudentSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     course = serializers.SlugRelatedField(
@@ -336,10 +336,7 @@ class TestQuestionDetailsSerializer(serializers.ModelSerializer):
         return get_test_ques_number(obj)
 
 class PassageDetailsSerializer(serializers.ModelSerializer):
-    section = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='title',
-    )
+    section = serializers.SerializerMethodField()
     questions = serializers.SerializerMethodField()
     class Meta:
         model = Passage
@@ -352,6 +349,9 @@ class PassageDetailsSerializer(serializers.ModelSerializer):
             ques.pop('passage', None)
             ques.pop('questionType', None)
         return quesData
+
+    def get_section(self, obj):
+        return {'id': obj.section.id, 'title': obj.section.title}
 
 class StudentTestResultSerializer(serializers.ModelSerializer):
     test = serializers.SerializerMethodField()
@@ -500,18 +500,262 @@ class CentrePieChartSerializer(serializers.ModelSerializer):
             centre=obj, joiningDate__gte=context['start_date'], joiningDate__lte=context['end_date']).count()
         return round((centre_students/all_students)*100, 2)
 
-# Currently being used in complete profile view
-class StudentSerializer(serializers.ModelSerializer):
-    course = NestedCourseSerializer(read_only=True)
-    centre = CentreSerializer(read_only=True)
-    user = UserSerializer(read_only=True)
-    user_id = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), source='user', write_only=True)
-    course_id = serializers.PrimaryKeyRelatedField(
-        queryset=Course.objects.all(), source='course', write_only=True)
-    centre_id = serializers.PrimaryKeyRelatedField(
-        queryset=Centre.objects.all(), source='centre', write_only=True)
+# -----------STUDENT VIEW SERIALIZERS-------------
 
+# Being used in complete profile view
+class StudentSerializer(serializers.ModelSerializer):
+    endAccessDate = serializers.DateField(format='%b %d, %Y')
+    joiningDate = serializers.DateField(format='%b %d, %Y')
+    dateOfBirth = serializers.DateField(format='%b %d, %Y')
+    course = NestedCourseSerializer(many=True)
+    centre = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='location',
+    )
     class Meta:
         model = Student
-        fields = '__all__'
+        exclude = ['user']
+
+# For listing upcoming tests
+class UpcomingTestsListSerializer(serializers.ModelSerializer):
+    startTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    endtime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    isStarted = serializers.SerializerMethodField()
+    detail = serializers.SerializerMethodField()
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    class Meta:
+        model = Test
+        exclude = ['instructions', 'typeOfTest', 'doc', 'active', 'super_admin', 'subject', 'unit', 'category']
+
+    def get_detail(self, obj):
+        return DOMAIN + 'api/app/tests/' + str(obj.pk) + '/detail/'
+
+    def get_isStarted(self, obj):
+        # Whether test has started or not
+        today = timezone.localtime(timezone.now())
+        if obj.startTime >= today:
+            return False
+        return True
+
+# For listing Categories
+class TestCategoriesListSerializer(serializers.ModelSerializer):
+    tests = serializers.SerializerMethodField()
+    class Meta:
+        model = Category
+        exclude = ['super_admin']
+
+    def get_tests(self, obj):
+        return DOMAIN + 'api/app/tests/practice/category/' + str(obj.pk) + '/'
+
+# For listing practice tests
+class PracticeTestsListSerializer(serializers.ModelSerializer):
+    detail = serializers.SerializerMethodField()
+    startTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    endtime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    isStarted = serializers.SerializerMethodField()
+    isEnded = serializers.SerializerMethodField()
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    attempted = serializers.SerializerMethodField()
+    class Meta:
+        model = Test
+        exclude = ['typeOfTest', 'instructions', 'doc', 'active', 'super_admin', 'subject', 'unit', 'category']
+
+    def get_detail(self, obj):
+        return DOMAIN + 'api/app/tests/' + str(obj.pk) + '/detail/'
+
+    def get_attempted(self, obj):
+        studentObj = self.context['studentObj']
+        result = UserTestResult.objects.filter(student=studentObj, test=obj)
+        if len(result) == 0:
+            return False
+        return True
+
+    def get_isStarted(self, obj):
+        # Whether test has started or not
+        today = timezone.localtime(timezone.now())
+        if obj.startTime >= today:
+            return False
+        return True
+
+    def get_isEnded(self, obj):
+        # Whether test has ended or not
+        today = timezone.localtime(timezone.now())
+        if not obj.endtime:
+            return False
+        if obj.endtime >= today:
+            return False
+        return True
+
+# For listing units of a particular subject
+class SubjectListSerializer(serializers.ModelSerializer):
+    units = serializers.SerializerMethodField()
+    class Meta:
+        model = Subject
+        exclude = ['course', 'super_admin']
+
+    def get_units(self, obj):
+        return DOMAIN + 'api/app/units/' + str(obj.id) + '/'
+
+# For lisitng tests of a particular unit
+class UnitListSerializer(serializers.ModelSerializer):
+    tests = serializers.SerializerMethodField()
+    class Meta:
+        model = Unit
+        exclude = ['subject']
+
+    def get_tests(self, obj):
+        return DOMAIN + 'api/app/tests/practice/category/unitWise/' + str(obj.pk) + '/'
+
+# Return options of a question
+class OptionDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Option
+        exclude = ['question', 'correct']
+
+# Return question details for attempting the test
+class QuestionDetailSerializer(serializers.ModelSerializer):
+    options = OptionDetailSerializer(many=True)
+    class Meta:
+        model = Question
+        exclude = ['section', 'intAnswer', 'valid', 'explanation']
+
+# Return question details of passage type questions
+class PassageQuestionDetailSerializer(serializers.ModelSerializer):
+    options = OptionDetailSerializer(many=True)
+    class Meta:
+        model = Question
+        exclude = ['section', 'intAnswer', 'valid', 'explanation', 'questionType', 'passage']
+
+# Return passage details along with it's questionss
+class PassageDetailSerializer(serializers.ModelSerializer):
+    questions = serializers.SerializerMethodField()
+    class Meta:
+        model = Passage
+        exclude = ['section', 'id']
+
+    def get_questions(self, obj):
+        questionObjs = Question.objects.filter(questionType='passage', passage=obj).order_by('quesNumber')
+        questionData = PassageQuestionDetailSerializer(questionObjs, many=True).data
+        return questionData
+
+# Return details of the section along with it's questions
+class SectionDetailSerializer(serializers.ModelSerializer):
+    questions = serializers.SerializerMethodField()
+    class Meta:
+        model = Section
+        exclude = ['test']
+
+    def get_questions(self, obj):
+        questionObjs = Question.objects.filter(section=obj).order_by('quesNumber')
+        questionData = QuestionDetailSerializer(questionObjs, many=True).data
+        questions = []
+
+        curr_passage_id = -1
+        for ques in questionData:
+            if ques['questionType'] == 'passage':
+                # Don't show passage type questions individually
+                # Make one passage for PTQ's of the same passage
+                passage_id = ques['passage']
+                if passage_id != curr_passage_id:
+                    passageObj = get_object_or_404(Passage, pk=passage_id)
+                    passageData = PassageDetailSerializer(passageObj).data
+                    passageData['questionType'] = 'passage'
+                    questions.append(passageData)
+                    curr_passage_id = passage_id
+            elif ques['questionType'] == 'integer':
+                # Remove options and passage key if ques is integer type
+                ques.pop('options')
+                ques.pop('passage')
+                questions.append(ques)
+            else:
+                # Remove passage key if ques is not passage type
+                ques.pop('passage')
+                questions.append(ques)
+
+        return questions
+
+# Return details of the test along with it's sections
+class TestDetailSerializer(serializers.ModelSerializer):
+    sections = serializers.SerializerMethodField()
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    category = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    class Meta:
+        model = Test
+        exclude = ['doc', 'typeOfTest', 'active', 'super_admin', 'startTime', 'endtime']
+
+    def get_sections(self, obj):
+        sectionObjs = Section.objects.filter(test=obj).order_by('sectionNumber')
+        sectionData = SectionDetailSerializer(sectionObjs, many=True).data
+        return sectionData
+
+# Return info of test for result
+class TestInfoForResultSerializer(serializers.ModelSerializer):
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    category = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    class Meta:
+        model = Test
+        exclude = ['description', 'startTime', 'endtime', 'doc', 'active', 'super_admin', 'instructions', 'duration']
+
+# Return detailed result of user's attempted test
+class TestResultSerializer(serializers.ModelSerializer):
+    testAttemptDate = serializers.DateField(format='%b %d, %Y')
+    percentage = serializers.FloatField(source='get_percentage')
+    rank = serializers.SerializerMethodField()
+    percentile = serializers.SerializerMethodField()
+    correct = serializers.SerializerMethodField()
+    incorrect = serializers.SerializerMethodField()
+    unattempted = serializers.SerializerMethodField()
+    class Meta:
+        model = UserTestResult
+        exclude = ['id', 'student', 'test']
+
+    def get_rank(self, obj):
+        context = self.context
+        return obj.get_rank(startDate=context['start_date'], endDate=context['end_date'])
+
+    def get_percentile(self, obj):
+        context = self.context
+        return obj.get_percentile(startDate=context['start_date'], endDate=context['end_date'])
+
+    def get_correct(self, obj):
+        percentage = round((obj.correct/obj.test.totalQuestions)*100, 2)
+        return {'number': obj.correct, 'percentage': percentage}
+
+    def get_incorrect(self, obj):
+        percentage = round((obj.incorrect/obj.test.totalQuestions)*100, 2)
+        return {'number': obj.incorrect, 'percentage': percentage}
+
+    def get_unattempted(self, obj):
+        percentage = round((obj.unattempted/obj.test.totalQuestions)*100, 2)
+        return {'number': obj.unattempted, 'percentage': percentage}
+
+# Return detailed sectional result of a student
+class SectionalResultSerializer(serializers.ModelSerializer):
+    section = NestedSectionSerializer()
+    class Meta:
+        model = UserSectionWiseResult
+        exclude = ['id', 'student']

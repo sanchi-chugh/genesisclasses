@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     # http://whitenoise.evans.io/en/stable/django.html#using-whitenoise-in-development
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-
     'webpack_loader',
     'api',
 ]
@@ -79,6 +78,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries':{
+                'value_from_settings': 'api.templatetags.api_extras',
+            },
             'debug': DEBUG,
         },
     },

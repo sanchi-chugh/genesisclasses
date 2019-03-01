@@ -13,7 +13,7 @@ export class Card extends Component {
         <div className={"header" + (this.props.hCenter ? " text-center" : "")}>
           <div>
             <Row>
-              <Col md={this.props.downloadButton ? 9 : 11}>
+              <Col md={this.props.downloadButton ? 9 : this.props.editButton ? 10 : 11}>
                 <h4 className="title">{this.props.title}</h4>
               </Col>
               {this.props.downloadButton ? <Col md={2}>
@@ -24,6 +24,11 @@ export class Card extends Component {
               {this.props.addButton ? <Col md={1}>
                 <Button bsSize="small" bsStyle="success" onClick={this.props.handleShowAddModal}>
                   <Glyphicon glyph="plus-sign" /> ADD
+                </Button>
+              </Col> :''}
+              {this.props.editButton ? <Col md={2}>
+                <Button bsSize="small" bsStyle="info" onClick={this.props.handleShowEditModal}>
+                  <Glyphicon glyph="edit" /> {this.props.editButtonLabel}
                 </Button>
               </Col> :''}
               {this.props.activeButton ? <Col md={1}>

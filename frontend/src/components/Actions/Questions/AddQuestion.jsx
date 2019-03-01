@@ -15,7 +15,6 @@ import { FormInputs } from "../../../components/FormInputs/FormInputs.jsx";
 import Button from "../../../components/CustomButton/CustomButton.jsx";
 import { Checkbox } from 'antd';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import { Editor } from 'react-draft-wysiwyg';
 import { EditorState, convertToRaw } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
 import IntegerType from "./IntegerType/IntegerType.jsx";

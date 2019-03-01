@@ -135,6 +135,20 @@ def check_passwd_strength(data):
     
     return (True, '')
 
+# Get academic year acc to provided date_str
+def get_academic_yr(date_str):
+    date_str_arr = date_str.split('-')
+    date_month = date_str_arr[1]
+
+    # Academic year is defined from April 1 of 1st yr to March 31 of 2nd yr
+    if int(date_month) < 4:
+        date_str_arr[0] = str(int(date_str_arr[0]) - 1)
+
+    start_date = date_str_arr[0] + '-04-01'
+    end_date = str(int(date_str_arr[0]) + 1) + '-03-31'
+
+    return (start_date, end_date)
+
 # -------------------VIEWS FOR CHOICEs-------------------------
 # Shows all subjects of superadmin in the format
 # subject_name (course_title_1 + course_title_2 + ...)
@@ -256,20 +270,6 @@ class CentrePieChartView(APIView):
             centre__super_admin=super_admin, joiningDate__gte=start_date, joiningDate__lte=end_date).count()
 
         return Response({"status": "successful", "detail": dictV})
-
-# Get academic year acc to provided date_str
-def get_academic_yr(date_str):
-    date_str_arr = date_str.split('-')
-    date_month = date_str_arr[1]
-
-    # Academic year is defined from April 1 of 1st yr to March 31 of 2nd yr
-    if int(date_month) < 4:
-        date_str_arr[0] = str(int(date_str_arr[0]) - 1)
-
-    start_date = date_str_arr[0] + '-04-01'
-    end_date = str(int(date_str_arr[0]) + 1) + '-03-31'
-
-    return (start_date, end_date)
 
 # Get overall topper details
 class TopperDetailsView(APIView):
@@ -2782,7 +2782,7 @@ class UpcomingTestsListViewSet(viewsets.ModelViewSet):
 
         # User can attempt the test anytime between startTime and endtime
         upcomingTests = self.model.objects.filter(typeOfTest='upcoming', super_admin=super_admin,
-            active=True, course__in=studentObj.course.all(), startTime__lte=today).distinct().order_by('-pk')
+            active=True, course__in=studentObj.course.all()).distinct().order_by('-pk')
         upcomingTests = upcomingTests.filter(Q(endtime__gt=today) | Q(endtime=None))
 
         # Show only unattempted tests
@@ -2828,8 +2828,7 @@ class TestCategoryDetailsViewSet(viewsets.ModelViewSet):
 
         # User can attempt the test anytime between startTime and endtime
         practiceTests = self.model.objects.filter(super_admin=super_admin, category__id=category_id, typeOfTest='practice',
-            active=True, course__in=studentObj.course.all(), startTime__lte=today).distinct().order_by('pk')
-        practiceTests = practiceTests.filter(Q(endtime__gt=today) | Q(endtime=None))
+            active=True, course__in=studentObj.course.all()).distinct().order_by('pk')
 
         # Get optional parameters
         params_dict = self.request.GET
@@ -3002,15 +3001,20 @@ class TestSubmitView(CreateAPIView):
     permission_classes = (permissions.IsAuthenticated, IsStudent, )
 
     def post(self, request, *args, **kwargs):
-        test_id = kwargs['pk']
         data = request.data
         user = self.request.user
         super_admin = get_super_admin(user)
         studentObj = get_object_or_404(Student, user=user)
+        test_id = kwargs['pk']
+        testObj = get_object_or_404(Test, super_admin=super_admin, pk=test_id)
 
         for responseObj in data:
             try:
                 question = Question.objects.get(pk=responseObj['question'])
+
+                # Do not save question result, if question does not belong to the given test
+                if question.section.test != testObj:
+                    continue
 
                 # Question Response can be saved only once
                 quesResponseObjs  = UserQuestionWiseResponse.objects.filter(question=question, student=studentObj)
@@ -3104,3 +3108,45 @@ class TestSubmitView(CreateAPIView):
                 quesResponse.save()
 
         return Response({'status': 'successful'})
+
+# Shows overall result of the test
+class TestResultView(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get(self, request, *args, **kwargs):
+        data = request.data
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        # Get test data
+        test_id = kwargs['pk']
+        testObj = get_object_or_404(Test, super_admin=super_admin, pk=test_id)
+        testData = TestInfoForResultSerializer(testObj).data
+        
+        # Get current academic yr
+        curr_date = datetime.datetime.today().strftime('%Y-%m-%d')
+        (start_date, end_date) = get_academic_yr(curr_date)
+
+        # Get user's result
+        testResultObj = get_object_or_404(UserTestResult, test=testObj, student=studentObj)
+        testResultData = TestResultSerializer(testResultObj, context={'start_date': start_date, 'end_date': end_date}).data
+
+        # Get user sectional result
+        sectionalResultObjs = UserSectionWiseResult.objects.filter(
+            section__test=testObj, student=studentObj).order_by('section__sectionNumber')
+        sectionalResultData = SectionalResultSerializer(sectionalResultObjs, many=True).data
+
+        # Get topper's result
+        topperTestResultObj = UserTestResult.objects.filter(test=testObj,
+            testAttemptDate__gte=start_date, testAttemptDate__lte=end_date).order_by('-marksObtained')[0]
+        topperTestResultData = TestResultSerializer(topperTestResultObj, context={'start_date': start_date, 'end_date': end_date}).data
+
+        # Get topper's info
+        topper = topperTestResultObj.student
+        topperInfo = NestedStudentSerializer(topper).data
+
+        dictV = {'test': testData, 'userTestResult': testResultData, 'topperResult': topperTestResultData, 
+                 'topperInfo': topperInfo, 'sectionalResult': sectionalResultData}
+
+        return Response({'status': 'successful', 'detail': dictV})

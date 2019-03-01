@@ -133,7 +133,10 @@ urlpatterns = [
 
     # Test Attempt Endpoints (same for upcoming and practice)
     path('app/tests/<int:pk>/detail/', TestDetailView.as_view()),    # Test detail view
-    path('app/tests/<int:pk>/submit/', TestSubmitView.as_view()),    # For storing responses of the test   
+    path('app/tests/<int:pk>/submit/', TestSubmitView.as_view()),    # For storing responses of the test
+
+    # Test Result Endpoints
+    path('app/tests/<int:pk>/result/', TestResultView.as_view()),    # Test result view
 
     # ---------------------COMMON ENDPOINTS-----------------------
     # This is for browsable api login/logout

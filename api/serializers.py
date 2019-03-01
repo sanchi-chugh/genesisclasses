@@ -93,7 +93,7 @@ class NestedQuestionSerializer(serializers.ModelSerializer):
         correctOptions = Option.objects.filter(question=obj, correct=True).order_by('pk')
         return [option.optionText for option in correctOptions]
 
-# Used as both a nested serializer and a main serializer in TopperDetailsView
+# Used as both a nested serializer and a main serializer in TopperDetailsView and TestResultView
 class NestedStudentSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     course = serializers.SlugRelatedField(
@@ -336,10 +336,7 @@ class TestQuestionDetailsSerializer(serializers.ModelSerializer):
         return get_test_ques_number(obj)
 
 class PassageDetailsSerializer(serializers.ModelSerializer):
-    section = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='title',
-    )
+    section = serializers.SerializerMethodField()
     questions = serializers.SerializerMethodField()
     class Meta:
         model = Passage
@@ -352,6 +349,9 @@ class PassageDetailsSerializer(serializers.ModelSerializer):
             ques.pop('passage', None)
             ques.pop('questionType', None)
         return quesData
+
+    def get_section(self, obj):
+        return {'id': obj.section.id, 'title': obj.section.title}
 
 class StudentTestResultSerializer(serializers.ModelSerializer):
     test = serializers.SerializerMethodField()
@@ -520,6 +520,7 @@ class StudentSerializer(serializers.ModelSerializer):
 class UpcomingTestsListSerializer(serializers.ModelSerializer):
     startTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
     endtime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    isStarted = serializers.SerializerMethodField()
     detail = serializers.SerializerMethodField()
     course = serializers.SlugRelatedField(
         many=True,
@@ -532,6 +533,13 @@ class UpcomingTestsListSerializer(serializers.ModelSerializer):
 
     def get_detail(self, obj):
         return DOMAIN + 'api/app/tests/' + str(obj.pk) + '/detail/'
+
+    def get_isStarted(self, obj):
+        # Whether test has started or not
+        today = timezone.localtime(timezone.now())
+        if obj.startTime >= today:
+            return False
+        return True
 
 # For listing Categories
 class TestCategoriesListSerializer(serializers.ModelSerializer):
@@ -548,6 +556,8 @@ class PracticeTestsListSerializer(serializers.ModelSerializer):
     detail = serializers.SerializerMethodField()
     startTime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
     endtime = serializers.DateTimeField(format='%b %d, %Y (%H:%M)')
+    isStarted = serializers.SerializerMethodField()
+    isEnded = serializers.SerializerMethodField()
     course = serializers.SlugRelatedField(
         many=True,
         read_only=True,
@@ -565,6 +575,22 @@ class PracticeTestsListSerializer(serializers.ModelSerializer):
         studentObj = self.context['studentObj']
         result = UserTestResult.objects.filter(student=studentObj, test=obj)
         if len(result) == 0:
+            return False
+        return True
+
+    def get_isStarted(self, obj):
+        # Whether test has started or not
+        today = timezone.localtime(timezone.now())
+        if obj.startTime >= today:
+            return False
+        return True
+
+    def get_isEnded(self, obj):
+        # Whether test has ended or not
+        today = timezone.localtime(timezone.now())
+        if not obj.endtime:
+            return False
+        if obj.endtime >= today:
             return False
         return True
 
@@ -677,3 +703,59 @@ class TestDetailSerializer(serializers.ModelSerializer):
         sectionObjs = Section.objects.filter(test=obj).order_by('sectionNumber')
         sectionData = SectionDetailSerializer(sectionObjs, many=True).data
         return sectionData
+
+# Return info of test for result
+class TestInfoForResultSerializer(serializers.ModelSerializer):
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    category = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    class Meta:
+        model = Test
+        exclude = ['description', 'startTime', 'endtime', 'doc', 'active', 'super_admin', 'instructions', 'duration']
+
+# Return detailed result of user's attempted test
+class TestResultSerializer(serializers.ModelSerializer):
+    testAttemptDate = serializers.DateField(format='%b %d, %Y')
+    percentage = serializers.FloatField(source='get_percentage')
+    rank = serializers.SerializerMethodField()
+    percentile = serializers.SerializerMethodField()
+    correct = serializers.SerializerMethodField()
+    incorrect = serializers.SerializerMethodField()
+    unattempted = serializers.SerializerMethodField()
+    class Meta:
+        model = UserTestResult
+        exclude = ['id', 'student', 'test']
+
+    def get_rank(self, obj):
+        context = self.context
+        return obj.get_rank(startDate=context['start_date'], endDate=context['end_date'])
+
+    def get_percentile(self, obj):
+        context = self.context
+        return obj.get_percentile(startDate=context['start_date'], endDate=context['end_date'])
+
+    def get_correct(self, obj):
+        percentage = round((obj.correct/obj.test.totalQuestions)*100, 2)
+        return {'number': obj.correct, 'percentage': percentage}
+
+    def get_incorrect(self, obj):
+        percentage = round((obj.incorrect/obj.test.totalQuestions)*100, 2)
+        return {'number': obj.incorrect, 'percentage': percentage}
+
+    def get_unattempted(self, obj):
+        percentage = round((obj.unattempted/obj.test.totalQuestions)*100, 2)
+        return {'number': obj.unattempted, 'percentage': percentage}
+
+# Return detailed sectional result of a student
+class SectionalResultSerializer(serializers.ModelSerializer):
+    section = NestedSectionSerializer()
+    class Meta:
+        model = UserSectionWiseResult
+        exclude = ['id', 'student']

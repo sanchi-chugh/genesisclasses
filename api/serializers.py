@@ -80,6 +80,11 @@ class NestedSectionSerializer(serializers.ModelSerializer):
         model = Section
         fields = ('id', 'title', 'totalQuestions', 'totalMarks', 'sectionNumber')
 
+class NestedSectionTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Section
+        fields = ('id', 'title')
+
 class NestedQuestionSerializer(serializers.ModelSerializer):
     correctAnswers = serializers.SerializerMethodField()
     class Meta:
@@ -314,10 +319,7 @@ class TestQuestionSerializer(serializers.ModelSerializer):
         return get_test_ques_number(obj)
 
 class TestQuestionDetailsSerializer(serializers.ModelSerializer):
-    section = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='title',
-    )
+    section = NestedSectionTitleSerializer()
     options = NestedOptionSerializer(many=True)
     passage = serializers.SerializerMethodField()
     quesNumber = serializers.SerializerMethodField()
@@ -336,7 +338,7 @@ class TestQuestionDetailsSerializer(serializers.ModelSerializer):
         return get_test_ques_number(obj)
 
 class PassageDetailsSerializer(serializers.ModelSerializer):
-    section = serializers.SerializerMethodField()
+    section = NestedSectionTitleSerializer()
     questions = serializers.SerializerMethodField()
     class Meta:
         model = Passage
@@ -349,9 +351,6 @@ class PassageDetailsSerializer(serializers.ModelSerializer):
             ques.pop('passage', None)
             ques.pop('questionType', None)
         return quesData
-
-    def get_section(self, obj):
-        return {'id': obj.section.id, 'title': obj.section.title}
 
 class StudentTestResultSerializer(serializers.ModelSerializer):
     test = serializers.SerializerMethodField()

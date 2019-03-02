@@ -34,8 +34,7 @@ class Centres extends Component {
           centreDeleted:false,
           deletingCentre:false,
           transferData:false,
-          transferTo:'Select Centre',
-          centre:null,
+          centre:'',
           centreAdded:false,
           addingCentre:false,
 
@@ -69,10 +68,11 @@ class Centres extends Component {
   }
 
   handleHideDeleteModal() {
-    this.setState({ show2: false, deletingCentre:false, centreDeleted:false, transferData:false,transferTo:'Select Centre', centre:null});
+    this.setState({ show2: false, deletingCentre:false, centreDeleted:false, transferData:false, centre:''});
   }
 
-  handleAdd(){
+  handleAdd(e){
+    e.preventDefault();
     this.setState({ addingCentre: true }, () => {
       const data = {location:this.state.value}
       axios.post('/api/centres/add/', data, {
@@ -80,12 +80,17 @@ class Centres extends Component {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => this.setState({ addingCentre: false, centreAdded:true }, this.fetchCentres()))
+      .then((res) => {
+        this.setState({ addingCentre: false, centreAdded:true }, this.fetchCentres()); 
+        this.props.handleClick('tr','Added Successfully');
+        this.handleHideAddModal();
+      })
       .catch((err) => this.setState({ addingCentre: false }, () => console.log(err)))
     });
   }
 
-  handleDelete = () => {
+  handleDelete = (e) => {
+    e.preventDefault();
     this.setState({ deletingCentre: true }, () => {
       if(this.state.transferData){
         const data = {data:{ "centre" : this.state.centre }};
@@ -95,7 +100,9 @@ class Centres extends Component {
             },
           })
           .then((res) => {
-            this.setState({ deletingCentre: false, centreDeleted:true, transferData:false},this.fetchCentres())
+            this.setState({ deletingCentre: false, centreDeleted:true, transferData:false},this.fetchCentres());
+            this.props.handleClick('tr','Deleted Successfully', 'warning');
+            this.handleHideDeleteModal();
           })
           .catch((err) => this.setState({ deletingCentre: false }, () => console.log(err)))
       }else{
@@ -112,7 +119,8 @@ class Centres extends Component {
     });
   } 
 
-  handleEdit() {
+  handleEdit(e) {
+    e.preventDefault();
     this.setState({ updatingCentre: true }, () => {
       const data = {location:this.state.value}
       axios.put(`/api/centres/edit/${this.state.id}/`, data, {
@@ -120,7 +128,11 @@ class Centres extends Component {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => {this.setState({ updatingCentre: false, centreUpdated:true }); this.fetchCentres()})
+      .then((res) => {
+        this.setState({ updatingCentre: false, centreUpdated:true }); this.fetchCentres();
+        this.props.handleClick('tr','Updated Successfully', 'info');
+        this.handleHideEditModal();
+      })
       .catch((err) => this.setState({ updatingCentre: false }, () => console.log(err)))
     });
   }
@@ -149,8 +161,8 @@ class Centres extends Component {
     this.setState({transferData: !this.state.transferData})
   }
 
-  handleSelect(item){
-    this.setState({transferTo:item.location, centre:item.id})
+  handleSelect(e){
+    this.setState({centre:e.target.value})
   }
 
   renderColumn(cell, row, enumObject, rowIndex) {

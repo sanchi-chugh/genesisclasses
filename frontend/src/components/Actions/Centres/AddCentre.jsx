@@ -22,39 +22,35 @@ class AddCentre extends Component {
                         ADD CENTRE
                     </Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
-                    { 
-                        this.props.centreAdded 
-                        ?
-                        <center><b><p>Added Successfully</p></b></center>
-                        :
-                    <form>
-                        <FormGroup
-                        controlId="formBasicText"
-                        >
-                        <ControlLabel>CENTRE NAME</ControlLabel>
-                        <FormControl
-                            type="text"
-                            value={this.props.value}
-                            placeholder="Centre Name Cannot Be Empty"
-                            onChange={this.props.handleTextChange}
-                        />
-                        </FormGroup>
-                        <LinearProgress
-                        style={
-                            this.props.addingCentre ? 
-                            {visibility: 'visible'} :
-                            {visibility: 'hidden'}
-                            }
-                        color="primary"
-                        />
-                    </form>
-                    }
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.centreAdded ? null : <Button bsStyle="success" onClick={this.props.handleAdd}>ADD CENTRE</Button>}
-                </Modal.Footer>
+                <form onSubmit={this.props.handleAdd}>
+                    <Modal.Body>
+                        
+                            <FormGroup
+                            controlId="formBasicText"
+                            >
+                            <ControlLabel>CENTRE NAME</ControlLabel>
+                            <FormControl
+                                type="text"
+                                value={this.props.value}
+                                placeholder="Enter Centre Name..."
+                                required
+                                onChange={this.props.handleTextChange}
+                            />
+                            </FormGroup>
+                            <LinearProgress
+                            style={
+                                this.props.addingCentre ? 
+                                {visibility: 'visible'} :
+                                {visibility: 'hidden'}
+                                }
+                            color="primary"
+                            />
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={this.props.onHide}>CLOSE</Button>
+                        {this.props.centreAdded ? null : <Button bsStyle="success" type="submit">ADD CENTRE</Button>}
+                    </Modal.Footer>
+                </form>
         </Modal>
     );
   }

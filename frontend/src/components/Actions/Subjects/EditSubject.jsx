@@ -61,11 +61,9 @@ class EditSubject extends Component {
                                             style={{marginLeft:8}}
                                             inline
                                             value={props.id}
-                                            defaultChecked={
-                                                this.props.formData.course.find((item)=>{
-                                                    return item === props.id
-                                                })
-                                            }
+                                            checked={
+                                                this.props.formData.course.indexOf(props.id) !== -1
+                                              }
                                             name='course'
                                             onChange={this.props.handleFormDataChange}
                                         >{props.title}</Checkbox>);

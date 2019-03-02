@@ -35,6 +35,10 @@ class AddTests extends Component {
         duration:'',
         instructions: EditorState.createEmpty(),
         typeOfTest:'',
+        edate:null,
+        etime:null,
+        sdate:null,
+        stime:null,
         startTime:'',
         endTime:'',
         doc:'',
@@ -71,7 +75,7 @@ class AddTests extends Component {
   }
 
   fetchUnits(){
-      if(this.state.formData.subject.trim() !== ''){
+      if(this.state.formData.subject !== '' || this.state.formData.subject !== null){
         axios.get(`/api/units/${this.state.formData.subject}/`, {
             headers: {
             Authorization: `Token ${localStorage.token}`
@@ -112,15 +116,15 @@ class AddTests extends Component {
     this.setState({ addingTest: true }, () => {
       var formData = new FormData();
       formData.append('title',this.state.formData.title)
-      formData.append('duration',this.state.formData.duration)
+      formData.append('duration',this.state.formData.duration * 60 )
       formData.append('instructions',draftToHtml(convertToRaw(this.state.formData.instructions.getCurrentContent())))
       formData.append('description',this.state.formData.description)
       formData.append('course',this.state.formData.course.join(','))
       formData.append('category',this.state.formData.category.join(','))
       formData.append('typeOfTest',this.state.formData.typeOfTest)
       formData.append('active',false)
-      formData.append('startTime',this.state.formData.startTime)
-      formData.append('endTime',this.state.formData.endTime)
+      formData.append('startTime', this.state.formData.sdate + ' ' + this.state.formData.stime + ':00')
+      formData.append('endtime', this.state.formData.edate + ' ' + this.state.formData.etime + ':00')
       formData.append('subject',this.state.formData.subject)
       formData.append('unit',this.state.formData.unit)
       if(this.state.formData.file !== null){
@@ -148,6 +152,7 @@ class AddTests extends Component {
   };
 
   handleFormDataChange(e) {
+    console.log(e)
     if(e.target.name === 'course' ){
         if(e.target.checked){
           this.state.formData.course.push(e.target.value)
@@ -192,9 +197,11 @@ class AddTests extends Component {
         if(e.target.name === 'subject'){
             this.setState({ formData: {
               ...this.state.formData,
-              [e.target.name] : e.target.value
+              [e.target.name] : e.target.value,
+              unit:''
           }},this.fetchUnits.bind(this));
         }else{
+          console.log(e.target.name,e.target.value,this.state.formData)
           this.setState({ formData: {
               ...this.state.formData,
               [e.target.name] : e.target.value
@@ -213,8 +220,8 @@ class AddTests extends Component {
             <Col md={12}>
               <Card
                 title="Add Test"
-                activeButton={true}
-                handleRadioButton={this.handleFormDataChange.bind(this)}
+                // activeButton={true}
+                // handleRadioButton={this.handleFormDataChange.bind(this)}
                 content={
                   <form onSubmit={(event)=>this.handleAdd(event)}>
                     <LinearProgress
@@ -329,17 +336,17 @@ class AddTests extends Component {
                         <Col md={6}>
                             <FormControl 
                                   type='date'
-                                  name='startDate'
-                                  onchange={this.handleFormDataChange.bind(this)}
-                                  value={this.state.formData.startDate}
+                                  name='sdate'
+                                  onChange={this.handleFormDataChange.bind(this)}
+                                  value={this.state.formData.sdate}
                                 />
                         </Col>
                         <Col md={6}>
                             <FormControl 
                               type='time'
-                              name='startTime'
-                              onchange={this.handleFormDataChange.bind(this)}
-                              value={this.state.formData.startTime}
+                              name='stime'
+                              onChange={this.handleFormDataChange.bind(this)}
+                              value={this.state.formData.stime}
                             />
                         </Col>
                       </Row>
@@ -350,17 +357,17 @@ class AddTests extends Component {
                         <Col md={6}>
                             <FormControl 
                                   type='date'
-                                  name='endDate'
-                                  onchange={this.handleFormDataChange.bind(this)}
-                                  value={this.state.formData.endDate}
+                                  name='edate'
+                                  onChange={this.handleFormDataChange.bind(this)}
+                                  value={this.state.formData.edate}
                                 />
                         </Col>
                         <Col md={6}>
                             <FormControl 
                               type='time'
-                              name='endTime'
-                              onchange={this.handleFormDataChange.bind(this)}
-                              value={this.state.formData.endTime}
+                              name='etime'
+                              onChange={this.handleFormDataChange.bind(this)}
+                              value={this.state.formData.etime}
                             />
                         </Col>
                       </Row>
@@ -416,7 +423,7 @@ class AddTests extends Component {
                             }
                         color="primary"
                         />
-                    <Button bsStyle="success" pullRight fill type="submit">
+                    <Button bsStyle="success" pullRight fill type="submit" disabled={this.state.addingTest}>
                       ADD TEST
                     </Button>
                     <div className="clearfix" />

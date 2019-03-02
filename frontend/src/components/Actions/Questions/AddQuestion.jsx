@@ -130,8 +130,6 @@ class AddQuestions extends Component {
             <Col md={12}>
               <Card
                 title="Add Question"
-                activeButton={true}
-                handleRadioButton={this.handleFormDataChange.bind(this)}
                 content={
                   <form onSubmit={(event)=>this.handleAdd(event)}>
                     <LinearProgress

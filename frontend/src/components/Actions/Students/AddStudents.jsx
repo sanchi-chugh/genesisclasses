@@ -26,16 +26,16 @@ class AddStudents extends Component {
     super();
     this.state = {
       centres:[],
-      centreName:'Select Centre',
-      centreId:'',
       preview:'',
       courses:[],
       formData:{
         first_name:'',
         last_name:'',
+        location: '',
         email:'',
         contact_number:'',
         endAccessDate:'',
+        joiningDate:'',
         father_name:'',
         gender:'',
         dateOfBirth:'',
@@ -88,8 +88,9 @@ class AddStudents extends Component {
       formData.append('contact_number',this.state.formData.contact_number)
       formData.append('email',this.state.formData.email)
       formData.append('endAccessDate',this.state.formData.endAccessDate)
+      formData.append('joiningDate',this.state.formData.joiningDate)
       formData.append('course',this.state.formData.course.join(','))
-      formData.append('centre',this.state.centreId)
+      formData.append('centre',this.state.formData.location)
       formData.append('father_name',this.state.formData.father_name)
       formData.append('gender',this.state.formData.gender)
       formData.append('dateOfBirth',this.state.formData.dateOfBirth)
@@ -111,10 +112,6 @@ class AddStudents extends Component {
       .then((res) => this.setState(this.props.history.goBack(),{ addingStudent: false, studentAdded:true },this.props.handleClick('tr','Added Successfully')))
       .catch((err) => this.setState({ addingStudent: false }, () => console.log(err)))
     });
-  }
-
-  handleSelect(item){
-    this.setState({centreName:item.location, centreId:item.id})
   }
   
   handleFormDataChange(e) {
@@ -152,18 +149,6 @@ class AddStudents extends Component {
   }
 
   render() {
-    const menu = (
-      <Menu>
-        {this.state.centres.map(item =>{
-            return(
-              <Menu.Item key={item.id}>
-                  <p onClick={()=> this.handleSelect(item)}>{item.location}</p>
-              </Menu.Item>
-            )
-        })}
-      </Menu>
-    );
-
 
     return (
       <div className="content">
@@ -236,20 +221,41 @@ class AddStudents extends Component {
                         },
                       ]}
                     />
+                    <FormInputs
+                        ncols={["col-md-6"]}
+                        proprieties={[
+                          {
+                            label: "JOINING Date *",
+                            type: "date",
+                            bsClass: "form-control",
+                            name:'joiningDate',
+                            value:this.state.formData.joiningDate,
+                            onChange:this.handleFormDataChange.bind(this)
+                          },
+                        ]}
+                        contents={
+                          <Col md={6}>
+                            <FormGroup>
+                              <ControlLabel className='form-input'>Centres * </ControlLabel>
+                              <FormControl 
+                                componentClass="select" 
+                                value={this.state.formData.location} 
+                                onChange={this.handleFormDataChange.bind(this)} 
+                                name="location">
+                                  <option value=''>Select Centre...</option>
+                                  { this.state.centres.map(item =>{
+                                    return(
+                                      <option value={item.id}>{item.location}</option>
+                                    )
+                                  })}
+                              </FormControl>  
+                            </FormGroup>
+                          </Col>
+                        }
+                      />
                     <Row>
-                      <Col md={4}>
-                      <ControlLabel>Centre Name</ControlLabel>
-                        <div>
-                        <Dropdown overlay={menu}>
-                            <a className="ant-dropdown-link" style={{marginLeft:8}}>
-                                {this.state.centreName} 
-                            <Icon type="down" />
-                            </a>
-                        </Dropdown>
-                        </div>
-                      </Col>
-                      <Col md={8}>
-                        <ControlLabel>Courses</ControlLabel>
+                      <Col md={12}>
+                        <ControlLabel className='form-input'>Courses *</ControlLabel>
                         <br/>
                         <FormGroup>
                             {this.state.courses.map((props)=>{
@@ -290,7 +296,7 @@ class AddStudents extends Component {
                         contents={
                             <Col md={4}>
                               <FormGroup>
-                                  <ControlLabel>Gender</ControlLabel>
+                                  <ControlLabel className='form-input'>Gender</ControlLabel>
                                   <FormControl 
                                     componentClass="select" 
                                     value={this.state.formData.gender} 

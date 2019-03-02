@@ -20,12 +20,12 @@ class Dashboard extends Component {
       _notificationSystem: null
     };
   }
-  handleNotificationClick(position,text,icon) {
+  handleNotificationClick(position,text,level="success") {
     this.state._notificationSystem.addNotification({
       message: (
         <div>{text}</div>
       ),
-      level: 'info',
+      level: level,
       position: position,
       autoDismiss: 15
     });

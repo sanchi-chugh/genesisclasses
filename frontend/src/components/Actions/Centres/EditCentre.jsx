@@ -22,39 +22,34 @@ class EditCentre extends Component {
                         EDIT CENTRE
                     </Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
-                    { 
-                        this.props.centreUpdated 
-                        ?
-                        <center><b><p>Updated Successully</p></b></center>
-                        :
-                    <form>
-                        <FormGroup
-                        controlId="formBasicText"
-                        >
-                        <ControlLabel>CENTRE NAME</ControlLabel>
-                        <FormControl
-                            type="text"
-                            value={this.props.value}
-                            placeholder="Centre Name Cannot Be Empty"
-                            onChange={this.props.handleTextChange}
-                        />
-                        </FormGroup>
-                        <LinearProgress
-                        style={
-                            this.props.updatingCentre ? 
-                            {visibility: 'visible'} :
-                            {visibility: 'hidden'}
-                            }
-                        color="primary"
-                        />
-                    </form>
-                    }
-                </Modal.Body>
+                <form onSubmit={this.props.handleEdit}>
+                    <Modal.Body>
+                            <FormGroup
+                            controlId="formBasicText"
+                            >
+                            <ControlLabel>CENTRE NAME</ControlLabel>
+                            <FormControl
+                                type="text"
+                                value={this.props.value}
+                                placeholder="Enter Centre Name..."
+                                required
+                                onChange={this.props.handleTextChange}
+                            />
+                            </FormGroup>
+                            <LinearProgress
+                            style={
+                                this.props.updatingCentre ? 
+                                {visibility: 'visible'} :
+                                {visibility: 'hidden'}
+                                }
+                            color="primary"
+                            />
+                    </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.centreUpdated ? null : <Button bsStyle="primary" onClick={this.props.handleEdit}>EDIT CENTRE</Button>}
+                    {this.props.centreUpdated ? null : <Button bsStyle="primary" type="submit">EDIT CENTRE</Button>}
                 </Modal.Footer>
+                </form>
         </Modal>
     );
   }

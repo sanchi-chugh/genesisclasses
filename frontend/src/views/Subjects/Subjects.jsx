@@ -196,7 +196,12 @@ class Subjects extends Component {
     console.log(this.state.formData.file,this.state)
     if(e.target.name === 'course' ){
         if(e.target.checked){
-          this.state.formData.course.push(e.target.value)
+          this.setState({
+            formData:{
+              ...this.state.formData,
+              course:[...this.state.formData.course, e.target.value]
+            }
+          })
         }else{
           this.setState({
             formData:{

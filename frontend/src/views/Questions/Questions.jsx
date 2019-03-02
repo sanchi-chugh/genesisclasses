@@ -6,7 +6,6 @@ import { Grid,
          ButtonGroup, 
          Button, 
          Glyphicon, 
-         Badge
 } from "react-bootstrap";
 import axios from 'axios';
 
@@ -40,8 +39,6 @@ class Questions extends Component {
           questionChoice:[],
           value: '',
           id:null,
-          updatingQuestion:false,
-          questionUpdated:false,
           questionDeleted:false,
           deletingQuestion:false,
           transferData:false,
@@ -229,7 +226,7 @@ class Questions extends Component {
   }
 
   handleEditButton(obj){
-    this.props.history.push({pathname:`/questions/edit/${obj.id}`})
+    this.props.history.push({pathname:`/tests/sections/questions/detail/edit/${obj.id}`})
   }
 
   handleFormDataChange(e) {

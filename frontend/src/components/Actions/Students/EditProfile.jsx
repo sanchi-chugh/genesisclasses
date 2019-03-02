@@ -157,7 +157,12 @@ class AddStudents extends Component {
   handleFormDataChange(e) {
     if(e.target.name === 'course' ){
         if(e.target.checked){
-          this.state.formData.course.push(e.target.value)
+          this.setState({
+            formData:{
+              ...this.state.formData,
+              course:[...this.state.formData.course, e.target.value]
+            }
+          })
         }else{
           this.setState({
             formData:{
@@ -303,10 +308,8 @@ class AddStudents extends Component {
                                             inline
                                             value={props.id}
                                             name='course'
-                                            defaultChecked={
-                                              this.state.formData.course.find((item)=>{
-                                                  return item === props.id
-                                              })
+                                            checked={
+                                              this.state.formData.course.indexOf( props.id ) !== -1
                                             }
                                             onChange={this.handleFormDataChange.bind(this)}
                                         >{props.title}</Checkbox>);

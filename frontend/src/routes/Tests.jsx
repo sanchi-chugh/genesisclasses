@@ -7,13 +7,14 @@ import Questions from "../views/Questions/Questions";
 import ViewPassage from "../components/Actions/Questions/ViewPassage";
 import ViewQuestion from "../components/Actions/Questions/ViewQuestions";
 import AddQuestion from "../components/Actions/Questions/AddQuestion";
+import EditQuestions from "../components/Actions/Questions/EditQuestions";
 
 var testsRoutes = [
     { 
         path: "/tests", name: "tests", component: Tests
     },
     { 
-        path: "/tests/edit", name: "edit", component: EditTest
+        path: "/tests/edit/:id", name: "edit", component: EditTest //testID
     },
     { 
         path: "/tests/view", name: "view", component: ViewTest
@@ -35,6 +36,9 @@ var testsRoutes = [
     },
     { 
         path: "/tests/sections/questions/add/:id", name: "add question", component: AddQuestion //id = sectionId
+    },
+    { 
+        path: "/tests/sections/questions/detail/edit/:id", name: "add question", component: EditQuestions //id = questionId
     },
 ];
 

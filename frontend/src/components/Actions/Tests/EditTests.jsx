@@ -5,7 +5,7 @@ import {
   Col,
   FormGroup,
   ControlLabel,
-  FormControl
+  FormControl,
 } from "react-bootstrap";
 
 import axios from 'axios';
@@ -13,60 +13,127 @@ import moment from 'moment';
 
 import { Card } from "../../../components/Card/Card.jsx";
 import { FormInputs } from "../../../components/FormInputs/FormInputs.jsx";
-import { UserCard } from "../../../components/UserCard/UserCard.jsx";
 import Button from "../../../components/CustomButton/CustomButton.jsx";
-import { Checkbox, Menu, Dropdown, Icon} from 'antd';
+import { Checkbox } from 'antd';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import { Editor } from 'react-draft-wysiwyg';
+import { EditorState, ContentState, convertToRaw, convertFromHTML } from 'draft-js';
+import draftToHtml from 'draftjs-to-html';
 
+import '../../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import '../../../../node_modules/antd/dist/antd.css'; 
-import { LinearProgress } from "@material-ui/core";
-
 class EditTest extends Component {
 
   constructor() {
     super();
     this.state = {
-      centres:[],
-      preview:'',
       courses:[],
+      subjects:[],
+      units:[],
+      categories:[],
       formData:{
-        first_name:'',
-        last_name:'',
-        email:'',
-        contact_number:'',
-        endAccessDate:'',
-        father_name:'',
-        gender:'',
-        dateOfBirth:'',
-        address:'',
-        city:'',
-        state:'',
-        pinCode:'',
-        image:null,
+        title:'',
+        duration:'',
+        instructions: EditorState.createEmpty(),
+        typeOfTest:'',
+        edate:null,
+        etime:null,
+        sdate:null,
+        stime:null,
+        startTime:'',
+        endTime:'',
+        doc:'',
         file:null,
         course:[],
-        clear:false,
-        centreName:'Select Centre',
-        centreId:''
+        category:[],
+        subject:'',
+        unit:'',
+        description:'',
       },
-      updatingStudent:false,
-      studentUpdated:false
+      updatingTest:false,
+      testUpdated:false
     };
   }
 
-  componentDidMount() {
-    this.fetchCentres();
+  componentWillMount() {
+    this.fetchCategories();
     this.fetchCourses();
     this.setOldData();
   }
 
-  fetchCentres(){
-    axios.get("/api/centres/", {
+  setOldData(){
+    axios.get(`/api/tests/detail/${this.props.match.params.id}/`, {
+      headers: {
+      Authorization: `Token ${localStorage.token}`
+      }
+    }).then(res => {
+        const data = res.data;
+        let durations = data.detail.duration.split(':')
+        console.log(durations)
+        const duration = parseInt(durations[0],10)*60 + parseInt(durations[1])
+        this.setState({
+          formData:{
+            ...this.state.formData,
+            title: data.detail.title,
+            duration: duration,
+            typeOfTest: data.detail.typeOfTest,
+            instructions: EditorState.createWithContent(ContentState.createFromBlockArray(convertFromHTML(data.detail.instructions))),
+            description: data.detail.description,
+            course : data.detail.course.map(item=>{return item.id}),
+            category: data.detail.category.map(item=>{return item.id}),
+            stime: data.detail.startTime !== null ? data.detail.startTime.split('(')[1].split(')')[0] : null,
+            etime: data.detail.endtime !== null ? data.detail.endtime.split('(')[1].split(')')[0] : null,
+            sdate: data.detail.startTime !== null ? moment(new Date(data.detail.startTime)).format("YYYY-MM-DD") : null,
+            edate: data.detail.endtime !== null ? moment(new Date(data.detail.endtime)).format("YYYY-MM-DD") : null,
+            subject: data.detail.subject !== null ? data.detail.subject.id : '',
+            unit: data.detail.unit !== null ? data.detail.unit.id : '',
+          }
+        },() => {
+          this.fetchSubjects();
+          this.fetchUnits();
+        })
+    });
+  }
+
+  fetchSubjects(){
+    if(this.state.formData.course.length > 0){
+      axios.get(`/api/subjects/${this.state.formData.course.join(',')}/`, {
+          headers: {
+          Authorization: `Token ${localStorage.token}`
+          }
+      }).then(res => {
+          const data = res.data;
+          this.setState({subjects:data});
+      });
+    }else{
+      this.setState({subjects:[]})
+    }
+  }
+
+  fetchUnits(){
+      if(this.state.formData.subject !== '' && this.state.formData.subject !== null){
+        console.log(this.state.formData)
+        axios.get(`/api/units/${this.state.formData.subject}/`, {
+            headers: {
+            Authorization: `Token ${localStorage.token}`
+            }
+        }).then(res => {
+            const data = res.data;
+            this.setState({units:data});
+        });
+      }else{
+        this.setState({units:[]})
+    }
+  }
+  
+  fetchCategories(){
+    axios.get("/api/testCategories/", {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
     }).then(res => {
         const data = res.data;
-        this.setState({centres:data});
+        this.setState({categories:data});
     });
   }
 
@@ -81,83 +148,51 @@ class EditTest extends Component {
     });
   }
 
-  setOldData(){
-    this.setState({
-      preview:this.props.location.data.image,
-      formData:{
-        ...this.state.formData,
-        first_name:this.props.location.data.first_name,
-        last_name:this.props.location.data.last_name,
-        email:this.props.location.data.email,
-        contact_number:this.props.location.data.contact_number,
-        centreId:this.props.location.data.centre.id,
-        centreName:this.props.location.data.centre.location,
-        endAccessDate:moment(new Date(this.props.location.data.endAccessDate)).format("YYYY-MM-DD"),
-        father_name:this.props.location.data.father_name === null ? '' : this.props.location.data.father_name,
-        gender:this.props.location.data.gender === null ? '' : this.props.location.data.gender,
-        dateOfBirth:this.props.location.data.dateOfBirth === null ? null : moment(new Date(this.props.location.data.dateOfBirth)).format("YYYY-MM-DD"),
-        address:this.props.location.data.address === null ? '' : this.props.location.data.address,
-        city:this.props.location.data.city === null ? '' : this.props.location.data.city,
-        state:this.props.location.data.state === null ? '' : this.props.location.data.state,
-        pinCode:this.props.location.data.pinCode === null ? '' : this.props.location.data.pinCode,
-        image:this.props.location.data.image === null ? '' : this.props.location.data.image,
-        file:null,
-        course:this.props.location.data.course.map(item=>{
-          return item.id
-        }),
-      }
-    })
-  }
-
   handleEdit(e){
-    console.log('test'+'as' + this.state.formData.dateOfBirth +'end')
     e.preventDefault();
-    this.setState({ updatingStudent: true }, () => {
+    this.setState({ updatingTest: true }, () => {
       var formData = new FormData();
-      formData.append('first_name',this.state.formData.first_name)
-      formData.append('last_name',this.state.formData.last_name)
-      formData.append('contact_number',this.state.formData.contact_number)
-      formData.append('email',this.state.formData.email)
-      formData.append('endAccessDate',this.state.formData.endAccessDate)
+      formData.append('title',this.state.formData.title)
+      formData.append('duration',this.state.formData.duration * 60 )
+      formData.append('instructions',draftToHtml(convertToRaw(this.state.formData.instructions.getCurrentContent())))
+      formData.append('description',this.state.formData.description)
       formData.append('course',this.state.formData.course.join(','))
-      formData.append('centre',this.state.formData.centreId)
-      formData.append('father_name',this.state.formData.father_name)
-      formData.append('gender',this.state.formData.gender)
-      if(this.state.formData.dateOfBirth !== null && this.state.formData.dateOfBirth !== '')
-        formData.append('dateOfBirth',this.state.formData.dateOfBirth)
-      else
-        formData.append('dateOfBirth','')
-      formData.append('address',this.state.formData.address)
-      formData.append('city',this.state.formData.city)
-      formData.append('state',this.state.formData.state)
-      formData.append('pinCode',this.state.formData.pinCode)
-      if(this.state.formData.clear){
-        formData.append('image','')
-      }else if(this.state.formData.file !== null){
-        formData.append('image',this.state.formData.file,this.state.formData.file.name)
-      }
-      axios.put(`/api/users/students/edit/${this.props.location.data.id}/`, formData, {
+      formData.append('category',this.state.formData.category.join(','))
+      formData.append('typeOfTest',this.state.formData.typeOfTest)
+      formData.append('active',false)
+      formData.append('startTime', this.state.formData.sdate + ' ' + this.state.formData.stime + ':00')
+      formData.append('endtime', this.state.formData.edate + ' ' + this.state.formData.etime + ':00')
+      formData.append('subject',this.state.formData.subject)
+      formData.append('unit',this.state.formData.unit)
+      axios.put(`/api/tests/edit/${this.props.match.params.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState(this.props.history.goBack(),{ updatingStudent: false, studentUpdated:true },this.props.handleClick('tr','Updated Successfully')))
-      .catch((err) => this.setState({ updatingStudent: false }, () => console.log(err)))
+      .then((res) => this.setState(this.props.history.goBack(),{ updatingTest: false, testUpdated:true },this.props.handleClick('tr','Added Successfully')))
+      .catch((err) => this.setState({ updatingTest: false }, () => console.log(err)))
     });
   }
 
-  handleSelect(item){
-    this.setState({ formData:{
-      ...this.state.formData,
-      centreName:item.location, 
-      centreId:item.id
-    }})
-  }
-  
+  onEditorStateChange = (editorState) => {
+    this.setState({
+      formData:{
+        ...this.state.formData,
+        instructions: editorState
+      },
+    });
+  };
+
   handleFormDataChange(e) {
     if(e.target.name === 'course' ){
         if(e.target.checked){
-          this.state.formData.course.push(e.target.value)
+          this.setState({
+            formData:{
+              ...this.state.formData,
+              course:[...this.state.formData.course, e.target.value]
+            }
+          })
+          this.fetchSubjects();
         }else{
           this.setState({
             formData:{
@@ -168,145 +203,153 @@ class EditTest extends Component {
                 }
               })
             }
+          },this.fetchSubjects.bind(this))
+        }
+    }else if(e.target.name === 'category' ){
+        if(e.target.checked){
+          this.setState({
+            formData:{
+              ...this.state.formData,
+              category:[...this.state.formData.category, e.target.value]
+            }
+          })
+        }else{
+          this.setState({
+            formData:{
+              ...this.state.formData,
+              category:this.state.formData.category.filter( (item) => {
+                if(item !== e.target.value){
+                  return item
+                }
+              })
+            }
           })
         }
-    }else if(e.target.name === 'image'){
-      if(e.target.files.length){
-        let file = e.target.files[0]
-        this.setState({ 
-          preview:URL.createObjectURL(e.target.files[0]),
-          formData: {
-          ...this.state.formData,
-          file : file,
-          image:URL.createObjectURL(e.target.files[0])
-      }});
+    }else if(e.target.name === 'doc'){
+        if(e.target.files.length){
+          let file = e.target.files[0]
+          this.setState({ 
+            formData: {
+            ...this.state.formData,
+            file : file
+        }});
       }
-    }else if(e.target.name==='clear'){
-      this.setState({ 
-        formData:{
-          ...this.state.formData,
-          clear: e.target.checked
-        }
-      });
     }else{
-      this.setState({ formData: {
-        ...this.state.formData,
-        [e.target.name] : e.target.value
-    }});
+        if(e.target.name === 'subject'){
+            this.setState({ formData: {
+              ...this.state.formData,
+              [e.target.name] : e.target.value,
+              unit:''
+          }},this.fetchUnits.bind(this));
+        }else{
+          console.log(e.target.name,e.target.value,this.state.formData)
+          this.setState({ formData: {
+              ...this.state.formData,
+              [e.target.name] : e.target.value
+          }}
+        );
+      }
     }
   }
 
   render() {
-    const menu = (
-      <Menu>
-        {this.state.centres.map(item =>{
-            return(
-              <Menu.Item key={item.id}>
-                  <p onClick={()=> this.handleSelect(item)}>{item.location}</p>
-              </Menu.Item>
-            )
-        })}
-      </Menu>
-    );
-
 
     return (
       <div className="content">
         <Grid fluid>
           <Row>
-            <Col md={8}>
+            <Col md={12}>
               <Card
-                title="Edit Profile"
+                title="Edit Test"
+                // activeButton={true}
+                // handleRadioButton={this.handleFormDataChange.bind(this)}
                 content={
                   <form onSubmit={(event)=>this.handleEdit(event)}>
                     <LinearProgress
                         style={
-                            this.state.updatingStudent ? 
+                            this.state.updatingTest ? 
                             {visibility: 'visible'} :
                             {visibility: 'hidden'}
                             }
                         color="primary"
                         />
                     <FormInputs
-                      ncols={["col-md-6", "col-md-6"]}
+                      ncols={["col-md-12"]}
                       proprieties={[
                         {
-                          label: `First Name *`,
+                          label: `Test Name *`,
                           type: "text",
                           bsClass: "form-control",
-                          placeholder: "First Name",
-                          name:'first_name',
-                          value:this.state.formData.first_name,
+                          placeholder: "Test Name",
+                          name:'title',
+                          value:this.state.formData.title,
                           onChange:this.handleFormDataChange.bind(this)
                         },
-                        {
-                          label: "Last Name *",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Last Name",
-                          name:'last_name',
-                          value:this.state.formData.last_name,
-                          onChange:this.handleFormDataChange.bind(this)
-                        }
                       ]}
                     />
                     <FormInputs
-                      ncols={["col-md-4", "col-md-4", "col-md-4"]}
+                        ncols={["col-md-12"]}
+                        proprieties={[
+                          {
+                            label: "Duration (in minutes)*",
+                            type: "number",
+                            bsClass: "form-control",
+                            placeholder: "Duration of test",
+                            name:'duration',
+                            value:this.state.formData.duration,
+                            onChange:this.handleFormDataChange.bind(this)
+                          },
+                        ]}
+                      />
+                    <FormGroup>
+                        <ControlLabel  className='form-input'>Type *</ControlLabel>
+                        <FormControl 
+                          componentClass="select" 
+                          value={this.state.formData.typeOfTest} 
+                          onChange={this.handleFormDataChange.bind(this)} 
+                          name="typeOfTest">
+                            <option value=''>Choose Type Of Test...</option>
+                            <option value='practice'>Practice</option>
+                            <option value='upcoming'>Upcoming</option>   
+                        </FormControl>  
+                    </FormGroup>
+                    <FormGroup>
+                      <ControlLabel  className='form-input'>Instructions *</ControlLabel>
+                      <Editor
+                        editorState={this.state.formData.instructions}
+                        name='instructons'
+                        editorClassName={'textarea'}
+                        onEditorStateChange={this.onEditorStateChange.bind(this)}
+                      /><hr/>
+                    </FormGroup>
+                    <FormInputs
+                      ncols={["col-md-12"]}
                       proprieties={[
                         {
-                          label: "Email address *",
-                          type: "email",
+                          label: `Description *`,
+                          componentClass: 'textarea',
                           bsClass: "form-control",
-                          placeholder: "Email",
-                          name:'email',
-                          value:this.state.formData.email,
-                          onChange:this.handleFormDataChange.bind(this)
-                        },
-                        {
-                          label: "Contact Number *",
-                          type: "phone-number",
-                          bsClass: "form-control",
-                          placeholder: "Contact Number",
-                          name:'contact_number',
-                          value:this.state.formData.contact_number,
-                          onChange:this.handleFormDataChange.bind(this)
-                        },
-                        {
-                          label: "Access Date *",
-                          type: "date",
-                          bsClass: "form-control",
-                          name:'endAccessDate',
-                          value:this.state.formData.endAccessDate,
+                          placeholder: "Enter Description",
+                          name:'description',
+                          value:this.state.formData.description,
                           onChange:this.handleFormDataChange.bind(this)
                         },
                       ]}
                     />
                     <Row>
-                      <Col md={4}>
-                      <ControlLabel>Centre Name</ControlLabel>
-                        <div>
-                        <Dropdown overlay={menu}>
-                            <a className="ant-dropdown-link" style={{marginLeft:8}}>
-                                {this.state.formData.centreName} 
-                            <Icon type="down" />
-                            </a>
-                        </Dropdown>
-                        </div>
-                      </Col>
                       <Col md={8}>
-                        <ControlLabel>Courses</ControlLabel>
+                        <ControlLabel className='form-input'>Courses *</ControlLabel>
                         <br/>
                         <FormGroup>
                             {this.state.courses.map((props)=>{
+                       
                                 return(<Checkbox 
                                             style={{marginLeft:8}}
                                             inline
                                             value={props.id}
                                             name='course'
-                                            defaultChecked={
-                                              this.state.formData.course.find((item)=>{
-                                                  return item === props.id
-                                              })
+                                            checked={
+                                              this.state.formData.course.indexOf( props.id ) !== -1
                                             }
                                             onChange={this.handleFormDataChange.bind(this)}
                                         >{props.title}</Checkbox>);
@@ -314,133 +357,127 @@ class EditTest extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <FormInputs
-                      ncols={["col-md-4", "col-md-4"]}
-                      proprieties={[
-                        {
-                          label: "Father Name",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Father Name",
-                          name:'father_name',
-                          value:this.state.formData.father_name,
-                          onChange:this.handleFormDataChange.bind(this)
-                        },
-                        {
-                          label: "Date Of Birth",
-                          type: "date",
-                          bsClass: "form-control",
-                          placeholder: "Date Of Birth",
-                          name:'dateOfBirth',
-                          value:this.state.formData.dateOfBirth,
-                          onChange:this.handleFormDataChange.bind(this)
-                        }
-                      ]}
-                      contents={
-                          <Col md={4}>
-                            <FormGroup>
-                                <ControlLabel>Gender</ControlLabel>
-                                <FormControl 
-                                  componentClass="select" 
-                                  value={this.state.formData.gender} 
-                                  onChange={this.handleFormDataChange.bind(this)} 
-                                  name="gender">
-                                    <option value=''>Choose Gender...</option>
-                                    <option value='male'>Male</option>
-                                    <option value='female'>Female</option>   
-                                </FormControl>  
-                            </FormGroup>
-                          </Col>
-                      }
-                    />
+                    <Row>
+                      <Col md={8}>
+                        <ControlLabel className='form-input'>Category *</ControlLabel>
+                        <br/>
+                        <FormGroup>
+                            {this.state.categories.map((props)=>{
+                                return(<Checkbox 
+                                            style={{marginLeft:8}}
+                                            inline
+                                            value={props.id}
+                                            name='category'
+                                            checked={
+                                              this.state.formData.category.indexOf( props.id ) !== -1
+                                            }
+                                            onChange={this.handleFormDataChange.bind(this)}
+                                        >{props.title}</Checkbox>);
+                            })} 
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <hr/>
+                    <FormGroup>
+                      <ControlLabel  className='form-input'>Start Time</ControlLabel>
+                      <Row>
+                        <Col md={6}>
+                            <FormControl 
+                                  type='date'
+                                  name='sdate'
+                                  onChange={this.handleFormDataChange.bind(this)}
+                                  value={this.state.formData.sdate}
+                                />
+                        </Col>
+                        <Col md={6}>
+                            <FormControl 
+                              type='time'
+                              name='stime'
+                              onChange={this.handleFormDataChange.bind(this)}
+                              value={this.state.formData.stime}
+                            />
+                        </Col>
+                      </Row>
+                    </FormGroup>
+                    <FormGroup>
+                      <ControlLabel  className='form-input'>End Time</ControlLabel>
+                      <Row>
+                        <Col md={6}>
+                            <FormControl 
+                                  type='date'
+                                  name='edate'
+                                  onChange={this.handleFormDataChange.bind(this)}
+                                  value={this.state.formData.edate}
+                                />
+                        </Col>
+                        <Col md={6}>
+                            <FormControl 
+                              type='time'
+                              name='etime'
+                              onChange={this.handleFormDataChange.bind(this)}
+                              value={this.state.formData.etime}
+                            />
+                        </Col>
+                      </Row>
+                    </FormGroup>
+                    <FormGroup>
+                        <ControlLabel  className='form-input'>Subject (Select Course First)</ControlLabel>
+                        <FormControl 
+                          componentClass="select" 
+                          value={this.state.formData.subject} 
+                          onChange={this.handleFormDataChange.bind(this)} 
+                          name="subject">
+                            <option value=''>...</option>
+                            {this.state.subjects.map(item=>{
+                              return(
+                                <option value={item.id}>{item.title.toUpperCase()}</option>
+                              )
+                            })}
+                        </FormControl>
+                    </FormGroup>
+                    <FormGroup>
+                        <ControlLabel  className='form-input'>Unit (Select Subject First)</ControlLabel>
+                        <FormControl 
+                          componentClass="select" 
+                          value={this.state.formData.unit} 
+                          onChange={this.handleFormDataChange.bind(this)} 
+                          name="unit">
+                            <option value=''>...</option>
+                            {this.state.units.map(item=>{
+                              return(
+                                <option value={item.id}>{item.title.toUpperCase()}</option>
+                              )
+                            })}
+                        </FormControl>  
+                    </FormGroup>
                     <FormInputs
                       ncols={["col-md-12"]}
                       proprieties={[
                         {
-                          label: "Address",
-                          type: "text",
+                          label: "UPLOAD DOCUMENT",
+                          type: "file",
                           bsClass: "form-control",
-                          placeholder: "Home Adress",
-                          name:'address',
-                          value:this.state.formData.address,
-                          onChange:this.handleFormDataChange.bind(this)
+                          name:'doc',
+                          disabled:true,
+                          onChange:this.handleFormDataChange.bind(this),
+                          accept:".docx,.doc",
                         }
                       ]}
                     />
-                    <FormInputs
-                      ncols={["col-md-4", "col-md-4", "col-md-4"]}
-                      proprieties={[
-                        {
-                          label: "City",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "City",
-                          name:'city',
-                          value:this.state.formData.city,
-                          onChange:this.handleFormDataChange.bind(this)
-                        },
-                        {
-                          label: "State",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "State",
-                          name:'state',
-                          value:this.state.formData.state,
-                          onChange:this.handleFormDataChange.bind(this)
-                        },
-                        {
-                          label: "Postal Code",
-                          type: "number",
-                          bsClass: "form-control",
-                          placeholder: "ZIP Code",
-                          name:'pinCode',
-                          value:this.state.formData.pinCode,
-                          onChange:this.handleFormDataChange.bind(this)
-                        }
-                      ]}
-                    />
-                    <ControlLabel>IMAGE</ControlLabel><br/>
-                        {   this.state.formData.image === null ? 
-                              <Col  md={4}>
-                                  <p>No Image Available</p>
-                              </Col>:
-                            <Row md={12}>
-                              <Col xs={4}>
-                                  <a href={this.state.formData.image} target="_blank">{this.state.formData.image.split('/')[4]}</a> 
-                              </Col>
-                              <Col xs={4}>
-                                  <Checkbox onChange={this.handleFormDataChange.bind(this)} name="clear" >CLEAR</Checkbox><br/>
-                              </Col>
-                            </Row>
-                        }
-                      <FormControl
-                          type="file"
-                          placeholder="Image"
-                          name='image'
-                          onChange={this.handleFormDataChange.bind(this)}
-                      /> <br/>
-                      <LinearProgress
+                    <LinearProgress
                         style={
-                            this.state.updatingStudent ? 
-                            {visibility: 'visible'} :
+                            this.state.updatingTest ? 
+                            {visibility: 'visible',marginBottom:10} :
                             {visibility: 'hidden'}
                             }
                         color="primary"
                         />
-                    <Button bsStyle="success" pullRight fill type="submit">
-                      EDIT PROFILE
+                    <Button bsStyle="success" pullRight fill type="submit" disabled={this.state.updatingTest}>
+                      EDIT TEST
                     </Button>
                     <div className="clearfix" />
                   </form>
                 }
-              />
-            </Col>
-            <Col md={4}>
-              <UserCard
-                bgImage="https://ununsplash.imgix.net/photo-1431578500526-4d9613015464?fit=crop&fm=jpg&h=300&q=75&w=400"
-                avatar={this.state.formData.file === null && (this.state.formData.image === null || this.state.formData.image === "") ? "https://scc.rhul.ac.uk/files/2018/06/placeholder.png" : this.state.preview}
-                name={this.state.formData.first_name + ' ' + this.state.formData.last_name}
-                userName={this.state.formData.email}
               />
             </Col>
           </Row>

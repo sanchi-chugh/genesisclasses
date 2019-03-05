@@ -4,6 +4,7 @@ import { Button,
          FormGroup, 
          FormControl,
          ControlLabel,
+         HelpBlock
          } from "react-bootstrap";
 
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -23,30 +24,30 @@ class AddCategories extends Component {
                         ADD CATEGORY
                     </Modal.Title>
                 </Modal.Header>
+                <form onSubmit={this.props.handleAdd}>
                 <Modal.Body>
-                    { 
-                        this.props.categoryAdded 
-                        ?
-                        <center><b><p>Added Successfully</p></b></center>
-                        :
-                    <form>
                         <FormGroup
                         controlId="formBasicText"
                         >
-                        <ControlLabel>CATEGORY NAME</ControlLabel>
+                        <ControlLabel>CATEGORY NAME *</ControlLabel>
                         <FormControl
                             type="text"
                             value={this.props.formData.title}
                             placeholder="Categories Name"
                             name='title'
+                            required
                             onChange={this.props.handleFormDataChange}
                         />
+                        {this.props.err !== null ? <HelpBlock>{this.props.err.message}</HelpBlock> : null}
                         <br/>
-                        <ControlLabel>DESCRIPTION</ControlLabel>
+                        <ControlLabel>DESCRIPTION </ControlLabel>
                         <FormControl
                             type="text"
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
                             value={this.props.formData.description}
-                            placeholder="Description"
+                            placeholder="Description..."
                             name='description'
                             onChange={this.props.handleFormDataChange}
                         />
@@ -67,13 +68,12 @@ class AddCategories extends Component {
                             }
                         color="primary"
                         />
-                    </form>
-                    }
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.categoryAdded ? null : <Button bsStyle="success" onClick={this.props.handleAdd}>ADD CATEGORY</Button>}
+                    {this.props.categoryAdded ? null : <Button bsStyle="success" type="submit">ADD CATEGORY</Button>}
                 </Modal.Footer>
+                </form>
         </Modal>
     );
   }

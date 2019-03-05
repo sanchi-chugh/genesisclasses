@@ -25,6 +25,7 @@ class Categories extends Component {
         this.handleFormDataChange = this.handleFormDataChange.bind(this);
         this.state = {
           data: [],
+          err:null,
           show: false,//edit modal
           show2:false,//delete modal
           show3:false,//add modal
@@ -66,13 +67,25 @@ class Categories extends Component {
   }
 
   handleHideEditModal() {
-    this.setState({ show: false, updatingCategories:false, categoryUpdated:false, value:''});
+    this.setState({ 
+      show: false, 
+      updatingCategories:false, 
+      err:null,
+      categoryUpdated:false, 
+      formData:{
+        title:'',
+        description:'',
+        file:null,
+        image:'',
+      }
+    });
   }
 
   handleHideAddModal() {
     this.setState({ 
       show3: false, 
       addingCategories:false, 
+      err:null,
       categoryAdded:false,
       formData:{
         title:'',
@@ -86,11 +99,12 @@ class Categories extends Component {
     this.setState({ show2: false, deletingCategories:false, categoryDeleted:false});
   }
 
-  handleAdd(){
-    this.setState({ addingCategories: true }, () => {
+  handleAdd(e){
+    e.preventDefault();
+    this.setState({ addingCategories: true, err:null }, () => {
       var formData = new FormData();
-      formData.append('title',this.state.formData.title)
-      formData.append('description',this.state.formData.description)
+      formData.append('title',this.state.formData.title !== null ? this.state.formData.title : '')
+      formData.append('description',this.state.formData.description !== null ? this.state.formData.description :'' )
       if(this.state.formData.file !== null){
         formData.append('image',this.state.formData.file,this.state.formData.file.name)
       }else{
@@ -101,47 +115,97 @@ class Categories extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState({ addingCategories: false, categoryAdded:true }, this.fetchCategories()))
-      .catch((err) => this.setState({ addingCategories: false }, () => console.log(err)))
+      .then((res) => {
+        this.setState({ addingCategories: false, categoryAdded:true }, this.fetchCategories());
+        this.props.handleClick('tr','Added Successfully');
+        this.handleHideAddModal();
+      })
+      .catch((err) => this.setState({ addingCategories: false }, () => {
+        console.log(err.response); 
+        // this.setState({err:err.response.data.message});
+        for(let key in err.response.data) {
+          this.setState({
+            err:{
+              [key]: err.response.data[key]
+            }
+          })
+        }
+      }))
     });
   }
 
-  handleDelete = () => {
-    this.setState({ deletingCategories: true }, () => {
+  handleDelete = (e) => {
+    e.preventDefault();
+    this.setState({ deletingCategories: true, err:null }, () => {
         axios.delete(`/api/testCategories/delete/${this.state.id}/`,{
             headers: {
               Authorization: `Token ${localStorage.token}`
             },
           })
           .then((res) => {
-            this.setState({ deletingCategories: false,categoryDeleted:true,},this.fetchCategories())
+            this.setState({ deletingCategories: false,categoryDeleted:true,},this.fetchCategories());
+            this.props.handleClick('tr','Deleted Successfully', 'warning');
+            this.handleHideDeleteModal();
           })
-          .catch((err) => this.setState({ deletingCategories: false }, () => console.log(err)))
-    });
+          .catch((err) => this.setState({ deletingCategories: false }, () => {
+            console.log(err); 
+            for(let key in err.response.data) {
+              this.setState({
+                err:{
+                  [key]: err.response.data[key]
+                }
+              })
+            }
+            // this.setState({err:err.response.data.message})
+          }))
+      });
   } 
 
-  handleEdit() {
-    this.setState({ updatingCategories: true }, () => {
+  handleEdit(e) {
+    e.preventDefault();
+    this.setState({ updatingCategories: true, err:null }, () => {
       var formData = new FormData();
-      formData.append('title',this.state.formData.title)
-      formData.append('description',this.state.formData.description)
-      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : formData.append('image','')
+      formData.append('title',this.state.formData.title !== null ? this.state.formData.title : '')
+      formData.append('description',this.state.formData.description !== null ? this.state.formData.description :'' )
+      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : formData.append('image',this.state.formData.image)
       axios.put(`/api/testCategories/edit/${this.state.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => {this.setState({ updatingCategories: false, categoryUpdated:true }); this.fetchCategories()})
-      .catch((err) => this.setState({ updatingCategories: false }, () => console.log(err)))
+      .then((res) => {
+        this.setState({ updatingCategories: false, categoryUpdated:true }); this.fetchCategories();
+        this.props.handleClick('tr','Updated Successfully', 'info');
+        this.handleHideEditModal();
+      })
+      .catch((err) => this.setState({ updatingCategories: false }, () => {
+        console.log(err); 
+        // this.setState({err:err.response.data.message});
+        for(let key in err.response.data) {
+          this.setState({
+            err:{
+              [key]: err.response.data[key]
+            }
+          })
+        }
+      }))
     });
   }
 
   handleShowEditModal(obj){
+    // let file = null;
+    // if(obj.image !== null && obj.image !== ''){
+    //    file =  fetch(obj.image).then(res => {
+    //      return new File([res], obj.image.split['/'][5])
+    //    });
+    //    console.log(file)
+    // }
+    // console.log(file);
     this.setState({ id: obj.id , formData: {
       title:obj.title,
       image:obj.image,
       description:obj.description,
-      file:null
+      file: null
     }},()=>{
       this.setState({show:true})
     })
@@ -179,6 +243,14 @@ class Categories extends Component {
     }
   }
 
+  renderDescription(cell, row, enumObject, rowIndex){
+    return (
+      <div>
+        {row.description !== null && row.description !== '' ? row.description : '...'}
+      </div>
+    )
+  }
+  
   renderColumn(cell, row, enumObject, rowIndex) {
     return (
       <div>
@@ -220,12 +292,13 @@ class Categories extends Component {
                       search>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
                         <TableHeaderColumn dataField='title'>Categories</TableHeaderColumn>
-                        <TableHeaderColumn dataField='description'>Description</TableHeaderColumn>
+                        <TableHeaderColumn dataField='description' dataFormat={this.renderDescription.bind(this)}>Description</TableHeaderColumn>
                         <TableHeaderColumn dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
                     </BootstrapTable>
                     <EditCategories 
                       show={this.state.show} 
                       onHide={this.handleHideEditModal.bind(this)} 
+                      err={this.state.err}
                       categoryUpdated={this.state.categoryUpdated} 
                       formData={this.state.formData} 
                       courses={this.state.courses}
@@ -244,6 +317,7 @@ class Categories extends Component {
                     <AddCategories
                       show={this.state.show3}
                       onHide={this.handleHideAddModal.bind(this)}
+                      err={this.state.err}
                       categoryAdded={this.state.categoryAdded}
                       addingCategories={this.state.addingCategories}
                       handleAdd={this.handleAdd.bind(this)}

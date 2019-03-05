@@ -4,6 +4,7 @@ import { Button,
          FormGroup, 
          FormControl,
          ControlLabel,
+         HelpBlock,
          Row,Col} from "react-bootstrap";
 
 import { Checkbox} from 'antd';
@@ -26,33 +27,34 @@ class EditCategories extends Component {
                         EDIT CATEGORY
                     </Modal.Title>
                 </Modal.Header>
+                <form onSubmit={this.props.handleEdit}>
                 <Modal.Body>
-                    { 
-                        this.props.categoryUpdated 
-                        ?
-                        <center><b><p>Updated Successully</p></b></center>
-                        :
-                    <form>
                         <FormGroup
                         controlId="formBasicText"
                         >
-                        <ControlLabel>CATEGORY NAME</ControlLabel>
+                        <ControlLabel>CATEGORY NAME *</ControlLabel>
                         <FormControl
                             type="text"
                             value={this.props.formData.title}
                             placeholder="Categories Name"
                             name='title'
+                            required
                             onChange={this.props.handleFormDataChange}
                         />
+                        {this.props.err !== null ? <HelpBlock>{this.props.err}</HelpBlock> : null}
                         <br/>
-                        <ControlLabel>DESCRIPTION</ControlLabel>
+                        <ControlLabel>DESCRIPTION </ControlLabel>
                         <FormControl
                             type="text"
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
                             value={this.props.formData.description}
-                            placeholder="Description"
+                            placeholder="Description..."
                             name='description'
                             onChange={this.props.handleFormDataChange}
                         />
+                        <br/>
                         <br/>
                         <ControlLabel>IMAGE</ControlLabel><br/>
                         {   this.props.formData.image === null ? 
@@ -61,7 +63,7 @@ class EditCategories extends Component {
                             </Col>:
                             <Row md={12}>
                             <Col xs={4}>
-                                <a href={this.props.formData.image} target="_blank">{this.props.formData.image.split('/')[4]}</a> 
+                                <a href={this.props.formData.image} target="_blank">{this.props.formData.image.split('/')[5]}</a> 
                             </Col>
                             <Col xs={4}>
                                 <Checkbox onChange={this.props.handleFormDataChange} name="clear" >CLEAR</Checkbox><br/>
@@ -84,13 +86,12 @@ class EditCategories extends Component {
                             }
                         color="primary"
                         />
-                    </form>
-                    }
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.categoryUpdated ? null : <Button bsStyle="primary" onClick={this.props.handleEdit}>EDIT CATEGORY</Button>}
+                    {this.props.categoryUpdated ? null : <Button bsStyle="primary" type="submit">EDIT CATEGORY</Button>}
                 </Modal.Footer>
+                </form>
         </Modal>
     );
   }

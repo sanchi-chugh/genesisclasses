@@ -47,9 +47,12 @@ def fields_check(fields_arr, data):
     # Return True if check passes
     if len(missing_fields) == 0:
         return (True, '')
-    return (False, Response({
-        "status": "error", "message": "Some fields are missing. Please provide \"" + '", "'.join(missing_fields) + "\""}, 
-        status=HTTP_400_BAD_REQUEST))
+
+    # Form errors dictionary
+    errorDict = {}
+    for field in missing_fields:
+        errorDict[field] = ['This field is required.']
+    return (False, Response(errorDict, status=HTTP_400_BAD_REQUEST))
 
 # Helper function to set value as None if field value is not present
 def set_optional_fields(fields_arr, data):
@@ -75,9 +78,12 @@ def check_for_bool(fields_arr, data):
             wrong_fields.append(field)
     if len(wrong_fields) == 0:
         return (bool_dict, True, '')
-    return ({}, False, Response({"status": "error",
-        "message": "Incorrect field type. Please provide bool ('true' or 'false') in \"" + '", "'.join(wrong_fields) + "\""},
-        status=HTTP_400_BAD_REQUEST))
+
+    # Form errors dictionary
+    errorDict = {}
+    for field in wrong_fields:
+        errorDict[field] = ['Incorrect field type. Please provide boolean value ("true" or "false").']
+    return ({}, False, Response(errorDict, status=HTTP_400_BAD_REQUEST))
 
 # Helper function to check whether date field data is correct or not
 def check_for_date(fields_arr, data):
@@ -94,9 +100,12 @@ def check_for_date(fields_arr, data):
                 wrong_fields.append(field)
     if len(wrong_fields) == 0:
         return (True, '')
-    return (False, Response({"status": "error",
-        "message": "Incorrect date format. Please provide \"YYYY-MM-DD\" format in \"" + '", "'.join(wrong_fields) + "\""},
-        status=HTTP_400_BAD_REQUEST))
+    
+    # Form errors dictionary
+    errorDict = {}
+    for field in wrong_fields:
+        errorDict[field] = ['Incorrect date format. Please provide "YYYY-MM-DD" format.']
+    return (False, Response(errorDict, status=HTTP_400_BAD_REQUEST))
 
 # Helper function to send email
 def send_email(subject, content, recipient_list):
@@ -109,31 +118,27 @@ def send_email(subject, content, recipient_list):
 def check_passwd_strength(data):
     # check if passwords match
     if data['password1'] != data['password2']:
-        return (False, Response({
-            "status": "error", "message": "Provided passwords do NOT match."},
+        return (False, Response({'password2': ["Provided passwords do NOT match."]},
             status=HTTP_400_BAD_REQUEST))
 
+    errors = []
     password = data['password1']
 
     # check for length
     if len(password) < 8:
-        return (False, Response({
-            "status": "error", "message": "Password must be at least 8 characters long."},
-            status=HTTP_400_BAD_REQUEST))
-    
+        errors.append("Password must be at least 8 characters long.")
+
     # check for digit
     if not any(char.isdigit() for char in password):
-        return (False, Response({
-            "status": "error", "message": "Password must contain at least 1 digit."},
-            status=HTTP_400_BAD_REQUEST))
+        errors.append("Password must contain at least 1 digit.")
 
     # check for letter
     if not any(char.isalpha() for char in password):
-        return (False, Response({
-            "status": "error", "message": "Password must contain at least 1 letter."},
-            status=HTTP_400_BAD_REQUEST))
-    
-    return (True, '')
+        errors.append("Password must contain at least 1 letter.")
+
+    if len(errors) == 0:
+        return (True, '')
+    return (False, Response({'password1': errors}, status=HTTP_400_BAD_REQUEST))
 
 # Get academic year acc to provided date_str
 def get_academic_yr(date_str):
@@ -251,8 +256,7 @@ class CentrePieChartView(APIView):
             # If both start date and end date are provided
             if start_date > end_date:
                 # Error if start_date is greater than end_date
-                return Response({
-                    "status": "error", "message": "End date must come after the Start date."},
+                return Response({"end_date": ["End date must come after the Start date."]},
                     status=HTTP_400_BAD_REQUEST)
         
         # Get centre pie chart data according to start_date and end_data
@@ -295,8 +299,7 @@ class TopperDetailsView(APIView):
 
         # Return if test_type is incorrect
         if op_dict['test_type'] not in (None, 'all', 'practice', 'upcoming'):
-            return Response({
-                "status": "error", "message": "Test type must be one of (practice, upcoming, all)"},
+            return Response({"test_type": ["Test type must be one of (practice, upcoming, all)."]},
                 status=HTTP_400_BAD_REQUEST)
 
         # Get parameters
@@ -325,8 +328,7 @@ class TopperDetailsView(APIView):
             # If both start date and end date are provided
             if start_date > end_date:
                 # Error if start_date is greater than end_date
-                return Response({
-                    "status": "error", "message": "End date must come after the Start date."},
+                return Response({"end_date": ["End date must come after the Start date."]},
                     status=HTTP_400_BAD_REQUEST)
 
         # Get test result objs acc to provided params
@@ -438,15 +440,14 @@ class AddStudentUserView(CreateAPIView):
         if not valid_date:
             return result
 
+        errorDict = {}
         email = data['email']
 
         # Validate email id
         try:
             validate_email(email)
         except ValidationError:
-            return Response({
-                "status": "error", "message": "Provided email id is invalid."},
-                status=HTTP_400_BAD_REQUEST)
+            errorDict['email'] = ["Provided email id is invalid."]
 
         # Validate contact number
         valid_contact = True
@@ -456,16 +457,12 @@ class AddStudentUserView(CreateAPIView):
             valid_contact = False
 
         if len(data['contact_number']) != 10 or not valid_contact:
-            return Response({
-                "status": "error", "message": "Provided contact number is invalid. Only 10 digits are allowed."},
-                status=HTTP_400_BAD_REQUEST)
+            errorDict['contact_number'] = ["Provided contact number is invalid. Exact 10 digits are allowed."]
 
         # Do not form another student with the same email id
         userObjs = User.objects.filter(email=email, type_of_user='student')
         if(len(userObjs) != 0):
-            return Response({
-                "status": "error", "message": "A student with the same email id already exists."},
-                status=HTTP_400_BAD_REQUEST)
+            errorDict['email'] = ["A student with the same email id already exists."]
 
         centre = get_object_or_404(Centre, pk=int(data['centre']), super_admin=super_admin)
 
@@ -480,9 +477,11 @@ class AddStudentUserView(CreateAPIView):
                 pass
         # Return if student can't access any course
         if len(courses_arr) == 0:
-            return Response({
-                "status": "error", "message": "Please provide at least one valid course"},
-                status=HTTP_400_BAD_REQUEST)
+            errorDict['course'] = ["Please provide at least one valid course."]
+
+        # Return errors
+        if len(errorDict) != 0:
+            return Response(errorDict, status=HTTP_400_BAD_REQUEST)
 
         # Get unique username
         try:
@@ -579,15 +578,14 @@ class EditStudentUserView(UpdateAPIView):
         if not valid_date:
             return result
 
+        errorDict = {}
         email = data['email']
 
         # Validate email id
         try:
             validate_email(email)
         except ValidationError:
-            return Response({
-                "status": "error", "message": "Provided email id is invalid."},
-                status=HTTP_400_BAD_REQUEST)
+            errorDict['email'] = ["Provided email id is invalid."]
 
         # Validate contact number
         valid_contact = True
@@ -597,19 +595,13 @@ class EditStudentUserView(UpdateAPIView):
             valid_contact = False
 
         if len(data['contact_number']) != 10 or not valid_contact:
-            return Response({
-                "status": "error", "message": "Provided contact number is invalid. Only 10 digits are allowed."},
-                status=HTTP_400_BAD_REQUEST)
+            errorDict['contact_number'] = ["Provided contact number is invalid. Exact 10 digits are allowed."]
 
         # Do not form another student with the same email id
         if email != studentUserObj.email:
             userObjs = User.objects.filter(email=email, type_of_user='student')
             if len(userObjs) != 0:
-                return Response({
-                    "status": "error", "message": "A student with the same email id already exists."},
-                    status=HTTP_400_BAD_REQUEST)
-            studentUserObj.email = email
-            studentUserObj.save()
+                errorDict['email'] = ["A student with the same email id already exists."]
 
         centre = get_object_or_404(Centre, pk=int(data['centre']), super_admin=super_admin)
 
@@ -624,9 +616,15 @@ class EditStudentUserView(UpdateAPIView):
                 pass
         # Return if student can't access any course
         if len(courses_arr) == 0:
-            return Response({
-                "status": "error", "message": "Please provide at least one valid course"},
-                status=HTTP_400_BAD_REQUEST)
+            errorDict['course'] = ["Please provide at least one valid course."]
+
+        # Return errors
+        if len(errorDict) != 0:
+            return Response(errorDict, status=HTTP_400_BAD_REQUEST)
+
+        # Update email and courses, if valid
+        studentUserObj.email = email
+        studentUserObj.save()
         studentObj.course.set(courses_arr)
         studentObj.save()
 
@@ -702,8 +700,7 @@ class AddBulkStudentsView(CreateAPIView):
                 pass
         # Return if no course access is granted
         if len(courses_arr) == 0:
-            return Response({
-                "status": "error", "message": "Please provide at least one valid course"},
+            return Response({'course': ['Please provide at least one valid course.']},
                 status=HTTP_400_BAD_REQUEST)
 
         # Make studentCSVs directory if it does not exist
@@ -883,8 +880,7 @@ class AddCentreView(CreateAPIView):
         # Do not form another centre obj with already existing location
         centreObjs = Centre.objects.filter(location=location, super_admin=super_admin)
         if(len(centreObjs) != 0):
-            return Response({
-                "status": "error", "message": "Centre with the same location already exists"},
+            return Response({'location': ['Centre with the same location already exists.']},
                 status=HTTP_400_BAD_REQUEST)
         Centre.objects.create(location=location, super_admin=super_admin)
         return Response({"status": "successful"})
@@ -916,8 +912,7 @@ class EditCentreView(UpdateAPIView):
         super_admin = get_super_admin(self.request.user)
         centreObjs = self.model.objects.filter(location=location, super_admin=super_admin)
         if len(centreObjs) != 0 and centre not in centreObjs:
-            return Response({
-                "status": "error", "message": "Centre with the same location already exists"},
+            return Response({'location': ['Centre with the same location already exists.']},
                 status=HTTP_400_BAD_REQUEST)
 
         self.partial_update(request, *args, **kwargs)
@@ -974,8 +969,7 @@ class AddCourseView(CreateAPIView):
         # Do not form another course obj with already existing title
         courseObjs = self.model.objects.filter(title=title, super_admin=super_admin)
         if(len(courseObjs) != 0):
-            return Response({
-                "status": "error", "message": "Course with the same title already exists"},
+            return Response({'title': ['Course with the same title already exists.']},
                 status=HTTP_400_BAD_REQUEST)
         self.model.objects.create(title=title, super_admin=super_admin)
         return Response({"status": "successful"})
@@ -1006,8 +1000,7 @@ class EditCourseView(UpdateAPIView):
         super_admin = get_super_admin(self.request.user)
         courseObjs = self.model.objects.filter(title=title, super_admin=super_admin)
         if len(courseObjs) != 0 and course not in courseObjs:
-            return Response({
-                "status": "error", "message": "Course with the same title already exists"},
+            return Response({'title': ['Course with the same title already exists.']},
                 status=HTTP_400_BAD_REQUEST)
 
         self.partial_update(request, *args, **kwargs)
@@ -1056,8 +1049,7 @@ class AddSubjectView(CreateAPIView):
                 super_admin=super_admin,
                 )
             if len(subjectObjs) != 0:
-                return Response({"status": "error",
-                    "message": "Subject with the same title in the same course(s) already exists"},
+                return Response({'title': ['Subject with the same title in the same course(s) already exists.']},
                     status=HTTP_400_BAD_REQUEST)
 
         # Image and description are optional
@@ -1115,8 +1107,7 @@ class EditSubjectView(UpdateAPIView):
                 super_admin=super_admin,
                 )
             if len(subjectObjs) != 0 and subject not in subjectObjs:
-                return Response({"status": "error",
-                    "message": "Subject with the same title in the same course(s) already exists"},
+                return Response({'title': ['Subject with the same title in the same course(s) already exists.']},
                     status=HTTP_400_BAD_REQUEST)
 
         # Remove previous image from system
@@ -1248,8 +1239,7 @@ class AddUnitView(CreateAPIView):
         # Do not form another unit with already existing title in the same subject
         unitObjs = self.model.objects.filter(title=title, subject=subject)
         if len(unitObjs) != 0:
-            return Response({
-                "status": "error", "message": "Unit with the same title in the same subject already exists"},
+            return Response({'title': ['Unit with the same title in the same subject already exists.']},
                 status=HTTP_400_BAD_REQUEST)
 
         # Image and description are optional
@@ -1294,8 +1284,7 @@ class EditUnitView(UpdateAPIView):
         # Do not form another unit with already existing title in the same subject
         unitObjs = self.model.objects.filter(title=title, subject=subject)
         if len(unitObjs) != 0 and unit not in unitObjs:
-            return Response({
-                "status": "error", "message": "Unit with the same title in the same subject already exists"},
+            return Response({'title': ['Unit with the same title in the same subject already exists.']},
                 status=HTTP_400_BAD_REQUEST)
 
         # Remove previous image from system
@@ -1325,9 +1314,7 @@ def deleteUnit(request, pk):
         transfer_unit = get_object_or_404(Unit, pk=int(transfer_unit))
         unit_arr = unitObj.subject.units.all()
         if transfer_unit not in unit_arr:
-            return Response({
-                "status": "error",
-                "message": "Entered unit must belong to the same subject as the unit being deleted."},
+            return Response({'unit': ['Entered unit must belong to the same subject as the unit being deleted.']},
                 status=HTTP_400_BAD_REQUEST)
         testObjs = Test.objects.filter(unit=unitObj)
         for testObj in testObjs:
@@ -1372,8 +1359,7 @@ class AddTestCategoryView(CreateAPIView):
         # Do not form another test category with same title
         categoryObjs = self.model.objects.filter(title=title, super_admin=super_admin)
         if(len(categoryObjs) != 0):
-            return Response({
-                "status": "error", "message": "Test Category with the same title already exists"},
+            return Response({'title': ['Test Category with the same title already exists.']},
                 status=HTTP_400_BAD_REQUEST)
         
         # Image and description are optional
@@ -1414,8 +1400,7 @@ class EditTestCategoryView(UpdateAPIView):
         # Do not form another test category with same title
         categoryObjs = self.model.objects.filter(title=title, super_admin=super_admin)
         if(len(categoryObjs) != 0 and category not in categoryObjs):
-            return Response({
-                "status": "error", "message": "Test Category with the same title already exists"},
+            return Response({'title': ['Test Category with the same title already exists.']},
                 status=HTTP_400_BAD_REQUEST)
 
         # Remove previous image from system
@@ -1479,6 +1464,8 @@ def validate_test_info(data, super_admin):
         return {}, False, result
     active = bool_dict['active']
 
+    errorDict = {}
+
     # Make courses array
     courses = data['course'].split(',')
     courses_arr = []
@@ -1490,9 +1477,7 @@ def validate_test_info(data, super_admin):
             pass
     # Return if test does not belong to any course
     if len(courses_arr) == 0:
-        return ({}, False, Response({
-            "status": "error", "message": "Please provide at least one valid course."},
-            status=HTTP_400_BAD_REQUEST))
+        errorDict['course'] = ['Please provide at least one valid course.']
     
     # Get optional fields' values
     op_dict = set_optional_fields(['subject', 'unit', 'endtime', 'startTime'], data)
@@ -1505,19 +1490,16 @@ def validate_test_info(data, super_admin):
         unitObj = get_object_or_404(Unit, pk=int(data['unit']))
 
     # Either none or both subject and unit are compulsory for adding test
-    if (subjectObj and not unitObj) or (not subjectObj and unitObj):
-        return ({}, False, Response({
-            "status": "error",
-            "message": "Error in adding test to unit wise test. "
-                "Please provide both \"unit\" and \"subject\"."}, status=HTTP_400_BAD_REQUEST))
+    if (subjectObj and not unitObj):
+        errorDict['unit'] = ["Error in adding test to unit wise test. Please provide both \"unit\" and \"subject\"."]
+    if (not subjectObj and unitObj):
+        errorDict['subject'] = ["Error in adding test to unit wise test. Please provide both \"unit\" and \"subject\"."]
 
     # Entered unit must belong to the entered subject
-    if subjectObj:
+    if subjectObj and unitObj:
         unit_arr = subjectObj.units.all()
         if unitObj not in unit_arr:
-            return ({}, False, Response({
-                "status": "error", "message": "Specified unit does not belong to the specified subject."},
-                status=HTTP_400_BAD_REQUEST))
+            errorDict['unit'] = ["Specified unit does not belong to the specified subject."]
         # Add remaining courses of the subject to courses_arr
         subj_courses = subjectObj.course.all()
         for course in subj_courses:
@@ -1535,9 +1517,7 @@ def validate_test_info(data, super_admin):
             pass
     # Return if test does not belong to any category (not even unit wise category)
     if len(categories_arr) == 0 and not unitObj and not subjectObj:
-        return ({}, False, Response({
-            "status": "error", "message": "Please provide at least one valid category."},
-            status=HTTP_400_BAD_REQUEST))
+        errorDict['category'] = ["Please provide at least one valid category."]
 
     # Set start time and end time
     endtime = op_dict['endtime']
@@ -1548,17 +1528,16 @@ def validate_test_info(data, super_admin):
     # Return error if end time is less than start time
     if endtime and startTime:
         if endtime <= str(startTime):
-            return ({}, False, Response({
-                "status": "error",
-                "message": "End Time must be greater than start time (and current time)."},
-                status=HTTP_400_BAD_REQUEST))
+            errorDict['endtime'] = ["End Time must be greater than start time (and current time)."]
 
     # Check if type of test has any value other than practice/upcoming
     typeOfTest = data['typeOfTest']
     if typeOfTest not in ('practice', 'upcoming'):
-        return ({}, False, Response({
-            "status": "error", "message": "\"Type of test\" must be one of (practice, upcoming)."},
-            status=HTTP_400_BAD_REQUEST))
+        errorDict['typeOfTest'] = ['"Type of test" must be one of (practice, upcoming).']
+
+    # Return 400 if errors
+    if len(errorDict) != 0:
+        return ({}, False, Response(errorDict, status=HTTP_400_BAD_REQUEST))
 
     dictV = {'endtime': endtime, 'startTime': startTime, 'subject': subjectObj, 'unit': unitObj,
              'courses_arr': courses_arr, 'categories_arr': categories_arr, 'active': active}
@@ -1677,8 +1656,7 @@ class AddTestInfoView(CreateAPIView):
         # Do not form another test with the same title
         testObjs = self.model.objects.filter(title=data['title'], super_admin=super_admin)
         if(len(testObjs) != 0):
-            return Response({
-                "status": "error", "message": "Test with the same title already exists."},
+            return Response({"title": ["Test with the same title already exists."]},
                 status=HTTP_400_BAD_REQUEST)
 
         # Validate and get required values
@@ -1694,8 +1672,7 @@ class AddTestInfoView(CreateAPIView):
             file_name = str(op_dict['doc'])
             extension = file_name.split(".")[-1].lower()
             if extension not in ('doc', 'docx'):
-                return Response({
-                    "status": "error", "message": "Uploaded doc must be of \".doc\" or \".docx\" format."},
+                return Response({"doc": ["Uploaded doc must be of \".doc\" or \".docx\" format."]},
                     status=HTTP_400_BAD_REQUEST)
 
             # If docs directory does not exist, then make one
@@ -1751,8 +1728,7 @@ class AddTestInfoView(CreateAPIView):
                     shutil.rmtree(html_dir_path)
                     os.remove(doc_path)
                     testObj.delete()
-                    return Response({"status": "error", "message": msg},
-                        status=HTTP_400_BAD_REQUEST)
+                    return Response({"doc_errors": [msg]}, status=HTTP_400_BAD_REQUEST)
 
             except Exception:
                 msg = ('There was an unexpected error in the doc.' +
@@ -1763,8 +1739,7 @@ class AddTestInfoView(CreateAPIView):
                 shutil.rmtree(html_dir_path)
                 os.remove(doc_path)
                 testObj.delete()
-                return Response({"status": "error", "message": msg.strip()},
-                    status=HTTP_400_BAD_REQUEST)
+                return Response({"doc_errors": [msg.strip()]}, status=HTTP_400_BAD_REQUEST)
 
         return Response({"status": "successful"})
 
@@ -1793,8 +1768,7 @@ class EditTestInfoView(UpdateAPIView):
         # Do not form another test with the same title
         testObjs = Test.objects.filter(title=data['title'], super_admin=super_admin)
         if len(testObjs) != 0 and testObj not in testObjs:
-            return Response({
-                "status": "error", "message": "Test with the same title already exists."},
+            return Response({"title": ["Test with the same title already exists."]},
                 status=HTTP_400_BAD_REQUEST)
 
         # Validate and get required values
@@ -1824,26 +1798,29 @@ class EditTestInfoView(UpdateAPIView):
             # Error if the test does not have any sections
             sectionObjs = Section.objects.filter(test=testObj)
             if not sectionObjs.count():
-                return Response({
-                    "status": "error", "message": "There are no sections present in this test. " + error_msg},
+                return Response({"active": ["There are no sections present in this test. " + error_msg]},
                     status=HTTP_400_BAD_REQUEST)
-  
+
+            invalid_ques = []
+            quesNumber = 1
             for section in sectionObjs:
                 # Error if any section is empty
                 questionObjs = Question.objects.filter(section=section)
                 if not questionObjs.count():
-                    return Response({"status": "error",
-                        "message": ("No questions are present in section number " + str(section.sectionNumber) +
-                                    " of this test. " + error_msg)},
+                    return Response({"active": [("No questions are present in section number " + str(section.sectionNumber) +
+                                    " of this test. " + error_msg)]},
                         status=HTTP_400_BAD_REQUEST)
 
                 # Error if there is any invalid question in the test
                 for ques in questionObjs:
                     if not ques.valid:
-                        return Response({"status": "error", "message": (
-                            "Question number " + str(ques.quesNumber) + " of section number " + str(section.sectionNumber) +
-                            " of this test is INVALID. Please correct it, then only this test can become active. " + error_msg
-                            )}, status=HTTP_400_BAD_REQUEST)
+                        invalid_ques.append(quesNumber)
+                    quesNumber += 1
+
+            if len(invalid_ques) != 0:
+                return Response({"active": [("Question numbers " + ', '.join(str(ques) for ques in invalid_ques) +
+                    " of this test is INVALID. Please correct it, then only this test can become active. " + error_msg
+                    )]}, status=HTTP_400_BAD_REQUEST)
 
         testObj.active = dictV['active']
         testObj.save()
@@ -1875,7 +1852,6 @@ class SectionsView(APIView):
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
 
     def get(self, request, *args, **kwargs):
-        super_admin = get_super_admin(self.request.user)
         section_id = kwargs['pk']
         section = get_object_or_404(self.model, pk=section_id)
         sectionData = TestSectionSerializer(section).data
@@ -1922,9 +1898,7 @@ class EditSectionView(UpdateAPIView):
         # Ensure that no other section in that test has the same title
         sectionObjs = Section.objects.filter(test__id=section.test.id, title=data['title'])
         if len(sectionObjs) != 0 and section not in sectionObjs:
-            return Response({
-                'status': 'error',
-                'message': 'Section with the same title and in the same test already exists.'},
+            return Response({'title': ['Section with the same title and in the same test already exists.']},
                 status=HTTP_400_BAD_REQUEST)
         
         section.title = data['title']
@@ -1986,8 +1960,7 @@ def validate_intAnswer(data):
         except ValueError:
             error = True
     if error:
-        return (False, Response({
-                'status': 'error', 'message': 'Answer must be an integral value ranging from 0 to 9.'},
+        return (False, Response({'intAnswer': ['Answer must be an integral value ranging from 0 to 9.']},
                 status=HTTP_400_BAD_REQUEST))
     return (True, '')
 
@@ -2022,8 +1995,7 @@ class EditQuestionDetailsView(UpdateAPIView):
         if op_dict['questionType']:
             if (questionType not in ('mcq', 'scq') and questionType != data['questionType']) or \
                 (data['questionType'] not in ('mcq', 'scq')):
-                return Response({
-                    'status': 'error', 'message': 'Question type wrongly edited.'},
+                return Response({'questionType': ['Question type wrongly edited.']},
                     status=HTTP_400_BAD_REQUEST)
 
         # Return if compulsory fields are missing
@@ -2129,8 +2101,7 @@ class AddQuestionDetailsView(CreateAPIView):
                 marksNegative=marksNegative,
             )
         else:
-            return Response({
-                'status': 'error', 'message': 'Wrong question type provided.'},
+            return Response({'questionType': ['Wrong question type provided.']},
                 status=HTTP_400_BAD_REQUEST)
 
         return Response({'status': 'successful'})
@@ -2199,9 +2170,8 @@ def multi_correct_error(question, data):
     if question.questionType in ('passage', 'scq'):
         quesCorrectOptions = Option.objects.filter(question=question, correct=True)
         if len(quesCorrectOptions) > 0 and data['correct'] in (True, 'true'):
-            return (False, Response({'status': 'error', 
-                'message': 'Multiple correct options are NOT allowed in "' + question.questionType + '" type questions.'},
-                status=HTTP_400_BAD_REQUEST))
+            return (False, Response({'question': [('Multiple correct options are NOT allowed in "' +
+                question.questionType + '" type questions.')]}, status=HTTP_400_BAD_REQUEST))
     return (True, '')
 
 # Add an option for a particular question
@@ -2221,8 +2191,7 @@ class AddOptionView(CreateAPIView):
 
         # Return if option is added in integer type question
         if question.questionType == 'integer':
-            return Response({
-                'status': 'error', 'message': 'Adding options is NOT allowed in integer type questions.'},
+            return Response({'question': ['Adding options is NOT allowed in integer type questions.']},
                 status=HTTP_400_BAD_REQUEST)
 
         # Return if correct is not a bool field or a string ('true', 'false')
@@ -2324,7 +2293,7 @@ class RearrangeQuestions(APIView):
                     break
         
         if error_message:
-            return Response({'status': 'error', 'message': error_message}, status=HTTP_400_BAD_REQUEST)
+            return Response({'order': [error_message]}, status=HTTP_400_BAD_REQUEST)
 
         # Return error if questions of any passage are scattered
         ongoing_passage = -1
@@ -2345,9 +2314,7 @@ class RearrangeQuestions(APIView):
                 ongoing_passage = -1
 
         if error:
-            return Response({
-                'status': 'error',
-                'message': 'Error in re-arranging questions. Questions of one passage should remain together.'},
+            return Response({'order': ['Error in re-arranging questions. Questions of one passage should remain together.']},
                 status=HTTP_400_BAD_REQUEST)
 
         # Update question number (section wise)
@@ -2393,7 +2360,7 @@ class RearrangeSections(APIView):
                     break
 
         if error_message:
-            return Response({'status': 'error', 'message': error_message}, status=HTTP_400_BAD_REQUEST)
+            return Response({'order': [error_message]}, status=HTTP_400_BAD_REQUEST)
         
         # Update section number
         for i in range(len(order_arr)):
@@ -2678,6 +2645,8 @@ class CompleteStudentProfileView(UpdateAPIView):
             return result
 
         if not complete:
+            errorDict = {}
+
             # Provide available usernames if username chosen by user is already occupied
             username = data['username']
             existing = [user['username'] for user in User.objects.values('username')]
@@ -2690,14 +2659,8 @@ class CompleteStudentProfileView(UpdateAPIView):
                     if tentative not in existing:
                         available.append(tentative)
 
-                return Response({"status": "error", "message": ("This username is already occupied. " +
-                    "Available usernames similar to this are " + ', '.join(available) + " etc or try some other username.")},
-                    status=HTTP_400_BAD_REQUEST)
-
-            # Return if password strength weak
-            check_pass, result = check_passwd_strength(data)
-            if not check_pass:
-                return result
+                errorDict['username'] = [("This username is already occupied. " +
+                    "Available usernames similar to this are " + ', '.join(available) + " etc or try some other username.")]
 
             email = data['email']
 
@@ -2705,19 +2668,23 @@ class CompleteStudentProfileView(UpdateAPIView):
             try:
                 validate_email(email)
             except ValidationError:
-                return Response({
-                    "status": "error", "message": "Provided email id is invalid."},
-                    status=HTTP_400_BAD_REQUEST)
+                errorDict['email'] = ["Provided email id is invalid."]
 
             # Do not form another student with the same email id
             if email != studentUserObj.email:
                 userObjs = User.objects.filter(email=email, type_of_user='student')
                 if len(userObjs) != 0:
-                    return Response({"status": "error", "message": ("A student with the same email id already exists. " +
-                        "Either log in the user with this registered email id or register yourself with some other email id.")},
-                        status=HTTP_400_BAD_REQUEST)
-                studentUserObj.email = email
-                studentUserObj.save()
+                    errorDict['email'] = [("A student with the same email id already exists. " +
+                        "Either log in the user with this registered email id or register yourself with some other email id.")]
+
+            # Return errors, if any
+            if len(errorDict) != 0:
+                return Response(errorDict, status=HTTP_400_BAD_REQUEST)
+
+            # Return if password strength weak
+            check_pass, result = check_passwd_strength(data)
+            if not check_pass:
+                return result
 
         # Validate contact number
         valid_contact = True
@@ -2727,8 +2694,7 @@ class CompleteStudentProfileView(UpdateAPIView):
             valid_contact = False
 
         if len(data['contact_number']) != 10 or not valid_contact:
-            return Response({
-                "status": "error", "message": "Provided contact number is invalid. Only 10 digits are allowed."},
+            return Response({"contact_number": ["Provided contact number is invalid. Exact 10 digits are allowed."]},
                 status=HTTP_400_BAD_REQUEST)
 
         # Remove previous image from system
@@ -2824,7 +2790,6 @@ class TestCategoryDetailsViewSet(viewsets.ModelViewSet):
         user = self.request.user
         studentObj = get_object_or_404(Student, user=user)
         super_admin = get_super_admin(user)
-        today = timezone.localtime(timezone.now())
 
         # User can attempt the test anytime between startTime and endtime
         practiceTests = self.model.objects.filter(super_admin=super_admin, category__id=category_id, typeOfTest='practice',

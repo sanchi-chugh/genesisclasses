@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import axios from 'axios';
-import appRoutes from './routes/app.jsx';
+import appRoutes, { studentRoutes } from './routes/app.jsx';
 
 import './App.css';
 import LoginScreen from './views/LoginScreen/LoginScreen';
@@ -45,28 +45,40 @@ class App extends React.Component {
 
   render() {
     const { user } = this.state;
-    const isLoggedIn = this.state.user !== null;
+    const isLoggedIn = user !== null;
 
-    if (this.state.user === null && this.state.busy) {
+    if (user === null && this.state.busy) {
       return (
         <center><div className="loader"></div></center>
       );
     }
-    
-    return (
+    if(user === null && !this.state.busy){
+      return(
         <BrowserRouter>
             <Switch>
-            { !isLoggedIn 
+              <Route path={'/'} render={(props) => <LoginScreen {...props} getUser={this.getUser} /> } />
+            </Switch>
+        </BrowserRouter>
+      )
+    }
+    if(isLoggedIn){
+      return (
+        <BrowserRouter>
+            <Switch>
+            { user.type === 'superadmin' 
               ? 
-                <Route path={'/'} render={(props) => <LoginScreen {...props} getUser={this.getUser} /> } /> 
-              :
                 appRoutes.map((prop, key) => {
+                  return <Route path={prop.path} render={(props) => <prop.component {...props} logout={this.logout.bind(this)} /> } key={key} />;
+              }) 
+              :
+                studentRoutes.map((prop, key) => {
                   return <Route path={prop.path} render={(props) => <prop.component {...props} logout={this.logout.bind(this)} /> } key={key} />;
               })
             }
             </Switch>
         </BrowserRouter>
-    );
+      );
+    }
   }
 }
 

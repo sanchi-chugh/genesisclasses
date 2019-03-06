@@ -4,13 +4,13 @@ import NotificationSystem from "react-notification-system";
 
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
-import Sidebar from "../../components/Sidebar/Sidebar";
+import Sidebar from "../../WebAppComponents/Sidebar/Sidebar";
 
 import { style } from "../../variables/Variables.jsx";
 
-import dashboardRoutes from "../../routes/dashboard.jsx";
+import webapppRoutes from "../../routes/Webapp";
 
-class Dashboard extends Component {
+class Webapp extends Component {
   constructor(props) {
     super(props);
     this.componentDidMount = this.componentDidMount.bind(this);
@@ -32,18 +32,6 @@ class Dashboard extends Component {
   componentDidMount() {
     this.setState({ _notificationSystem: this.refs.notificationSystem });
     var _notificationSystem = this.refs.notificationSystem;
-    // _notificationSystem.addNotification({
-    //   title: <span data-notify="icon" className="pe-7s-gift" />,
-    //   message: (
-    //     <div>
-    //       Welcome to <b>Light Bootstrap Dashboard</b> - a beautiful freebie for
-    //       every web developer.
-    //     </div>
-    //   ),
-    //   level: level,
-    //   position: "tr",
-    //   autoDismiss: 15
-    // });
   }
   componentDidUpdate(e) {
     if (
@@ -67,7 +55,7 @@ class Dashboard extends Component {
         <div id="main-panel" className="main-panel" ref="mainPanel">
           <Header {...this.props} />
           <Switch>
-            {dashboardRoutes.map((prop, key) => {
+            {webapppRoutes.map((prop, key) => {
               if (prop.name === "Notifications")
                 return (
                   <Route
@@ -100,4 +88,4 @@ class Dashboard extends Component {
   }
 }
 
-export default Dashboard;
+export default Webapp;

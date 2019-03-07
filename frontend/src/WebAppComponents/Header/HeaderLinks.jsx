@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { NavItem, Nav} from "react-bootstrap";
 
 class HeaderLinks extends Component {
 
@@ -9,22 +8,22 @@ class HeaderLinks extends Component {
   render() {
     return (
       <div className="nav-links">
-        <Nav>
-          <NavItem eventKey={1} href="#">
-            Toggle
-          </NavItem>
-          <NavItem eventKey={2}>
-            Search
-          </NavItem>
-        </Nav>
-        <Nav pullRight>
-          <NavItem eventKey={3} href="#">
-            Settings
-          </NavItem>
-          <NavItem eventKey={4} onClick={this.logout.bind(this)}>
-            Log Out
-          </NavItem>
-        </Nav>
+        <ul className="left">
+          <li href="#">
+            <a>Toggle</a>
+          </li>
+          <li>
+            <a>Search</a>
+          </li>
+        </ul>
+        <ul className="right">
+          <li href="#">
+            <a>Settings</a>
+          </li>
+          <li>
+            <a onClick={this.logout.bind(this)}>Log Out</a>
+          </li>
+        </ul>
       </div>
     );
   }

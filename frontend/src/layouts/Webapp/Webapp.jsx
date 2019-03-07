@@ -3,7 +3,6 @@ import { Route, Switch, Redirect } from "react-router-dom";
 import NotificationSystem from "react-notification-system";
 
 import Header from "../../WebAppComponents/Header/Header";
-import Footer from "../../components/Footer/Footer";
 import Sidebar from "../../WebAppComponents/Sidebar/Sidebar";
 
 import { style } from "../../variables/Variables.jsx";
@@ -83,7 +82,7 @@ class Webapp extends Component {
               );
             })}
           </Switch>
-          <Footer />
+          {/* <Footer /> */}
         </div>
       </div>
     );

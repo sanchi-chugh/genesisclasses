@@ -151,3 +151,12 @@
 .card-app .content .type4{
     background-color: #DBFFB2 !important;
 }
+
+@media (max-width: 991px){
+    #main-panel{
+        width: calc(100% - 260px);
+    }
+    .nav-bar{
+        width:100%;
+    }
+}

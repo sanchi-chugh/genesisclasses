@@ -79,14 +79,75 @@
 .nav-bar{
     position: fixed !important;
     width: calc(100% - 260px);
+    height:60px;
     background-color: #01458E !important;
     z-index: 10;
+}
+
+.nav-links .left{
+    float: left;
+}
+
+.nav-links .right{
+    float: right;
+}
+
+.nav-links ul li {
+    color:white !important;
+    list-style: none;
+    line-height: 20px;
+    display: inline-block;
+    padding: 15px;
 }
 
 .nav-links ul li a{
     color:white !important;
 }
 
+.title-heading{
+    margin-top:0;
+    color:grey;
+}
+
 .home-content{
-    margin-top: 80px;
+    margin-top: 65px;
+}
+
+.card-app{
+    box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23) !important;
+    margin: 0px !important;
+    margin-bottom: 30px !important;
+    /* width: 200px !important; */
+}
+
+.card-app .content{ 
+    padding:0 !important;
+}
+
+.card-app .content img{
+    width:100% !important;
+    height: 150px !important;
+}
+
+.card-app .content .title{
+    width:100%;
+    height: 40px;
+    background-color: #D2EDFF;
+    border-radius: 0 0 4px 4px;
+    text-align: center;
+    padding:5px 0px 5px 0px;
+    font-weight: 500;
+    color:#01458E;
+}
+
+.card-app .content .type2{
+    background-color: #D9D2FD !important;
+}
+
+.card-app .content .type3{
+    background-color: #FFE0D2 !important;
+}
+
+.card-app .content .type4{
+    background-color: #DBFFB2 !important;
 }

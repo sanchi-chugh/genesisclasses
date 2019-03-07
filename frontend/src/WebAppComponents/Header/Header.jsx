@@ -29,12 +29,9 @@ class Header extends Component {
   }
   render() {
     return (
-      <Navbar fluid className="nav-bar">
-        <Navbar.Header>
-          {/* <Navbar.Toggle onClick={this.mobileSidebarToggle} /> */}
-        </Navbar.Header>
+      <nav fluid className="nav-bar">
           <HeaderLinks { ...this.props} />
-      </Navbar>
+      </nav>
     );
   }
 }

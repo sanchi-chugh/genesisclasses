@@ -9,7 +9,7 @@ class Sidebar extends Component {
   }
   render() {
     return (
-      <div id="side" className="side">
+      <div id="side" className={"side" + (this.props.expanded ? " side-expanded" : "")}>
         <div className="logo">
           <p>LOGO HERE</p>
         </div>

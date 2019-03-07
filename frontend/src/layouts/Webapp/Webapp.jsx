@@ -17,7 +17,8 @@ class Webapp extends Component {
     this.componentDidMount = this.componentDidMount.bind(this);
     this.handleNotificationClick = this.handleNotificationClick.bind(this);
     this.state = {
-      _notificationSystem: null
+      _notificationSystem: null,
+      expanded:false
     };
   }
   handleNotificationClick(position,text,level="success") {
@@ -48,28 +49,20 @@ class Webapp extends Component {
       this.refs.mainPanel.scrollTop = 0;
     }
   }
+  toggleSidebar(){
+    this.setState({
+      expanded: !this.state.expanded
+    })
+  }
   render() {
     return (
       <div className="wrapper">
         <NotificationSystem ref="notificationSystem" style={style} />
-        <Sidebar {...this.props} />
-        <div id="main-panel" className="main-panel" ref="mainPanel">
-          <Header {...this.props} />
+        <Sidebar {...this.props} expanded={this.state.expanded}/>
+        <div id="main-panel" className={"main-panel" + (this.state.expanded ? " main-panel-expanded" : "")} ref="mainPanel">
+          <Header {...this.props} toggle={this.toggleSidebar.bind(this)} expanded={this.state.expanded}/>
           <Switch>
             {webapppRoutes.map((prop, key) => {
-              if (prop.name === "Notifications")
-                return (
-                  <Route
-                    path={prop.path}
-                    key={key}
-                    render={routeProps => (
-                      <prop.component
-                        {...routeProps}
-                        handleClick={this.handleNotificationClick}
-                      />
-                    )}
-                  />
-                );
               if (prop.redirect)
                 return <Redirect from={prop.path} to={prop.to} key={key} />;
               return (
@@ -77,12 +70,12 @@ class Webapp extends Component {
                   <prop.component
                     {...routeProps}
                     handleClick={this.handleNotificationClick}
+                    expanded={this.state.expanded}
                   />
                 )} key={key} />
               );
             })}
           </Switch>
-          {/* <Footer /> */}
         </div>
       </div>
     );

@@ -83,6 +83,10 @@
     z-index: 10;
 }
 
-.navbar-default .navbar-nav > li > a:not(.btn){
+.nav-links ul li a{
     color:white !important;
+}
+
+.home-content{
+    margin-top: 80px;
 }

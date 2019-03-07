@@ -3,8 +3,6 @@ import { NavLink } from "react-router-dom";
 
 import webappRoutes from "../../routes/Webapp.jsx";
 
-import '../../assets/css/app.css';
-
 class Sidebar extends Component {
   activeRoute(routeName) {
     return this.props.location.pathname.indexOf(routeName) > -1 ? "active" : "";

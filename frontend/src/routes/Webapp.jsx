@@ -1,19 +1,19 @@
-import Dashboard from "../views/Dashboard/Dashboard";
+import Home from "../views/Home/Home";
 
 const webappRoutes = [
   {
-    path: "/dashboard",
-    name: "Dashboard",
+    path: "/home",
+    name: "Home",
     icon: "pe-7s-graph",
-    component: Dashboard
+    component: Home
   },
   {
     path: "/test",
-    name: "Dashboard",
+    name: "Home",
     icon: "pe-7s-graph",
-    component: Dashboard
+    component: Home
   },
-  { redirect: true, path: "/", to: "/dashboard", name: "Dashboard" }
+  { redirect: true, path: "/", to: "/home", name: "Home" }
 ];
 
 export default webappRoutes;

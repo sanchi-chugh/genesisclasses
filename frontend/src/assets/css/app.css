@@ -58,7 +58,7 @@
     line-height: 30px;
     font-size: 12px;
     font-weight: 600;
-    color:#D2EDFF;
+    color:#F0F0F0;
     text-transform: uppercase;
 }
 
@@ -67,11 +67,22 @@
 }
 
 .side .side-wrapper .active{
-    background-color: #02448E;
-    color:#D2EDFF;
+    background-color: #01458E;
+    color:#F0F0F0;
 }
 
 .side .side-wrapper .p{
     text-align: center;
     vertical-align: middle;
+}
+
+.nav-bar{
+    position: fixed !important;
+    width: calc(100% - 260px);
+    background-color: #01458E !important;
+    z-index: 10;
+}
+
+.navbar-default .navbar-nav > li > a:not(.btn){
+    color:white !important;
 }

@@ -10,6 +10,8 @@ import { style } from "../../variables/Variables.jsx";
 
 import webapppRoutes from "../../routes/Webapp";
 
+import '../../assets/css/app.css';
+
 class Webapp extends Component {
   constructor(props) {
     super(props);

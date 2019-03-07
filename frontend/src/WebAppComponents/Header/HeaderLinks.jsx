@@ -10,7 +10,7 @@ class HeaderLinks extends Component {
       <div className="nav-links">
         <ul className="left">
           <li href="#">
-            <a>Toggle</a>
+            <a onClick={this.props.toggle}>Toggle</a>
           </li>
           <li>
             <a>Search</a>

@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-
-import { Card } from "../../WebAppComponents/Card/Card.jsx";
+import { Row, Col, Grid } from "react-bootstrap";
 import Axios from "axios";
 import DescriptionCard from "../../WebAppComponents/DescriptionCard/DescriptionCard.jsx";
 import TestList from "../../WebAppComponents/TestListInfinite/TestList.jsx";
@@ -18,9 +17,8 @@ class ChapterWise extends Component {
     };
   }
 
-  componentDidMount() {
+  componentWillMount() {
     this.fetchUnits();
-    this.fetchTests(`?page=1`);
    }
  
   fetchUnits(){
@@ -33,7 +31,14 @@ class ChapterWise extends Component {
         item.sno = res.data.indexOf(item) + 1;
         return item;
       })
-      this.setState({units:data});
+      this.setState({
+          units:data,
+          unitSelected:data.length !== 0 ? data[0].id : null
+        },()=>{
+            if(this.state.unitSelected!==null){
+                this.fetchTests(`?page=1`);
+            }
+        });
     });
   }
   fetchMore(){
@@ -52,11 +57,11 @@ class ChapterWise extends Component {
     });
   }
   
-  fetchTests(page){
+  fetchTests(page,index=0){
         if(page===`?page=1`){
             page=""
         }
-        Axios.get( `/api/app/tests/practice/category/${this.props.match.params.id}/${page}`, {
+        Axios.get( this.state.units[index].tests, {
             headers: {
             Authorization: `Token ${localStorage.token}`
             }
@@ -66,6 +71,13 @@ class ChapterWise extends Component {
             this.setState({data:data, next:data.next,busy:false});
         });
     }
+  handleUnitSelect(id){
+      this.setState({
+          unitSelected:id
+        },()=>{
+            this.fetchTests('?page=1',this.state.units.findIndex(obj => obj.id === id));
+        })
+  }
   testFunction(){
     alert('Clicked')
   }
@@ -78,13 +90,39 @@ class ChapterWise extends Component {
            title={'Chemistry'}
            handleClick={this.testFunction.bind(this)}
         />
-        <center><h4 className="title-heading">Choose Test</h4></center>
-        <TestList 
-            fetchMore={this.fetchMore.bind(this)}
-            next={this.state.next}
-            data={this.state.data}
-            testFunction={this.testFunction.bind(this)}
-        />
+        {!this.state.busy &&
+        <Grid fluid>
+            <Row>
+                <Col md={3}>
+                    <div className="side-chap">
+                        <div className="chap-wrapper">
+                            {this.state.units.map(item=>{
+                                return(
+                                    <div>
+                                        <div className={"chap-list-item" + (this.state.unitSelected === item.id ? ' active' : '')} key={item.id} onClick={this.handleUnitSelect.bind(this,item.id)}>
+                                            {item.title}
+                                        </div>
+                                        {/* <div className={"chap-list-item item-hidden" + (this.state.unitSelected === item.id ? ' active' : '')} key={item.id} onClick={this.handleUnitSelect.bind(this,item.id)}>
+                                            {item.title}
+                                        </div> */}
+                                    </div>
+                                );   
+                            })}
+                        </div>
+                    </div>
+                </Col>
+                <Col md={9} style={{backgroundColor:'white',padding:'25px',fontWeight:'500',color:'black',borderRadius:'4px'}}>
+                    <h4 className="title-heading">Tests For {this.state.units[this.state.units.findIndex(obj => obj.id === this.state.unitSelected)].title}</h4>
+                    <TestList 
+                        fetchMore={this.fetchMore.bind(this)}
+                        next={this.state.next}
+                        data={this.state.data}
+                        testFunction={this.testFunction.bind(this)}
+                    />
+                </Col>
+            </Row>
+        </Grid>
+        }
       </div>
     );
   }

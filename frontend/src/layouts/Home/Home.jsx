@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { Route, Switch } from "react-router-dom";
 
-import studentsRoutes from "../../routes/Students";
+import homeRoutes from "../../routes/Home";
 
-class Home extends Component {
+class HomeLayout extends Component {
 
   componentDidUpdate(e) {
     if (e.history.action === "PUSH") {
@@ -17,7 +17,7 @@ class Home extends Component {
     return (
       <div className="content" ref={'content'}>
           <Switch>
-            {studentsRoutes.map((prop, key) => {
+            {homeRoutes.map((prop, key) => {
               return (
                 <Route path={prop.path} exact render={routeProps => (
                   <prop.component
@@ -33,4 +33,4 @@ class Home extends Component {
   }
 }
 
-export default Home;
+export default HomeLayout;

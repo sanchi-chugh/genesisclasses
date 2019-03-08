@@ -16,10 +16,10 @@ class UnitWiseTests extends Component {
   }
 
   componentDidMount() {
-    this.fetchCategories();
+    this.fetchSubjects();
    }
  
-  fetchCategories(){
+  fetchSubjects(){
     Axios.get("/api/app/subjects/", {
         headers: {
         Authorization: `Token ${localStorage.token}`

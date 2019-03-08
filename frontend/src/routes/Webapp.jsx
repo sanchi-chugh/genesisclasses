@@ -1,20 +1,13 @@
-import Home from "../views/Home/Home";
-import UnitWiseTests from "../views/UnitWiseTests/UnitWiseTest";
+import HomeLayout from "../layouts/Home/Home";
 
 const webappRoutes = [
   {
-    path: "/home",
+    path: "/",
     name: "Home",
     icon: "pe-7s-graph",
-    component: Home
+    component: HomeLayout
   },
-  {
-    path: "/subjects",
-    name: "Subjects",
-    icon: "pe-7s-graph",
-    component: UnitWiseTests
-  },
-  { redirect: true, path: "/", to: "/home", name: "Home" }
+  { redirect: true, path: "/", to: "/", name: "Home" }
 ];
 
 export default webappRoutes;

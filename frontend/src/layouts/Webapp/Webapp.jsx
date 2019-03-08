@@ -56,7 +56,7 @@ class Webapp extends Component {
   }
   render() {
     return (
-      <div className="wrapper">
+      <div className="wrapper" id="wrapper">
         <NotificationSystem ref="notificationSystem" style={style} />
         <Sidebar {...this.props} expanded={this.state.expanded}/>
         <div id="main-panel" className={"main-panel" + (this.state.expanded ? " main-panel-expanded" : "")} ref="mainPanel">

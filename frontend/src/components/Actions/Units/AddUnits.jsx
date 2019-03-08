@@ -6,7 +6,6 @@ import { Button,
          ControlLabel,
          DropdownButton,
          MenuItem,
-         ButtonToolbar
          } from "react-bootstrap";
 
 import LinearProgress from '@material-ui/core/LinearProgress';

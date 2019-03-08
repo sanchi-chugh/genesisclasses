@@ -16,8 +16,8 @@ class Home extends Component {
   }
 
   componentDidMount() {
-    this.fetchCategories();
     this.fetchUpcomingTests();
+    this.fetchCategories();
    }
  
   fetchCategories(){
@@ -50,6 +50,12 @@ class Home extends Component {
   testFunction(){
     alert('Clicked')
   }
+  handleUnitWise(){
+    this.props.history.push('/subjects');
+  }
+  handleCategory(id){
+    this.props.history.push(`/category/${id}`);
+  }
   render() {
     return (
       <div className="content home-content">
@@ -60,7 +66,7 @@ class Home extends Component {
               return(
                 <Col lg={3} sm={6}>
                   <Card
-                    title={item.title}
+                    title={'Take Test'}
                     content={item}
                     disabled={this.state.data.isStarted}
                     handleClick={this.testFunction.bind(this)}
@@ -76,7 +82,7 @@ class Home extends Component {
                   <Card
                     image={'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
                     title={'Unit Wise Tests'}
-                    handleClick={this.testFunction.bind(this)}
+                    handleClick={this.handleUnitWise.bind(this)}
                   />
                 </Col>
             {/* display cards after fetching from server */}
@@ -86,7 +92,7 @@ class Home extends Component {
                   <Card
                     image={item.image !== null && item.image !== '' ? item.image :'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
                     title={item.title}
-                    handleClick={this.testFunction.bind(this)}
+                    handleClick={this.handleCategory.bind(this,item.id)}
                     color={'type' + ((item.sno) % 4)}
                   />
                 </Col>

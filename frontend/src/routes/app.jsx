@@ -6,16 +6,13 @@ export var appRoutes = [
         path: "/", name: "Dashboard", component: Dashboard
     },
     { 
-        path: "/home", name: "Dashboard", component: Dashboard 
+        path: "/dashboard", name: "Dashboard", component: Dashboard 
     },
 ];
 
 export var studentRoutes = [
     { 
         path: "/", name: "Webapp", component: Webapp
-    },
-    { 
-        path: "/home", name: "Webapp", component: Webapp
     },
 ];
 

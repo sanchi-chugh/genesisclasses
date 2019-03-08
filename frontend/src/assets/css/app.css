@@ -158,10 +158,17 @@
     position: absolute;
     height: 100%;
     width: 100%;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0,0,0,0.7);
     cursor: not-allowed;
+    color: white;
+    padding-top: 20px;
 }
 
+.card-app .disabled p{
+    font-weight: 400 !important;
+    text-align: center;
+    font-size: 26px !important;
+}
 .card-app .content{ 
     padding:0 !important;
     user-select: none;
@@ -182,6 +189,7 @@
     width:100% !important;
     height: 150px !important;
     padding: 10px;
+    text-align: left !important;
 }
 
 .card-app .content .info p{
@@ -256,6 +264,9 @@
     display: inline-block;
     width: 300px;
     margin: 20px;
+}
+.test{
+    width: 250px;
 }
 @media (max-width: 991px){
     #main-panel{

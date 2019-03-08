@@ -64,7 +64,7 @@ class Dashboard extends Component {
       <div className="wrapper">
         <NotificationSystem ref="notificationSystem" style={style} />
         <Sidebar {...this.props} />
-        <div id="main-panel" className="main-panel" ref="mainPanel">
+        <div className="main-panel" ref="mainPanel">
           <Header {...this.props} />
           <Switch>
             {dashboardRoutes.map((prop, key) => {

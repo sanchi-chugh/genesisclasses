@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { Grid, Row, Col } from "react-bootstrap";
 
 import { Card } from "../../WebAppComponents/Card/Card.jsx";
 import Axios from "axios";
@@ -36,13 +35,15 @@ class UnitWiseTests extends Component {
   testFunction(){
     alert('Clicked')
   }
-
+  handleSubject(id){
+    this.props.history.push(`/subjects/${id}`)
+  }
   render() {
     return (
       <div className="content home-content">
         <DescriptionCard 
            image={'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
-           title={'Chemistry'}
+           title={'Unit Wise Test'}
            handleClick={this.testFunction.bind(this)}
         />
         <center><h4 className="title-heading">Choose Subject</h4></center>
@@ -53,7 +54,7 @@ class UnitWiseTests extends Component {
                   <Card
                     image={item.image !== null && item.image !== '' ? item.image :'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
                     title={item.title}
-                    handleClick={this.testFunction.bind(this)}
+                    handleClick={this.handleSubject.bind(this,item.id)}
                     color={'type' + ((item.sno) % 4)}
                   />
               </div>

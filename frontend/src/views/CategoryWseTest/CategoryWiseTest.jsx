@@ -1,9 +1,7 @@
 import React, { Component } from "react";
 
-import { Card } from "../../WebAppComponents/Card/Card.jsx";
 import Axios from "axios";
-import LinearProgress from '@material-ui/core/LinearProgress';
-import InfiniteScroll from 'react-infinite-scroller';
+import TestList from "../../WebAppComponents/TestListInfinite/TestList.jsx";
 
 class CategoryWiseTests extends Component {
 
@@ -60,30 +58,12 @@ class CategoryWiseTests extends Component {
       <div className="content home-content">
         <center><h4 className="title-heading">Tests</h4></center>
         {!this.state.busy &&
-        <div style={{display:'block', textAlign:'center'}}>
-            <InfiniteScroll
-                pageStart={0}
-                loadMore={this.fetchMore.bind(this)}
-                hasMore={this.state.next === null ? false : true}
-                loader={<div key={0}><LinearProgress
-                color="primary"
-                /></div>}
-                useWindow={true}
-                threshold={10}>
-                {this.state.data.results.map(item=>{
-                    return(
-                        <div className="test inline" key={item.id}>
-                            <Card
-                                image={item.image !== null && item.image !== '' ? item.image :'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
-                                title={'Take Test'}
-                                content={item} disabled={!item.isStarted}
-                                handleClick={this.testFunction.bind(this)}
-                            />
-                        </div>
-                    );
-                })}
-            </InfiniteScroll>
-        </div>}
+        <TestList 
+          fetchMore={this.fetchMore.bind(this)}
+          next={this.state.next}
+          data={this.state.data}
+          testFunction={this.testFunction.bind(this)}
+        />}
       </div>
     );
   }

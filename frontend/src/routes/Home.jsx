@@ -1,6 +1,7 @@
 import Home from "../views/Home/Home";
 import UnitWiseTests from "../views/UnitWiseTests/UnitWiseTest";
 import CategoryWiseTests from "../views/CategoryWseTest/CategoryWiseTest";
+import ChapterWise from "../views/ChapterWiseTests/ChapterWise";
 
 const homeRoutes = [
   {
@@ -14,6 +15,12 @@ const homeRoutes = [
     name: "Subjects",
     icon: "pe-7s-graph",
     component: UnitWiseTests
+  },
+  {
+    path: "/subjects/:id", //subjectID
+    name: "Units",
+    icon: "pe-7s-graph",
+    component: ChapterWise
   },
   {
     path: "/category/:id", //categoryPK

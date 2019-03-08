@@ -191,7 +191,7 @@
 
 .card-app .content .info{
     width:100% !important;
-    height: 150px !important;
+    height: 170px !important;
     padding: 10px;
     text-align: left !important;
 }
@@ -242,6 +242,11 @@
     margin-top:0;
     margin-right:0;
     border-radius: 4px;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none;
 }
 
 .card-desc .content{
@@ -272,7 +277,7 @@
     margin: 20px;
 }
 .test{
-    width: 220px;
+    width: 200px;
 }
 
 .side-chap{

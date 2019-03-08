@@ -88,7 +88,7 @@ class ChapterWise extends Component {
         <DescriptionCard 
            image={'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
            title={'Chemistry'}
-           handleClick={this.testFunction.bind(this)}
+        //    handleClick={this.testFunction.bind(this)}
         />
         {!this.state.busy &&
         <Grid fluid>

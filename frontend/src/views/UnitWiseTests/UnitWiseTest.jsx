@@ -44,7 +44,7 @@ class UnitWiseTests extends Component {
         <DescriptionCard 
            image={'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
            title={'Unit Wise Test'}
-           handleClick={this.testFunction.bind(this)}
+          //  handleClick={this.testFunction.bind(this)}
         />
         <center><h4 className="title-heading">Choose Subject</h4></center>
         <div style={{display:'block', textAlign:'center'}}>

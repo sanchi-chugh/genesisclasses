@@ -11,14 +11,18 @@
     background-size: cover;
     background-position: center center; 
     background-color: white;
-    transition: width 0.4s ease-in;
+    transition: all 0.4s ease;
 }
 /* toggle sidebar */
 .side-expanded {
     width:0%;
+    /* display: none; */
+}
+.side-expanded .logo p{
+    display: none;
 }
 #main-panel{
-    transition: width 0.4s ease-in;
+    transition: all 0.4s ease;
 }
 .main-panel-expanded {
     width:100% !important;
@@ -27,6 +31,7 @@
 .nav-bar-expanded{
     width:100% !important;
 }
+
 /* toggle sidebar end */
 .side .side-wrapper {
     position: relative;
@@ -98,8 +103,13 @@
     height:60px;
     background-color: #01458E !important;
     z-index: 10;
+    transition: all 0.4s ease;
     user-select: none;
-    transition: width 0.4s ease-in;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none;
 }
 
 .nav-links .left{
@@ -135,16 +145,60 @@
     box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23) !important;
     margin: 0px !important;
     margin-bottom: 30px !important;
+    transition: all 0.1s ease;
+    position: relative;
     /* width: 200px !important; */
+}
+
+.card-app:hover{
+    transform: scale(1.05);
+}
+
+.card-app .disabled{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0,0,0,0.4);
+    cursor: not-allowed;
 }
 
 .card-app .content{ 
     padding:0 !important;
+    user-select: none;
+    cursor: pointer;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none;
 }
 
 .card-app .content img{
     width:100% !important;
     height: 150px !important;
+}
+
+.card-app .content .info{
+    width:100% !important;
+    height: 150px !important;
+    padding: 10px;
+}
+
+.card-app .content .info p{
+    font-size:14px;
+    font-weight: 400;
+    word-wrap: break-word;
+    word-break: normal;
+    margin:2px;
+    color: grey;
+}
+
+#test-title{
+    font-size: 20px;
+    margin-bottom:5px;
+    font-weight: 400;
+    word-wrap: break-word;
+    word-break: normal;
 }
 
 .card-app .content .title{
@@ -158,23 +212,57 @@
     color:#01458E;
 }
 
-.card-app .content .type2{
+.card-app .content .type1{
     background-color: #D9D2FD !important;
 }
 
-.card-app .content .type3{
+.card-app .content .type2{
     background-color: #FFE0D2 !important;
 }
 
-.card-app .content .type4{
+.card-app .content .type3{
     background-color: #DBFFB2 !important;
 }
 
+.card-desc{
+    background-color: white;
+    margin: 15px;
+    margin-top:0;
+}
+
+.card-desc .content{
+    padding:20px;
+    padding-left:0px; 
+}
+
+.card-desc .content .image{
+    width:100%;
+    margin-bottom:10px;
+}
+
+.card-desc .content .description h4{
+    font-weight: 300;
+    color: #01458E;
+
+}
+
+.card-desc .content .image img{
+    box-shadow: 0 5px 10px rgba(0,0,0,0.19), 0 3px 6px rgba(0,0,0,0.20) !important;
+    height:160px;
+    width:160px;
+}
+
+.inline{
+    display: inline-block;
+    width: 300px;
+    margin: 20px;
+}
 @media (max-width: 991px){
     #main-panel{
         width: calc(100% - 260px);
     }
     .nav-bar{
         width:100%;
+        z-index:4 !important;
     }
 }

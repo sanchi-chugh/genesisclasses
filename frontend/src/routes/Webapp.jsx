@@ -1,4 +1,5 @@
 import Home from "../views/Home/Home";
+import UnitWiseTests from "../views/UnitWiseTests/UnitWiseTest";
 
 const webappRoutes = [
   {
@@ -8,10 +9,10 @@ const webappRoutes = [
     component: Home
   },
   {
-    path: "/test",
-    name: "Home",
+    path: "/subjects",
+    name: "Subjects",
     icon: "pe-7s-graph",
-    component: Home
+    component: UnitWiseTests
   },
   { redirect: true, path: "/", to: "/home", name: "Home" }
 ];

@@ -1,6 +1,9 @@
 {
   "name": "test-series",
   "version": "0.1.0",
+  "engines": {
+    "node" : "^8.15.1"
+  },
   "scripts": {
     "postinstall": "npm install --prefix frontend && npm run build --prefix frontend",
     "heroku-postbuild": "echo Skip builds on Heroku"

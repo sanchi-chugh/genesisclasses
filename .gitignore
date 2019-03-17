@@ -1,4 +1,5 @@
-venv
+gitignore
+env
 *.pyc
 staticfiles
 .env

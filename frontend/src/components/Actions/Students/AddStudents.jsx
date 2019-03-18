@@ -109,7 +109,10 @@ class AddStudents extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState(this.props.history.goBack(),{ addingStudent: false, studentAdded:true },this.props.handleClick('tr','Added Successfully')))
+      .then((res) => this.setState({ addingStudent: false, studentAdded:true },() => {
+        this.props.history.goBack(),
+        this.props.handleClick('tr','Added Successfully')
+      }))
       .catch((err) => this.setState({ addingStudent: false }, () => console.log(err)))
     });
   }

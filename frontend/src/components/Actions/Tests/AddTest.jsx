@@ -137,7 +137,10 @@ class AddTests extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState(this.props.history.goBack(),{ addingTest: false, testAdded:true },this.props.handleClick('tr','Added Successfully')))
+      .then((res) => this.setState({ addingTest: false, testAdded:true },()=>{
+        this.props.history.goBack();
+        this.props.handleClick('tr','Added Successfully');
+      }))
       .catch((err) => this.setState({ addingTest: false }, () => console.log(err)))
     });
   }

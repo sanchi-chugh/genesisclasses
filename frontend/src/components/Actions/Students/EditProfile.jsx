@@ -34,6 +34,7 @@ class AddStudents extends Component {
         email:'',
         contact_number:'',
         endAccessDate:'',
+        joiningDate:'',
         father_name:'',
         gender:'',
         dateOfBirth:'',
@@ -45,8 +46,7 @@ class AddStudents extends Component {
         file:null,
         course:[],
         clear:false,
-        centreName:'Select Centre',
-        centreId:''
+        centre:''
       },
       updatingStudent:false,
       studentUpdated:false
@@ -90,9 +90,9 @@ class AddStudents extends Component {
         last_name:this.props.location.data.last_name,
         email:this.props.location.data.email,
         contact_number:this.props.location.data.contact_number,
-        centreId:this.props.location.data.centre.id,
-        centreName:this.props.location.data.centre.location,
+        centre:this.props.location.data.centre.id,
         endAccessDate:moment(new Date(this.props.location.data.endAccessDate)).format("YYYY-MM-DD"),
+        joiningDate:moment(new Date(this.props.location.data.joiningDate)).format("YYYY-MM-DD"),
         father_name:this.props.location.data.father_name === null ? '' : this.props.location.data.father_name,
         gender:this.props.location.data.gender === null ? '' : this.props.location.data.gender,
         dateOfBirth:this.props.location.data.dateOfBirth === null ? null : moment(new Date(this.props.location.data.dateOfBirth)).format("YYYY-MM-DD"),
@@ -102,15 +102,12 @@ class AddStudents extends Component {
         pinCode:this.props.location.data.pinCode === null ? '' : this.props.location.data.pinCode,
         image:this.props.location.data.image === null ? '' : this.props.location.data.image,
         file:null,
-        course:this.props.location.data.course.map(item=>{
-          return item.id
-        }),
+        course : this.props.location.data.course.map(item=>{return item.id}),
       }
     })
   }
 
   handleEdit(e){
-    console.log('test'+'as' + this.state.formData.dateOfBirth +'end')
     e.preventDefault();
     this.setState({ updatingStudent: true }, () => {
       var formData = new FormData();
@@ -119,8 +116,9 @@ class AddStudents extends Component {
       formData.append('contact_number',this.state.formData.contact_number)
       formData.append('email',this.state.formData.email)
       formData.append('endAccessDate',this.state.formData.endAccessDate)
+      formData.append('joiningDate',this.state.formData.joiningDate)
       formData.append('course',this.state.formData.course.join(','))
-      formData.append('centre',this.state.formData.centreId)
+      formData.append('centre',this.state.formData.centre)
       formData.append('father_name',this.state.formData.father_name)
       formData.append('gender',this.state.formData.gender)
       if(this.state.formData.dateOfBirth !== null && this.state.formData.dateOfBirth !== '')
@@ -141,7 +139,10 @@ class AddStudents extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState(this.props.history.goBack(),{ updatingStudent: false, studentUpdated:true },this.props.handleClick('tr','Updated Successfully')))
+      .then((res) => this.setState({ updatingStudent: false, studentUpdated:true },()=>{
+        this.props.history.goBack();
+        this.props.handleClick('tr','Updated Successfully');
+      }))
       .catch((err) => this.setState({ updatingStudent: false }, () => console.log(err)))
     });
   }
@@ -202,19 +203,6 @@ class AddStudents extends Component {
   }
 
   render() {
-    const menu = (
-      <Menu>
-        {this.state.centres.map(item =>{
-            return(
-              <Menu.Item key={item.id}>
-                  <p onClick={()=> this.handleSelect(item)}>{item.location}</p>
-              </Menu.Item>
-            )
-        })}
-      </Menu>
-    );
-
-
     return (
       <div className="content">
         <Grid fluid>
@@ -222,7 +210,7 @@ class AddStudents extends Component {
             <Col md={8}>
               <Card
                 title="Edit Profile"
-                content={
+                content={ 
                   <form onSubmit={(event)=>this.handleEdit(event)}>
                     <LinearProgress
                         style={
@@ -286,20 +274,41 @@ class AddStudents extends Component {
                         },
                       ]}
                     />
+                    <FormInputs
+                        ncols={["col-md-6"]}
+                        proprieties={[
+                          {
+                            label: "JOINING Date *",
+                            type: "date",
+                            bsClass: "form-control",
+                            name:'joiningDate',
+                            value:this.state.formData.joiningDate,
+                            onChange:this.handleFormDataChange.bind(this)
+                          },
+                        ]}
+                        contents={
+                          <Col md={6}>
+                            <FormGroup>
+                              <ControlLabel className='form-input'>Centres * </ControlLabel>
+                              <FormControl 
+                                componentClass="select" 
+                                value={this.state.formData.centre} 
+                                onChange={this.handleFormDataChange.bind(this)} 
+                                name="centre">
+                                  <option value=''>Select Centre...</option>
+                                  { this.state.centres.map(item =>{
+                                    return(
+                                      <option value={item.id}>{item.location}</option>
+                                    )
+                                  })}
+                              </FormControl>  
+                            </FormGroup>
+                          </Col>
+                        }
+                      />
                     <Row>
-                      <Col md={4}>
-                      <ControlLabel>Centre Name</ControlLabel>
-                        <div>
-                        <Dropdown overlay={menu}>
-                            <a className="ant-dropdown-link" style={{marginLeft:8}}>
-                                {this.state.formData.centreName} 
-                            <Icon type="down" />
-                            </a>
-                        </Dropdown>
-                        </div>
-                      </Col>
-                      <Col md={8}>
-                        <ControlLabel>Courses</ControlLabel>
+                      <Col md={12}>
+                        <ControlLabel className='form-input'>Courses *</ControlLabel>
                         <br/>
                         <FormGroup>
                             {this.state.courses.map((props)=>{

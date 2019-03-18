@@ -69,7 +69,7 @@ class EditTest extends Component {
     }).then(res => {
         const data = res.data;
         let durations = data.detail.duration.split(':')
-        console.log(durations)
+        console.log('data',res.data)
         const duration = parseInt(durations[0],10)*60 + parseInt(durations[1])
         this.setState({
           formData:{
@@ -77,7 +77,7 @@ class EditTest extends Component {
             title: data.detail.title,
             duration: duration,
             typeOfTest: data.detail.typeOfTest,
-            instructions: EditorState.createWithContent(ContentState.createFromBlockArray(convertFromHTML(data.detail.instructions))),
+            instructions: data.detail.instructions !== null && data.detail.instructions !== "" ? EditorState.createWithContent(ContentState.createFromBlockArray(convertFromHTML(data.detail.instructions))) : EditorState.createEmpty(),
             description: data.detail.description,
             course : data.detail.course.map(item=>{return item.id}),
             category: data.detail.category.map(item=>{return item.id}),
@@ -89,6 +89,7 @@ class EditTest extends Component {
             unit: data.detail.unit !== null ? data.detail.unit.id : '',
           }
         },() => {
+          console.log('as',this.state.formData)
           this.fetchSubjects();
           this.fetchUnits();
         })
@@ -169,7 +170,10 @@ class EditTest extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState(this.props.history.goBack(),{ updatingTest: false, testUpdated:true },this.props.handleClick('tr','Added Successfully')))
+      .then((res) => this.setState({ updatingTest: false, testUpdated:true },()=>{
+        this.props.history.goBack();
+        this.props.handleClick('tr','Updated Successfully');
+      }))
       .catch((err) => this.setState({ updatingTest: false }, () => console.log(err)))
     });
   }

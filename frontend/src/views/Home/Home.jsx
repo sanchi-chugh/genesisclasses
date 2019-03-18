@@ -40,6 +40,7 @@ class Home extends Component {
         Authorization: `Token ${localStorage.token}`
         }
     }).then(res => {
+      console.log(res.data)
       const data = res.data.map(item => {
         item.sno = res.data.indexOf(item) + 1;
         return item;
@@ -59,47 +60,46 @@ class Home extends Component {
   render() {
     return (
       <div className="content home-content">
-        <Grid fluid>
-          <h4 className="title-heading">Upcoming Tests</h4>
-          <Row>
+        <h4 className="title-heading">Upcoming Tests</h4>
+        <div style={{display:'block',width:'100%', marginBottom:'20px'}}>
           {this.state.upcomingTests.map(item=>{
-              return(
-                <Col lg={3} sm={6}>
-                  <Card
-                    title={'Take Test'}
-                    content={item}
-                    disabled={this.state.data.isStarted}
-                    handleClick={this.testFunction.bind(this)}
-                  />
-                </Col>
-              )
-            })}
-          </Row>
-          <h4 className="title-heading">Practice Tests</h4>
-          <Row> 
-            {/* fixed card for unit wise tests */}
-                <Col lg={3} sm={6}>
-                  <Card
-                    image={'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
-                    title={'Unit Wise Tests'}
-                    handleClick={this.handleUnitWise.bind(this)}
-                  />
-                </Col>
-            {/* display cards after fetching from server */}
-            {this.state.data.map(item=>{
-              return(
-                <Col lg={3} sm={6}>
-                  <Card
-                    image={item.image !== null && item.image !== '' ? item.image :'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
-                    title={item.title}
-                    handleClick={this.handleCategory.bind(this,item.id)}
-                    color={'type' + ((item.sno) % 4)}
-                  />
-                </Col>
-              )
-            })}
-          </Row>
-        </Grid>
+            return(
+              <div className="home-cards">
+                <Card
+                  subTitle={item.isStarted ? 'Take Test' : 'Not Yet Started'}
+                  content={item}
+                  disabled={!item.isStarted}
+                  color={!item.isStarted ? ' type4' : ''}
+                  handleClick={this.testFunction.bind(this)}
+                />
+              </div>
+            )
+          })}
+        </div>
+        <h4 className="title-heading">Practice Tests</h4>
+        {/* fixed card for unit wise tests */}
+        <div style={{display:'block',width:'100%'}}>
+          <div className="home-cards">
+            <Card
+              image={'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
+              title={'Unit Wise Tests'}
+              handleClick={this.handleUnitWise.bind(this)}
+            />
+          </div>
+       {/* display cards after fetching from server */}
+       {this.state.data.map(item=>{
+          return(
+            <div className="home-cards">
+              <Card
+                image={item.image !== null && item.image !== '' ? item.image :'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
+                title={item.title}
+                handleClick={this.handleCategory.bind(this,item.id)}
+                color={'type' + ((item.sno) % 4)}
+              />
+            </div>
+          )
+        })}
+       </div>
       </div>
     );
   }

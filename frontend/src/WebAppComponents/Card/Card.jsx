@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import moment from 'moment';
 
 export class Card extends Component {
   render() {
@@ -6,8 +7,6 @@ export class Card extends Component {
       <div className="card card-app">
         {this.props.disabled &&
           <div className={"disabled"}>
-            <p>Test will start on</p>
-            <p>{this.props.content.startTime}</p>
           </div>
         }
           <div className="content" onClick={this.props.handleClick}>
@@ -19,16 +18,93 @@ export class Card extends Component {
             {this.props.content &&
             <div className="info">
               <div id="test-title">{this.props.content.title}</div>
-              <p>Max Marks :- {this.props.content.totalMarks}</p>
-              <p>Time :- {this.props.content.duration.split(':')[0]+' hrs '+ this.props.content.duration.split(':')[0]+' mins'}</p>
-              <p>Number Of Questions :- {this.props.content.totalQuestions}</p>
-              <p>End Time :- {this.props.content.endtime}</p>
+              <div className="details">
+                <div className="key">
+                  Total Marks
+                </div>
+                <div className="value">
+                  {this.props.content.totalMarks}
+                </div>
+              </div>
+
+              <div className="details">
+                <div className="key">
+                  Duration
+                </div>
+                <div className="value">
+                  {parseInt(this.props.content.duration.split(':')[0]) * 60 + parseInt(this.props.content.duration.split(':')[1]) }
+                </div>
+              </div>
+
+              <div className="details">
+                <div className="key">
+                  No. of questions
+                </div>
+                <div className="value">
+                  {this.props.content.totalQuestions}
+                </div>
+              </div>
+
+              {this.props.disabled ?
+                <div>
+                  <div className="details">
+                    <div className="key">
+                      Start Date
+                    </div>
+                    <div className="value">
+                      {moment(new Date(this.props.content.startTime)).format("DD-MM-YY")}
+                    </div>
+                  </div>
+
+                  <div className="details">
+                    <div className="key">
+                      Start Time
+                    </div>
+                    <div className="value">
+                      {
+                        this.props.content.startTime !== null ?
+                        this.props.content.startTime.split("(")[1].split(")")[0]
+                        : '...'}
+                    </div>
+                  </div>
+                </div>
+                 :
+                <div>
+                  <div className="details">
+                    <div className="key">
+                      End Date
+                    </div>
+                    <div className="value">
+                      {moment(new Date(this.props.content.endtime)).format("DD-MM-YY")}
+                    </div>
+                  </div>
+
+                  <div className="details">
+                    <div className="key">
+                      End Time
+                    </div>
+                    <div className="value">
+                      {
+                        this.props.content.endtime !== null ?
+                        this.props.content.endtime.split("(")[1].split(")")[0]
+                        : '...'}
+                    </div>
+                </div>
+                </div>
+              }
             </div>
             }
             <div className="footer">
-              <div className={"title "+this.props.color}>
-                {this.props.title} {this.props.subTitle}
-              </div>
+              {this.props.title ?
+                <div className={"title "+this.props.color}>
+                  {this.props.title}
+                </div> : null
+              }
+              {this.props.subTitle ?
+                <div className={"sub-title "+this.props.color}>
+                  {this.props.subTitle}
+                </div> : null
+              }
             </div>
           </div>
       </div>

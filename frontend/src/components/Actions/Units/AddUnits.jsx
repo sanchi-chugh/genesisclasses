@@ -13,7 +13,7 @@ import InfiniteScroll from 'react-infinite-scroller';
 import  './styles.css';
 
 class AddUnits extends Component {
-
+ 
   render() {
     return ( 
             <Modal
@@ -48,7 +48,8 @@ class AddUnits extends Component {
                         <br/>
                         <ControlLabel>DESCRIPTION</ControlLabel>
                         <FormControl
-                            type="text"
+                            componentClass='textarea'
+                            bsClass='form-control'
                             value={this.props.formData.description}
                             placeholder="Description"
                             name='description'

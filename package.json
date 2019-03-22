@@ -6,7 +6,6 @@
   },
   "scripts": {
     "postinstall": "npm install --prefix frontend && npm run build --prefix frontend"
-    "build": "node frontend/scripts/build.js"
   },
   "dependencies": {
     "moment": "^2.24.0",

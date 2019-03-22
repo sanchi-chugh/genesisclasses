@@ -33,7 +33,6 @@ export class Card extends Component {
               {this.props.editButton ? <Col md={2}>
                 <Button bsSize="small" bsStyle="info" onClick={this.props.handleShowEditModal}>
                   <Glyphicon glyph="edit" /> {this.props.editButtonLabel}
-                </Button>
               </Col> :''}
               {this.props.activeButton ? <Col md={2}>
                 <RadioGroup onChange={this.props.onChange} defaultValue={this.props.active}>

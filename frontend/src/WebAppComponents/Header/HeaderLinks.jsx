@@ -1,5 +1,9 @@
 import React, { Component } from "react";
+<<<<<<< HEAD
 import { Button, Glyphicon } from "react-bootstrap"
+=======
+
+>>>>>>> 75b1cb9dfcd10e9580c46ad9c2cf28f4d60f603b
 class HeaderLinks extends Component {
 
   logout(){

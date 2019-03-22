@@ -11,7 +11,7 @@ class HeaderLinks extends Component {
       <div className="nav-links">
         <ul className="left">
           <li href="#">
-            <a ><Glyphicon glyph="align-justify" style={{color:'white', fontSize: '18px'}} onClick={this.props.toggle}/></a>
+            <a ><Glyphicon glyph="menu-hamburger" style={{color:'white', fontSize: '18px'}} onClick={this.props.toggle}/></a>
           </li>
           <li>
             <a ><Glyphicon glyph="search" style={{color:'white', fontSize: '18px'}}/></a>

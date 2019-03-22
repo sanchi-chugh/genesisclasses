@@ -49,6 +49,7 @@ class EditTest extends Component {
         subject:'',
         unit:'',
         description:'',
+        active: null
       },
       updatingTest:false,
       testUpdated:false
@@ -69,7 +70,14 @@ class EditTest extends Component {
     }).then(res => {
         const data = res.data;
         let durations = data.detail.duration.split(':')
+        let  editorState = EditorState.createEmpty();
+        let contentBlock  = convertFromHTML(data.detail.instructions);
+        if(contentBlock.contentBlocks !== null){
+          let contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks, contentBlock.entityMap);
+          editorState = EditorState.createWithContent(contentState);
+        }
         console.log('data',res.data)
+        console.log(convertFromHTML(data.detail.instructions));
         const duration = parseInt(durations[0],10)*60 + parseInt(durations[1])
         this.setState({
           formData:{
@@ -77,7 +85,7 @@ class EditTest extends Component {
             title: data.detail.title,
             duration: duration,
             typeOfTest: data.detail.typeOfTest,
-            instructions: data.detail.instructions !== null && data.detail.instructions !== "" ? EditorState.createWithContent(ContentState.createFromBlockArray(convertFromHTML(data.detail.instructions))) : EditorState.createEmpty(),
+            instructions: editorState,
             description: data.detail.description,
             course : data.detail.course.map(item=>{return item.id}),
             category: data.detail.category.map(item=>{return item.id}),
@@ -87,6 +95,7 @@ class EditTest extends Component {
             edate: data.detail.endtime !== null ? moment(new Date(data.detail.endtime)).format("YYYY-MM-DD") : null,
             subject: data.detail.subject !== null ? data.detail.subject.id : '',
             unit: data.detail.unit !== null ? data.detail.unit.id : '',
+            active: data.detail.active
           }
         },() => {
           console.log('as',this.state.formData)
@@ -160,7 +169,7 @@ class EditTest extends Component {
       formData.append('course',this.state.formData.course.join(','))
       formData.append('category',this.state.formData.category.join(','))
       formData.append('typeOfTest',this.state.formData.typeOfTest)
-      formData.append('active',false)
+      formData.append('active',this.state.formData.active)
       formData.append('startTime', this.state.formData.sdate + ' ' + this.state.formData.stime + ':00')
       formData.append('endtime', this.state.formData.edate + ' ' + this.state.formData.etime + ':00')
       formData.append('subject',this.state.formData.subject)
@@ -187,6 +196,14 @@ class EditTest extends Component {
     });
   };
 
+  onChange = () => {
+        this.setState({
+          formData:{
+            ...this.state.formData,
+            active:!this.state.formData.active
+          }
+        })
+      }
   handleFormDataChange(e) {
     if(e.target.name === 'course' ){
         if(e.target.checked){
@@ -265,7 +282,10 @@ class EditTest extends Component {
             <Col md={12}>
               <Card
                 title="Edit Test"
-                // activeButton={true}
+                icon="remove"
+                activeButton={true}
+                active={this.state.formData.active}
+                onChange={this.onChange}
                 // handleRadioButton={this.handleFormDataChange.bind(this)}
                 content={
                   <form onSubmit={(event)=>this.handleEdit(event)}>

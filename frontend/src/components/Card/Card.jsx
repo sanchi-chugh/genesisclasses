@@ -5,6 +5,10 @@ import {
   Button, 
   Glyphicon, 
 } from "react-bootstrap";
+import { Radio } from 'antd';
+
+const RadioButton = Radio.Button;
+const RadioGroup = Radio.Group;
 
 export class Card extends Component {
   render() {
@@ -13,8 +17,8 @@ export class Card extends Component {
         <div className={"header" + (this.props.hCenter ? " text-center" : "")}>
           <div>
             <Row>
-              <Col md={this.props.downloadButton ? 9 : this.props.editButton ? 10 : 11}>
-                <h4 className="title">{this.props.title}</h4>
+              <Col md={this.props.downloadButton ? 9 : this.props.editButton || this.props.activeButton  ? 10 : 11}>
+                <h4 className="title" style={{display: 'inline-block'}}>{this.props.title}</h4>
               </Col>
               {this.props.downloadButton ? <Col md={2}>
                 <Button bsSize="small" bsStyle="info" onClick={this.props.handleDownloadButton}>
@@ -31,10 +35,11 @@ export class Card extends Component {
                   <Glyphicon glyph="edit" /> {this.props.editButtonLabel}
                 </Button>
               </Col> :''}
-              {this.props.activeButton ? <Col md={1}>
-                <Button bsSize="small" bsStyle="success" onClick={this.props.handleShowAddModal}>
-                  <Glyphicon glyph="plus-sign" /> ADD
-                </Button>
+              {this.props.activeButton ? <Col md={2}>
+                <RadioGroup onChange={this.props.onChange} defaultValue={this.props.active}>
+                  <RadioButton value={false}><Glyphicon glyph={'remove'} style={{padding:'5px',color: !this.props.active  ? 'red' : 'grey'}}/></RadioButton>
+                  <RadioButton value={true}><Glyphicon glyph={'ok'} style={{padding:'5px',color:this.props.active  ? 'green' : 'grey'}}/></RadioButton>
+                </RadioGroup>
               </Col> :''}
             </Row>
           </div>

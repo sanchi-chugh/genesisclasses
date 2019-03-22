@@ -118,10 +118,14 @@
 
 .nav-links .left{
     float: left;
+    padding-inline-start: 10px;
+    padding-top: 4px ;
 }
 
 .nav-links .right{
     float: right;
+    padding-inline-start: 10px;
+    padding-top: 4px ;
 }
 
 .nav-links ul li {

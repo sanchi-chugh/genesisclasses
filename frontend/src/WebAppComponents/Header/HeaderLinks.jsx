@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-
+import { Button, Glyphicon } from "react-bootstrap"
 class HeaderLinks extends Component {
 
   logout(){
@@ -10,18 +10,18 @@ class HeaderLinks extends Component {
       <div className="nav-links">
         <ul className="left">
           <li href="#">
-            <a onClick={this.props.toggle}>Toggle</a>
+            <a ><Glyphicon glyph="align-justify" style={{color:'white', fontSize: '18px'}} onClick={this.props.toggle}/></a>
           </li>
           <li>
-            <a>Search</a>
+            <a ><Glyphicon glyph="search" style={{color:'white', fontSize: '18px'}}/></a>
           </li>
         </ul>
         <ul className="right">
-          <li href="#">
-            <a>Settings</a>
+          <li>
+           <a ><Glyphicon glyph="cog" style={{color:'white', fontSize: '18px'}}/></a>
           </li>
           <li>
-            <a onClick={this.logout.bind(this)}>Log Out</a>
+            <a ><Glyphicon glyph="log-out" style={{color:'white', fontSize: '18px'}} onClick={this.logout.bind(this)}/></a>
           </li>
         </ul>
       </div>

@@ -6,7 +6,7 @@ import { Card } from "../../WebAppComponents/Card/Card.jsx";
 class TestList extends Component {
     render(){
         return(
-            <div style={{display:'block', textAlign:'center'}}>
+            <div style={{display:'block'}}>
                 <InfiniteScroll
                     pageStart={0}
                     loadMore={this.props.fetchMore}
@@ -20,8 +20,8 @@ class TestList extends Component {
                         return(
                             <div className="test inline" key={item.id}>
                                 <Card
-                                    image={item.image !== null && item.image !== '' ? item.image :'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
-                                    title={'Take Test'}
+                                    subTitle={item.isStarted ? 'Take Test' : 'Not Yet Started'}
+                                    color={!item.isStarted ? ' type4' : ''}
                                     content={item} disabled={!item.isStarted}
                                     handleClick={this.props.testFunction}
                                 />

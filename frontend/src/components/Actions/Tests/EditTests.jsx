@@ -196,7 +196,6 @@ class EditTest extends Component {
     });
   };
 
-<<<<<<< HEAD
   onChange = () => {
         this.setState({
           formData:{
@@ -205,8 +204,7 @@ class EditTest extends Component {
           }
         })
       }
-=======
->>>>>>> 75b1cb9dfcd10e9580c46ad9c2cf28f4d60f603b
+
   handleFormDataChange(e) {
     if(e.target.name === 'course' ){
         if(e.target.checked){

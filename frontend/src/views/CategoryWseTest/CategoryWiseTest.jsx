@@ -51,14 +51,14 @@ class CategoryWiseTests extends Component {
 
   testFunction(){
         alert('Clicked')
-   }
+   } 
 
   render() {
     return (
       <div className="content home-content">
         <center><h4 className="title-heading">Tests</h4></center>
         {!this.state.busy &&
-        <TestList 
+        <TestList
           fetchMore={this.fetchMore.bind(this)}
           next={this.state.next}
           data={this.state.data}

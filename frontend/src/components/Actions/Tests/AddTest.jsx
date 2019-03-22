@@ -13,10 +13,11 @@ import axios from 'axios';
 import { Card } from "../../../components/Card/Card.jsx";
 import { FormInputs } from "../../../components/FormInputs/FormInputs.jsx";
 import Button from "../../../components/CustomButton/CustomButton.jsx";
-import { Checkbox, Menu, Dropdown, Icon} from 'antd';
+import { Checkbox } from 'antd';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { Editor } from 'react-draft-wysiwyg';
-import { EditorState } from 'draft-js';
+import { EditorState, convertToRaw } from 'draft-js';
+import draftToHtml from 'draftjs-to-html';
 
 import '../../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import '../../../../node_modules/antd/dist/antd.css'; 
@@ -25,10 +26,6 @@ class AddTests extends Component {
   constructor() {
     super();
     this.state = {
-      centres:[],
-      centreName:'Select Centre',
-      centreId:'',
-      preview:'',
       courses:[],
       subjects:[],
       units:[],
@@ -38,6 +35,10 @@ class AddTests extends Component {
         duration:'',
         instructions: EditorState.createEmpty(),
         typeOfTest:'',
+        edate:null,
+        etime:null,
+        sdate:null,
+        stime:null,
         startTime:'',
         endTime:'',
         doc:'',
@@ -45,7 +46,8 @@ class AddTests extends Component {
         course:[],
         category:[],
         subject:'',
-        unit:''
+        unit:'',
+        description:'',
       },
       addingTest:false,
       testAdded:false
@@ -73,7 +75,7 @@ class AddTests extends Component {
   }
 
   fetchUnits(){
-      if(this.state.formData.subject.trim() !== ''){
+      if(this.state.formData.subject !== '' || this.state.formData.subject !== null){
         axios.get(`/api/units/${this.state.formData.subject}/`, {
             headers: {
             Authorization: `Token ${localStorage.token}`
@@ -114,13 +116,17 @@ class AddTests extends Component {
     this.setState({ addingTest: true }, () => {
       var formData = new FormData();
       formData.append('title',this.state.formData.title)
-      formData.append('duration',this.state.formData.duration)
-      formData.append('instructions',this.state.formData.instructions)
+      formData.append('duration',this.state.formData.duration * 60 )
+      formData.append('instructions',draftToHtml(convertToRaw(this.state.formData.instructions.getCurrentContent())))
       formData.append('description',this.state.formData.description)
       formData.append('course',this.state.formData.course.join(','))
       formData.append('category',this.state.formData.category.join(','))
       formData.append('typeOfTest',this.state.formData.typeOfTest)
-      formData.append('startTime',this.state.formData.startTime)
+      formData.append('active',false)
+      formData.append('startTime', this.state.formData.sdate + ' ' + this.state.formData.stime + ':00')
+      formData.append('endtime', this.state.formData.edate + ' ' + this.state.formData.etime + ':00')
+      formData.append('subject',this.state.formData.subject)
+      formData.append('unit',this.state.formData.unit)
       if(this.state.formData.file !== null){
         formData.append('doc',this.state.formData.file,this.state.formData.file.name)
       }else{
@@ -131,7 +137,10 @@ class AddTests extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState(this.props.history.goBack(),{ addingTest: false, testAdded:true },this.props.handleClick('tr','Added Successfully')))
+      .then((res) => this.setState({ addingTest: false, testAdded:true },()=>{
+        this.props.history.goBack();
+        this.props.handleClick('tr','Added Successfully');
+      }))
       .catch((err) => this.setState({ addingTest: false }, () => console.log(err)))
     });
   }
@@ -146,6 +155,7 @@ class AddTests extends Component {
   };
 
   handleFormDataChange(e) {
+    console.log(e)
     if(e.target.name === 'course' ){
         if(e.target.checked){
           this.state.formData.course.push(e.target.value)
@@ -190,9 +200,11 @@ class AddTests extends Component {
         if(e.target.name === 'subject'){
             this.setState({ formData: {
               ...this.state.formData,
-              [e.target.name] : e.target.value
+              [e.target.name] : e.target.value,
+              unit:''
           }},this.fetchUnits.bind(this));
         }else{
+          console.log(e.target.name,e.target.value,this.state.formData)
           this.setState({ formData: {
               ...this.state.formData,
               [e.target.name] : e.target.value
@@ -211,8 +223,8 @@ class AddTests extends Component {
             <Col md={12}>
               <Card
                 title="Add Test"
-                activeButton={true}
-                handleRadioButton={this.handleFormDataChange.bind(this)}
+                // activeButton={true}
+                // handleRadioButton={this.handleFormDataChange.bind(this)}
                 content={
                   <form onSubmit={(event)=>this.handleAdd(event)}>
                     <LinearProgress
@@ -242,7 +254,7 @@ class AddTests extends Component {
                         proprieties={[
                           {
                             label: "Duration (in minutes)*",
-                            type: "text",
+                            type: "number",
                             bsClass: "form-control",
                             placeholder: "Duration of test",
                             name:'duration',
@@ -327,17 +339,17 @@ class AddTests extends Component {
                         <Col md={6}>
                             <FormControl 
                                   type='date'
-                                  name='startDate'
-                                  onchange={this.handleFormDataChange.bind(this)}
-                                  value={this.state.formData.startDate}
+                                  name='sdate'
+                                  onChange={this.handleFormDataChange.bind(this)}
+                                  value={this.state.formData.sdate}
                                 />
                         </Col>
                         <Col md={6}>
                             <FormControl 
                               type='time'
-                              name='startTime'
-                              onchange={this.handleFormDataChange.bind(this)}
-                              value={this.state.formData.startTime}
+                              name='stime'
+                              onChange={this.handleFormDataChange.bind(this)}
+                              value={this.state.formData.stime}
                             />
                         </Col>
                       </Row>
@@ -348,17 +360,17 @@ class AddTests extends Component {
                         <Col md={6}>
                             <FormControl 
                                   type='date'
-                                  name='endDate'
-                                  onchange={this.handleFormDataChange.bind(this)}
-                                  value={this.state.formData.endDate}
+                                  name='edate'
+                                  onChange={this.handleFormDataChange.bind(this)}
+                                  value={this.state.formData.edate}
                                 />
                         </Col>
                         <Col md={6}>
                             <FormControl 
                               type='time'
-                              name='endTime'
-                              onchange={this.handleFormDataChange.bind(this)}
-                              value={this.state.formData.endTime}
+                              name='etime'
+                              onChange={this.handleFormDataChange.bind(this)}
+                              value={this.state.formData.etime}
                             />
                         </Col>
                       </Row>
@@ -376,7 +388,7 @@ class AddTests extends Component {
                                 <option value={item.id}>{item.title.toUpperCase()}</option>
                               )
                             })}
-                        </FormControl>  
+                        </FormControl>
                     </FormGroup>
                     <FormGroup>
                         <ControlLabel  className='form-input'>Unit (Select Subject First)</ControlLabel>
@@ -414,7 +426,7 @@ class AddTests extends Component {
                             }
                         color="primary"
                         />
-                    <Button bsStyle="success" pullRight fill type="submit">
+                    <Button bsStyle="success" pullRight fill type="submit" disabled={this.state.addingTest}>
                       ADD TEST
                     </Button>
                     <div className="clearfix" />
@@ -423,7 +435,7 @@ class AddTests extends Component {
               />
             </Col>
           </Row>
-        </Grid>>
+        </Grid>
       </div>
     );
   }

@@ -74,7 +74,7 @@ class ViewProfile extends Component {
               />
             </Col>
           </Row>
-        </Grid>>
+        </Grid>
       </div>
     );
   }

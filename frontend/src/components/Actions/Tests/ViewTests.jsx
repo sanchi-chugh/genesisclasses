@@ -85,7 +85,7 @@ class ViewTest extends Component {
               />
             </Col>
           </Row>
-        </Grid>>
+        </Grid>
       </div>
     );
   }

@@ -5,7 +5,6 @@ import NotificationSystem from "react-notification-system";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import Sidebar from "../../components/Sidebar/Sidebar";
-import { Alert } from "react-bootstrap";
 
 import { style } from "../../variables/Variables.jsx";
 
@@ -20,12 +19,12 @@ class Dashboard extends Component {
       _notificationSystem: null
     };
   }
-  handleNotificationClick(position,text,icon) {
+  handleNotificationClick(position,text,level="success") {
     this.state._notificationSystem.addNotification({
       message: (
         <div>{text}</div>
       ),
-      level: 'info',
+      level: level,
       position: position,
       autoDismiss: 15
     });
@@ -65,7 +64,7 @@ class Dashboard extends Component {
       <div className="wrapper">
         <NotificationSystem ref="notificationSystem" style={style} />
         <Sidebar {...this.props} />
-        <div id="main-panel" className="main-panel" ref="mainPanel">
+        <div className="main-panel" ref="mainPanel">
           <Header {...this.props} />
           <Switch>
             {dashboardRoutes.map((prop, key) => {

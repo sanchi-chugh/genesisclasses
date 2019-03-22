@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { NavLink } from "react-router-dom";
 
 import webappRoutes from "../../routes/Webapp.jsx";
+import appLogo from "../../assets/img/app_logo.png";
 
 class Sidebar extends Component {
   activeRoute(routeName) {
@@ -11,11 +12,19 @@ class Sidebar extends Component {
     return (
       <div id="side" className={"side" + (this.props.expanded ? " side-expanded" : "")}>
         <div className="logo">
-          <p>LOGO HERE</p>
+          <img src={appLogo} />
         </div>
         <div className="side-wrapper">
           <div className="profile">
-            <p>profile</p>
+            <div style={{display:'block'}}>
+              <span className='avatar'>
+                <img src="http://en.imoconsultores.pt/Assets/Images/avatar-placeholder.jpg" />
+              </span>
+              <span className='name'>
+                <p>Mohit Nagpal</p>
+                <a>Edit Profile</a>
+              </span>
+            </div>
           </div>
           <ul className="nav">
             {webappRoutes.map((prop, key) => {

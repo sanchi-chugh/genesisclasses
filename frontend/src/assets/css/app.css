@@ -5,7 +5,6 @@
     left: 0;
     width: 260px;
     display: block;
-    z-index: 1;
     color: #fff;
     font-weight: 200;
     background-size: cover;
@@ -16,11 +15,9 @@
 /* toggle sidebar */
 .side-expanded {
     width:0%;
-    /* display: none; */
+    z-index: -99 !important;
 }
-.side-expanded .logo p{
-    display: none;
-}
+
 #main-panel{
     transition: all 0.4s ease;
     background-color: #F0F0F0;
@@ -63,17 +60,47 @@
     height: 60px;
     z-index: 4; 
     background-color: #D2EDFF;}
-.side .logo p {
-    float: left;
-    font-size: 20px;
-    margin: 10px 10px;
-    color: #FFFFFF;
-    line-height: 20px;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+.side .logo img {
+    width: 260px;
+    height: 58px;
+    transition: all 0.4s ease;
+}
 .side .profile {
     position: relative;
     height: 100px;
-    margin:5px}
+    margin:5px;
+    padding: 10px;
+    padding-left: 20px;
+}
+
+.side .profile .avatar{
+    display: inline-block;
+}
+
+.side .profile .avatar img{
+    width: 80px;
+    height: 80px;
+    border-radius: 80px;
+    margin: auto;
+}
+
+.side .profile .name{
+    display: inline-block;
+    padding-left: 10px;
+    margin: 4px;
+}
+
+.side .profile .name p{
+    font-size: 18px;
+    color: black;
+    padding: 0;
+    margin: 0;
+}
+
+.side .profile .name a{
+    color: #01458E;
+    font-weight: 500;
+}
 
 .side .side-wrapper > .nav > {
     margin-top: 10px;

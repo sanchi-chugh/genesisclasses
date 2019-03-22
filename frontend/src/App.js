@@ -72,7 +72,7 @@ class App extends React.Component {
               }) 
               :
                 studentRoutes.map((prop, key) => {
-                  return <Route path={prop.path} render={(props) => <prop.component {...props} logout={this.logout.bind(this)} /> } key={key} />;
+                  return <Route path={prop.path} render={(props) => <prop.component {...props} user={user} logout={this.logout.bind(this)} /> } key={key} />;
               })
             }
             </Switch>

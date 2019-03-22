@@ -9,6 +9,7 @@ class Sidebar extends Component {
     return this.props.location.pathname.indexOf(routeName) > -1 ? "active" : "";
   }
   render() {
+    console.log(this.props.user)
     return (
       <div id="side" className={"side" + (this.props.expanded ? " side-expanded" : "")}>
         <div className="logo">
@@ -18,10 +19,10 @@ class Sidebar extends Component {
           <div className="profile">
             <div style={{display:'block'}}>
               <span className='avatar'>
-                <img src="http://en.imoconsultores.pt/Assets/Images/avatar-placeholder.jpg" />
+                <img src={this.props.user.image !== null ? this.props.user.image : "http://en.imoconsultores.pt/Assets/Images/avatar-placeholder.jpg"} />
               </span>
               <span className='name'>
-                <p>Mohit Nagpal</p>
+                <p>{this.props.user.first_name !== null ? this.props.user.first_name :''}{this.props.user.last_name !== null ? ' '+this.props.user.last_name :''}</p>
                 <a>Edit Profile</a>
               </span>
             </div>

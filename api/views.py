@@ -2773,6 +2773,16 @@ class TestCategoriesListViewSet(viewsets.ModelViewSet):
         categories = self.model.objects.filter(super_admin=super_admin).order_by('pk')
         return categories
 
+# Get details of a particular category
+class TestCategoryDetailsView(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get(self, request, *args, **kwargs):
+        category_id = kwargs['pk']
+        categoryObj = get_object_or_404(Category, pk=category_id)
+        categoryData = TestCategoriesListSerializer(categoryObj, context={'request': request}).data
+        return Response({'status': 'successful', 'detail': categoryData})
+
 # Get practice tests of a particular test category
 class TestCategoryDetailsViewSet(viewsets.ModelViewSet):
     model = Test

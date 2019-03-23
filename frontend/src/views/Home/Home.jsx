@@ -50,6 +50,7 @@ class Home extends Component {
   }
   testFunction(){
     alert('Clicked')
+    this.props.history.push('/app/test/start')
   }
   handleUnitWise(){
     this.props.history.push('/subjects');

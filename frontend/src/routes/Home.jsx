@@ -28,7 +28,7 @@ const homeRoutes = [
     icon: "pe-7s-graph",
     component: CategoryWiseTests
   },
-  { redirect: true, path: "/", to: "/home", name: "Home" }
+  { redirect: true, path: "/", to: "/", name: "Home" }
 ];
 
 export default homeRoutes;

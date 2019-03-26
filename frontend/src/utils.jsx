@@ -1,4 +1,4 @@
-export toggleFullScreen = () => {
+export const toggleFullScreen = () => {
   if ((document.fullScreenElement && document.fullScreenElement !== null) ||    
    (!document.mozFullScreen && !document.webkitIsFullScreen)) {
     if (document.documentElement.requestFullScreen) {  

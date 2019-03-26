@@ -49,8 +49,7 @@ class Home extends Component {
     });
   }
   testFunction(){
-    alert('Clicked')
-    this.props.history.push('/app/test/start')
+    this.props.history.push('/app/test/start/1')
   }
   handleUnitWise(){
     this.props.history.push('/subjects');
@@ -58,9 +57,17 @@ class Home extends Component {
   handleCategory(id){
     this.props.history.push(`/category/${id}`);
   }
+
+  handleKeyPress(event){
+    alert('pressed')
+    if(event.key == 'Enter'){
+      alert('pressed enter')
+    }
+  }
+
   render() {
     return (
-      <div className="content home-content">
+      <div className="content home-content" tabIndex="0" onKeyPress={this.handleKeyPress.bind(this)}>
         <h4 className="title-heading">Upcoming Tests</h4>
         <div style={{display:'block',width:'100%', marginBottom:'20px'}}>
           {this.state.upcomingTests.map(item=>{

@@ -58,6 +58,7 @@
 
 .wrapper-test .main-body .nav-right .content{
     padding: 20px;
+    width: 100%;
 }
 
 .wrapper-test .main-body .nav-right .content .timer-units ul li{
@@ -94,21 +95,43 @@
     margin-top: 10px;
 }
 
+.main-body .nav-right .content .button{
+    height: 50px;
+    background-color: darkblue;
+    position: absolute;
+    width: calc(24% - 40px);
+    bottom: 0;
+}
+
 .main-body .nav-right .content .section .section-body{
     height: 0px;
     width: 100%;
     transition: all 0.4s;
+    margin-top: 10px;
+    padding-left: 12px;
+    display: none;
+}
+
+.body-expanded .question-badge{
+    background-color: #F0F0F0;
+    width: 24px;
+    height: 24px;
+    border-radius: 100%;
+    display: inline-block;
+    color: black !important;
+    margin: 10px;
 }
 
 .section .body-expanded{
     height: 200px !important;
+    display: block !important;
 }
 
 .main-body .nav-right .content .section .section-header{
     width: 100%;
     height: 40px;
-    background-color: #D2EDFF;
-    color: #01458E;
+    background-color: #F0F0F0;
+    color: grey;
     box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
     margin: auto;
     padding: 12px;
@@ -124,6 +147,11 @@
 
 .section .section-header .icon-expanded{
     transform: rotate(180deg);
+}
+
+.section .header-expanded{
+    background-color: #D2EDFF !important;
+    color: #01458E !important;
 }
 
 .section-header:hover{

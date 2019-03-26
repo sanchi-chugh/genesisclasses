@@ -9,7 +9,7 @@ const takeTestRoutes = [
   },
   {
     path: "/app/test/instructions/:id",
-    name: "Take Test",
+    name: "Instructions",
     component: Instructions
   },
   { redirect: true, path: "/", to: "/", name: "Home" }

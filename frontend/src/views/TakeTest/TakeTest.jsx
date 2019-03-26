@@ -20,7 +20,6 @@ class TakeTest extends Component {
 
   render() {
     return (
-      <div className="wrapper" id="wrapper">
         <div className="main-body">
           <div className="nav-right">
             <div className="content">
@@ -88,7 +87,6 @@ class TakeTest extends Component {
 
             </div>
         </div>
-      </div>
     );
   }
 }

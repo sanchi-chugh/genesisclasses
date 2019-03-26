@@ -21,6 +21,7 @@
 #main-panel{
     transition: all 0.4s ease;
     background-color: #F0F0F0;
+    min-height: 100%;
 }
 .wrapper-test{
     background-color: white !important;
@@ -577,6 +578,9 @@
     width: 100%;
     font-weight: 900;
     margin: auto;
+}
+.home-content:focus{
+    outline: none;
 }
 
 .footer p:hover{

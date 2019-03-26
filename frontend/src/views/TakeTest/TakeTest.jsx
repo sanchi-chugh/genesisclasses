@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { Glyphicon } from "react-bootstrap";
 import Timer from "react-compound-timer";
-import { toggleFullScreen }  from "../../utils.jsx";
 
 class TakeTest extends Component {
   constructor(props) {

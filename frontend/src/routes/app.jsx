@@ -13,7 +13,7 @@ export var appRoutes = [
 
 export var studentRoutes = [
 	{
-    	path: "/app/test/start/:id", name: "TakeTest", component: TakeTest
+    	path: "/app/test/", name: "TakeTest", component: TakeTest
     },
     { 
         path: "/", name: "Webapp", component: Webapp

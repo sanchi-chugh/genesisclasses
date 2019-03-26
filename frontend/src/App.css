@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:300');
+
 .loader {
     border: 6px solid #f3f3f3; /* Light grey */
     border-top: 6px solid #424242; /* Dark grey */
@@ -15,6 +17,6 @@
     100% { transform: rotate(360deg); }
   }
 
-  body{
-    font-family: Roboto !important;
+  body, h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6, p, a{
+    font-family: 'Montserrat', sans-serif !important;
   }

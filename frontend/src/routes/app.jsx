@@ -16,7 +16,7 @@ export var studentRoutes = [
     	path: "/app/test/start/:id", name: "TakeTest", component: TakeTest
     },
     { 
-        path: "", name: "Webapp", component: Webapp
+        path: "/", name: "Webapp", component: Webapp
     },
 ];
 

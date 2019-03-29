@@ -41,7 +41,7 @@
     color: #01458E;
     display: inline-block;
     font-size: 24px;
-    font-weight: 500;
+    font-weight: 700;
 }
 
 .wrapper-test .main-body{
@@ -82,7 +82,7 @@
 .wrapper-test .main-body .nav-right .content .labels .inline-labels{
     display: inline-block;
     padding-inline-start: 10px;
-    font-size: 18px;
+    font-size: 14px;
     color: grey;
 }
 
@@ -98,10 +98,22 @@
 
 .main-body .nav-right .content .button{
     height: 50px;
-    background-color: darkblue;
     position: absolute;
     width: calc(24% - 40px);
     bottom: 0;
+}
+
+.main-body .nav-right .content .button .submit-btn{
+    width: 100%;
+    background-color: #01458E;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
+    text-align: center;
+    height: 40px;
+    margin-right: 15px;
+    cursor: pointer;
+    color: white;
+    padding-top: 9px;
+    font-weight: 700;
 }
 
 .main-body .nav-right .content .section .section-body{
@@ -174,16 +186,162 @@
     width: 100%;
     min-height: 85%;
     background-color: white;
-    box-shadow: 0px 0px 5px rgba(0,0,0,0.2);
-    margin-bottom: 40px
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.16);
+    margin-bottom: 40px;
+    padding: 24px;
+}
+
+/* question (MCQ, SCQ and Integer Type) */
+.main-body .body .content .index-head{
+    height: 80px;
+    margin-bottom: 20px;
+}
+
+.content .index-head .left{
+    display: inline-block;
+}
+
+.index-head .left h4{
+    margin: 0;
+}
+
+.index-head .left p{
+    color: rgba(117, 117, 117, 1);
+    font-size: 13px;
+}
+
+.content .index-head .right{
+    display: inline-block;
+    float: right;
+    text-align: right;
+}
+
+.index-head .right p{
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+/* paragraph type question */
+.main-body .body .content .index-head-paragraph{
+    height: 40px;
+    margin-bottom: 20px;
+}
+
+.index-head-paragraph h4{
+    margin: 0;
+}
+
+.main-body .body .content .paragraph-block{
+    display: block;
+    width: 100%;
+    min-height: calc(100% - 60px);
+}
+
+.main-body .body .content .paragraph-block .paragraph-left{
+    display: inline-block;
+    width: 50%;
+    height: 53vh;
+    overflow-y: scroll;
+}
+
+.main-body .body .content .paragraph-block .question-right{
+    display: inline-block;
+    width: 50%;
+    height: 53vh;
+    overflow-y: scroll;
+    padding-left: 10px;
+}
+
+.question-right .question-marks{
+    width: 100%;
+    text-align: right;
+    padding-right: 10px;
+}
+
+.question-right .question-marks span{
+    display: inline-block;
+    padding-inline-start: 20px;
+}
+
+.question-right .question-marks p{
+    font-size: 13px;
+    display: inline-block;
+}
+
+/* Question layout in take test */
+.main-body .body .content .question{
+    min-height: 100px;
+}
+.main-body .body .content .option{
+    min-height: 200px;
+}
+
+.option .integer-options{
+    display: block;
+    width: 60%;
+    position: relative;
+    user-select: none;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none;
+}
+
+.option .integer-options .integer-option-btn{
+    display: inline-block;
+    width: 84px;
+    height: 50px;
+    border: 1px solid rgba(112, 112, 112, 1);
+    border-radius: 8px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 20px;
+    cursor: pointer;
+    color: rgba(1, 69, 142, 1);
+    padding: 8px;
+}
+
+.option .integer-options .integer-option-btn-selected{
+    background-color: rgba(228, 242, 251, 1) !important;
+    border: none !important;
 }
 
 .wrapper-test .main-body .footer{
     height: 50px;
-    background-color: darkblue;
     position: absolute;
-    width: 76%;
+    width: calc(76% - 2%);
     bottom: 0;
+    display: block;
+    padding-inline-start: 2%;
+}
+
+.wrapper-test .main-body .footer .previous-btn{
+    display: inline-block;
+    width: calc(50% - 7.5px);
+    background-color: #01458E;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
+    text-align: center;
+    height: 40px;
+    margin-right: 15px;
+    cursor: pointer;
+    color: white;
+    padding-top: 9px;
+    font-weight: 700;
+}
+
+.wrapper-test .main-body .footer .next-btn{
+    display: inline-block;
+    width: calc(50% - 7.5px);
+    background-color: #01458E;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
+    text-align: center;
+    height: 40px;
+    cursor: pointer;
+    color: white;
+    padding-top: 9px;
+    font-weight: 700;
 }
 
 .main-panel-expanded {
@@ -202,7 +360,7 @@
     width: 100%;
     z-index: 4;
     padding-bottom: 30px; 
-    box-shadow: 1px 10px 10px 0px rgba(0,0,0,0.1);
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.16);
     color:grey;
 }
 .side .side-background {
@@ -333,16 +491,16 @@
     color:grey;
     margin-left: 20px;
     font-weight: 400;
-    font-size: 28px;
+    font-size: 22px;
 }
 
 .home-content{
-    margin-top: 65px;
+    margin-top: 50px;
     margin-left: 20px;
 }
 
 .card-app{
-    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
+    box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.16);
     margin: 0px !important;
     margin-bottom: 30px !important;
     transition: all 0.1s ease;
@@ -402,7 +560,7 @@
 }
 
 .card-app .content .info .details{
-    font-size:14px;
+    font-size:12px;
     word-wrap: break-word;
     word-break: normal;
     margin:2px;
@@ -414,7 +572,7 @@
     font-weight: 400;
     color: black;
     display: inline-block;
-    width: 65%;
+    width: 60%;
 }
 
 .card-app .content .info .details .value{
@@ -424,19 +582,19 @@
     word-wrap: break-word;
     word-break: normal;
     float: right;
-    width: 35%;
+    width: 40%;
 }
 
 #test-title{
     font-size: 16px;
     margin-bottom:5px;
-    font-weight: 400;
+    font-weight: 700;
     word-wrap: break-word;
     word-break: normal;
     color: #01458E;
     text-align: center;
     padding: 10px;
-    box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+    box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.16);
 }
 
 .card-app .content .title{
@@ -446,8 +604,9 @@
     border-radius: 0 0 4px 4px;
     text-align: center;
     padding:10px 0px 10px 0px;
-    font-weight: 500;
+    font-weight: 900;
     color: #01458E !important;
+    box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.16);
 }
 
 .card-app .content .sub-title{
@@ -457,8 +616,9 @@
     border-radius: 0 0 4px 4px;
     text-align: center;
     padding:5px 0px 5px 0px;
-    font-weight: 500;
+    font-weight: 900;
     color:#D2EDFF;
+    box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.16);
 }
 
 .card-app .content .type1{
@@ -639,7 +799,7 @@
     margin: 0;
 }
 
- .instruction-card h3{
+.instruction-card h3{
     color:  rgba(1, 69, 142, 1);
     margin: 0;
  }
@@ -699,4 +859,138 @@
 #color3{
     background-color: rgba(249, 230, 221, 1);
     /* pink */
+}
+
+/* custom radio button */
+.my-radio label {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  font-size: 15px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default radio button */
+.my-radio label input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Create a custom radio button */
+.my-radio .checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: white;   
+  border-radius: 100%;
+  border: 2px solid rgba(1, 69, 142, 1);
+}
+
+/* On mouse-over, add a grey background color */
+.my-radio label:hover input ~ .checkmark {
+  background-color: white;
+}
+
+/* When the radio button is checked, add a blue background */
+.my-radio label input:checked ~ .checkmark {
+  background-color: white;  
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.my-radio .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.my-radio label input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.my-radio label .checkmark:after {
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(1, 69, 142, 1);
+}
+
+/* Custom checkbox */
+.my-checkbox label {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 30px;
+  cursor: pointer;
+  font-size: 15px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default checkbox */
+.my-checkbox label input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Create a custom checkbox */
+.my-checkbox .checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: white;   
+  border: 2px solid rgba(1, 69, 142, 1);
+}
+
+/* On mouse-over, add a grey background color */
+.my-checkbox label:hover input ~ .checkmark {
+  background-color: white;
+}
+
+/* When the checkbox is checked, add a blue background */
+.my-checkbox label input:checked ~ .checkmark {
+    background: rgba(1, 69, 142, 1);
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.my-checkbox .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the checkmark when checked */
+.my-checkbox label input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the checkmark/indicator */
+.my-checkbox label .checkmark:after {
+  top: -2px;
+  left: 4px;
+  width: 8px;
+  height: 16px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
 }

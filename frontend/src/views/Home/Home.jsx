@@ -48,8 +48,8 @@ class Home extends Component {
       this.setState({upcomingTests:data});
     });
   }
-  testFunction(){
-    this.props.history.push('/app/test/start/1')
+  testFunction(id){
+    this.props.history.push(`/app/test/start/${id}`)
   }
   handleUnitWise(){
     this.props.history.push('/subjects');
@@ -78,7 +78,7 @@ class Home extends Component {
                   content={item}
                   disabled={!item.isStarted}
                   color={!item.isStarted ? ' type4' : ''}
-                  handleClick={this.testFunction.bind(this)}
+                  handleClick={this.testFunction.bind(this,item.id)}
                 />
               </div>
             )

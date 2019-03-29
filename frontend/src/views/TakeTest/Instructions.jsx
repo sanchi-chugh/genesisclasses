@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Glyphicon } from "react-bootstrap";
+import renderHTML from 'react-render-html';
 
 class Instructions extends Component {
 
@@ -10,9 +11,9 @@ class Instructions extends Component {
             <div className="left">
               <div className="instruction">
                 <div className="content"><strong>Category:</strong> Unit Wise Test</div>
-                <div className="content"><strong>Subject:</strong> Chemistry</div>
+                {this.props.data.subject && <div className="content"><strong>Subject:</strong> {this.props.data.subject}</div>}
                 <div className="content"><strong>Course:</strong> {this.props.data.course.join(', ')}</div>
-                <div className="content"><strong>Unit:</strong> Chemical Engeneering</div>
+                {this.props.data.unit && <div className="content"><strong>Unit:</strong> {this.props.data.unit}</div>}
               </div>
               <div>
                 <div className="instruction-card" id="color1">
@@ -48,7 +49,7 @@ class Instructions extends Component {
             <div className="description">
               <h4>Instructions</h4>
               <p>
-                lorem ipsum hehe
+                {renderHTML(this.props.data.instructions)}
               </p>
             </div>
           </div>

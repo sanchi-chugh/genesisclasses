@@ -2862,6 +2862,25 @@ class SubjectListViewSet(viewsets.ModelViewSet):
 
         return subjects
 
+# Return details of a particular subject
+class SubjectInfoView(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        subject_id = kwargs['pk']
+        subjectObj = Subject.objects.filter(pk=subject_id, super_admin=super_admin,
+            course__in=studentObj.course.all()).distinct()
+
+        if len(subjectObj) == 0:
+            raise Http404
+
+        subjectData = SubjectSerializer(subjectObj[0], context={'request': request}).data
+        return Response({'status': 'successful', 'detail': subjectData})
+
 # Get list of all units of a particular subject
 class UnitsListViewSet(viewsets.ModelViewSet):
     model = Unit
@@ -3131,7 +3150,6 @@ class TestAnalytics(APIView):
     permission_classes = (permissions.IsAuthenticated, IsStudent, )
 
     def get(self, request, *args, **kwargs):
-        data = request.data
         user = self.request.user
         super_admin = get_super_admin(user)
         studentObj = get_object_or_404(Student, user=user)
@@ -3151,7 +3169,6 @@ class SectionAnalysis(APIView):
     permission_classes = (permissions.IsAuthenticated, IsStudent, )
 
     def get(self, request, *args, **kwargs):
-        data = request.data
         user = self.request.user
         super_admin = get_super_admin(user)
         studentObj = get_object_or_404(Student, user=user)
@@ -3173,7 +3190,6 @@ class QuestionAnalysis(APIView):
     permission_classes = (permissions.IsAuthenticated, IsStudent, )
 
     def get(self, request, *args, **kwargs):
-        data = request.data
         user = self.request.user
         super_admin = get_super_admin(user)
         studentObj = get_object_or_404(Student, user=user)
@@ -3201,7 +3217,6 @@ class PassageAnalysis(APIView):
     permission_classes = (permissions.IsAuthenticated, IsStudent, )
 
     def get(self, request, *args, **kwargs):
-        data = request.data
         user = self.request.user
         super_admin = get_super_admin(user)
         studentObj = get_object_or_404(Student, user=user)

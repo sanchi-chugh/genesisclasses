@@ -747,6 +747,8 @@ class TestDetailSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field='title',
     )
+    subject = NestedSubjectSerializer()
+    unit = NestedUnitSerializer()
     class Meta:
         model = Test
         exclude = ['doc', 'typeOfTest', 'active', 'super_admin', 'startTime', 'endtime']

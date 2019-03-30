@@ -129,6 +129,7 @@ urlpatterns = [
 
     # Unit Wise Test Endpoints
     path('app/subjects/', SubjectListViewSet.as_view({'get': 'list'})),     # List all subjects
+    path('app/subjects/<int:pk>/detail/', SubjectInfoView.as_view()),     # Details of a particular subject
     path('app/units/<int:pk>/', UnitsListViewSet.as_view({'get': 'list'})),     # List all units of a subject
     path('app/tests/practice/category/unitWise/<int:pk>/', UnitWiseTestsListViewSet.as_view({'get': 'list'})),  # List tests of a unit
 

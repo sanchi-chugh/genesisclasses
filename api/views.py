@@ -3125,3 +3125,97 @@ class TestResultView(APIView):
                  'topperInfo': topperInfo, 'sectionalResult': sectionalResultData}
 
         return Response({'status': 'successful', 'detail': dictV})
+
+# Test detail and sectional result
+class TestAnalytics(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get(self, request, *args, **kwargs):
+        data = request.data
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        # Get user's result
+        test_id = kwargs['pk']
+        testObj = get_object_or_404(Test, super_admin=super_admin, pk=test_id)
+        testResultObj = get_object_or_404(UserTestResult, test=testObj, student=studentObj)
+
+        # Get details of the test, along with it's sections
+        testData = TestAnalysisSerializer(testObj, context={'request': request}).data
+
+        return Response({'status': 'successful', 'detail': testData})
+
+# Section detail and question wise result
+class SectionAnalysis(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get(self, request, *args, **kwargs):
+        data = request.data
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        # Get user's result
+        test_id = kwargs['test_pk']
+        testObj = get_object_or_404(Test, super_admin=super_admin, pk=test_id)
+        testResultObj = get_object_or_404(UserTestResult, test=testObj, student=studentObj)
+
+        # Get sectional result
+        sec_id = kwargs['sec_pk']
+        secObj = get_object_or_404(Section, test__super_admin=super_admin, pk=sec_id)
+        secData = SectionAnalysisSerializer(secObj, context={'request': request, 'student': studentObj}).data
+
+        return Response({'status': 'successful', 'detail': secData})
+
+# Result of a particular question with it's details
+class QuestionAnalysis(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get(self, request, *args, **kwargs):
+        data = request.data
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        # Get user's result
+        test_id = kwargs['test_pk']
+        testObj = get_object_or_404(Test, super_admin=super_admin, pk=test_id)
+        testResultObj = get_object_or_404(UserTestResult, test=testObj, student=studentObj)
+        sec_id = kwargs['sec_pk']
+        secObj = get_object_or_404(Section, test__super_admin=super_admin, pk=sec_id)
+
+        # Get question detail
+        ques_id = kwargs['ques_pk']
+        quesObj = get_object_or_404(Question, section__test__super_admin=super_admin, pk=ques_id)
+        quesData = QuestionAnalysisSerializer(quesObj, context={'request': request, 'student': studentObj}).data
+
+        if quesObj.questionType == 'integer':
+            quesData.pop('options')
+        quesData.pop('passage')
+
+        return Response({'status': 'successful', 'detail': quesData})
+
+# Result of questions of a particular passage
+class PassageAnalysis(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get(self, request, *args, **kwargs):
+        data = request.data
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        # Get user's result
+        test_id = kwargs['test_pk']
+        testObj = get_object_or_404(Test, super_admin=super_admin, pk=test_id)
+        testResultObj = get_object_or_404(UserTestResult, test=testObj, student=studentObj)
+        sec_id = kwargs['sec_pk']
+        secObj = get_object_or_404(Section, test__super_admin=super_admin, pk=sec_id)
+
+        # Get passage detail
+        passage_id = kwargs['pass_pk']
+        passageObj = get_object_or_404(Passage, section=secObj, pk=passage_id)
+        passageData = PassageAnalysisSerializer(passageObj, context={'request': request, 'student': studentObj}).data
+
+        return Response({'status': 'successful', 'detail': passageData})

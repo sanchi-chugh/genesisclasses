@@ -139,6 +139,13 @@ urlpatterns = [
     # Test Result Endpoints
     path('app/tests/<int:pk>/result/', TestResultView.as_view()),    # Test result view
 
+    # Question Wise Test Result Endpoints
+    path('app/tests/<int:pk>/result/questionWiseAnalysis/', TestAnalytics.as_view()),    # Show sections of a question
+    path('app/tests/<int:test_pk>/result/questionWiseAnalysis/section/<int:sec_pk>/', SectionAnalysis.as_view()),  # Show ques of sec
+    # Show question/passage details and question/passage result
+    path('app/tests/<int:test_pk>/result/questionWiseAnalysis/section/<int:sec_pk>/question/<int:ques_pk>/', QuestionAnalysis.as_view()),
+    path('app/tests/<int:test_pk>/result/questionWiseAnalysis/section/<int:sec_pk>/passage/<int:pass_pk>/', PassageAnalysis.as_view()),
+
     # ---------------------COMMON ENDPOINTS-----------------------
     # This is for browsable api login/logout
     path('api-auth/', include('rest_framework.urls')),

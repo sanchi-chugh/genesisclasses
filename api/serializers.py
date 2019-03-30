@@ -896,3 +896,40 @@ class PassageAnalysisSerializer(serializers.ModelSerializer):
             ques.pop('section')
             ques.pop('passage')
         return quesData
+
+# Return list of attempted tests
+class TestResultListSerializer(serializers.ModelSerializer):
+    course = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    category = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title',
+    )
+    subject = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='title',
+    )
+    unit = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='title',
+    )
+    userResult = serializers.SerializerMethodField()
+    testResult = serializers.SerializerMethodField()
+    class Meta:
+        model = Test
+        exclude = ['startTime', 'endtime', 'typeOfTest', 'instructions', 'doc', 'active', 'super_admin']
+
+    def get_userResult(self, obj):
+        result = get_object_or_404(UserTestResult, test=obj, student=self.context['student'])
+        resultData = TestResultSerializer(result, context=self.context).data
+        resultData.pop('correct')
+        resultData.pop('incorrect')
+        resultData.pop('unattempted')
+        return resultData
+    
+    def get_testResult(self, obj):
+        return DOMAIN + 'api/app/tests/' + str(obj.pk) + '/result/'

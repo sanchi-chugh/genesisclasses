@@ -147,6 +147,9 @@ urlpatterns = [
     path('app/tests/<int:test_pk>/result/questionWiseAnalysis/section/<int:sec_pk>/question/<int:ques_pk>/', QuestionAnalysis.as_view()),
     path('app/tests/<int:test_pk>/result/questionWiseAnalysis/section/<int:sec_pk>/passage/<int:pass_pk>/', PassageAnalysis.as_view()),
 
+    # For test result tab
+    path('app/result/tests/', TestResultListViewSet.as_view({'get': 'list'})),  # List all attempted tests of a particular test type
+
     # ---------------------COMMON ENDPOINTS-----------------------
     # This is for browsable api login/logout
     path('api-auth/', include('rest_framework.urls')),

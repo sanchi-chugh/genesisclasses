@@ -3234,3 +3234,40 @@ class PassageAnalysis(APIView):
         passageData = PassageAnalysisSerializer(passageObj, context={'request': request, 'student': studentObj}).data
 
         return Response({'status': 'successful', 'detail': passageData})
+
+class TestResultListViewSet(viewsets.ModelViewSet):
+    model = UserTestResult
+    serializer_class = TestResultListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_serializer_context(self):
+        user = self.request.user
+        studentObj = get_object_or_404(Student, user=user)
+
+        # Get current academic yr
+        curr_date = datetime.datetime.today().strftime('%Y-%m-%d')
+        (start_date, end_date) = get_academic_yr(curr_date)
+
+        return {'request': self.request, 'student': studentObj, 'start_date': start_date, 'end_date': end_date}
+
+    def get_queryset(self):
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+        params_dict = self.request.GET
+
+        # Return if compulsory parameters are missing
+        check_pass, result = fields_check(['typeOfTest'], params_dict)
+        if not check_pass:
+            return (False, result)
+
+        # Filter out attempted test results
+        results = UserTestResult.objects.filter(test__typeOfTest=params_dict['typeOfTest'],
+            student=studentObj, test__super_admin=super_admin).order_by('-testAttemptDate')
+
+        # Filter out attempted tests
+        tests = []
+        for result in results:
+            tests.append(result.test)
+        return tests

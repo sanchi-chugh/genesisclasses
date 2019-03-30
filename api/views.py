@@ -3235,6 +3235,7 @@ class PassageAnalysis(APIView):
 
         return Response({'status': 'successful', 'detail': passageData})
 
+# List all attempted tests in test result tab
 class TestResultListViewSet(viewsets.ModelViewSet):
     model = UserTestResult
     serializer_class = TestResultListSerializer
@@ -3257,13 +3258,8 @@ class TestResultListViewSet(viewsets.ModelViewSet):
         studentObj = get_object_or_404(Student, user=user)
         params_dict = self.request.GET
 
-        # Return if compulsory parameters are missing
-        check_pass, result = fields_check(['typeOfTest'], params_dict)
-        if not check_pass:
-            return (False, result)
-
         # Filter out attempted test results
-        results = UserTestResult.objects.filter(test__typeOfTest=params_dict['typeOfTest'],
+        results = self.model.objects.filter(test__typeOfTest=params_dict['typeOfTest'],
             student=studentObj, test__super_admin=super_admin).order_by('-testAttemptDate')
 
         # Filter out attempted tests
@@ -3271,3 +3267,62 @@ class TestResultListViewSet(viewsets.ModelViewSet):
         for result in results:
             tests.append(result.test)
         return tests
+
+# Display rank list of a particular test
+class TestRankList(viewsets.ModelViewSet):
+    model = UserTestResult
+    serializer_class = StudentResultListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_serializer_context(self):
+        user = self.request.user
+        studentObj = get_object_or_404(Student, user=user)
+        params_dict = self.request.GET
+
+        # Get start_date and end_date
+        op_dict = set_optional_fields(['centre', 'course', 'start_date', 'end_date'], params_dict)
+
+        course = op_dict['course']
+        centre = op_dict['centre']
+
+        if course:
+            course = int(course)
+        if centre:
+            centre = int(centre)
+
+        return {'request': self.request, 'start_date': op_dict['start_date'],
+            'end_date': op_dict['end_date'], 'course': course, 'centre': centre}
+
+    def get_queryset(self):
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+        params_dict = self.request.GET
+
+        # Get optional parameters
+        op_dict = set_optional_fields(['centre', 'course', 'start_date', 'end_date'], params_dict)
+
+        start_date = op_dict['start_date']
+        end_date = op_dict['end_date']
+        course = op_dict['course']
+        centre = op_dict['centre']
+
+        # Get test result objs acc to provided params
+        test_id = self.kwargs['pk']
+        UserTestResultObjs = self.model.objects.filter(test=test_id, test__super_admin=super_admin)
+        if start_date:
+            UserTestResultObjs = UserTestResultObjs.filter(testAttemptDate__gte=start_date)
+        if end_date:
+            UserTestResultObjs = UserTestResultObjs.filter(testAttemptDate__lte=end_date)
+        if centre:
+            centre = int(centre)
+            UserTestResultObjs = UserTestResultObjs.filter(student__centre__id=centre)
+        if course:
+            course = int(course)
+            UserTestResultObjs = UserTestResultObjs.filter(student__course__id=course)
+
+        # Sort results according to rank
+        unsorted_results = UserTestResultObjs.all()
+        sorted_results = sorted(unsorted_results, key=lambda x: x.get_rank(start_date, end_date, centre, course))
+        return sorted_results

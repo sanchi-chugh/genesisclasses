@@ -933,3 +933,23 @@ class TestResultListSerializer(serializers.ModelSerializer):
     
     def get_testResult(self, obj):
         return DOMAIN + 'api/app/tests/' + str(obj.pk) + '/result/'
+
+class StudentResultListSerializer(serializers.ModelSerializer):
+    testAttemptDate = serializers.DateField(format='%b %d, %Y')
+    percentage = serializers.FloatField(source='get_percentage')
+    percentile = serializers.SerializerMethodField()
+    rank = serializers.SerializerMethodField()
+    student = NestedStudentSerializer()
+    class Meta:
+        model = UserTestResult
+        exclude = ['correct', 'incorrect', 'unattempted']
+
+    def get_percentile(self, obj):
+        context = self.context
+        return obj.get_percentile(startDate=context['start_date'], endDate=context['end_date'],
+            centreID=context['centre'], courseID=context['course'])
+
+    def get_rank(self, obj):
+        context = self.context
+        return obj.get_rank(startDate=context['start_date'], endDate=context['end_date'],
+            centreID=context['centre'], courseID=context['course'])

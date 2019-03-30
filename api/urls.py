@@ -148,7 +148,8 @@ urlpatterns = [
     path('app/tests/<int:test_pk>/result/questionWiseAnalysis/section/<int:sec_pk>/passage/<int:pass_pk>/', PassageAnalysis.as_view()),
 
     # For test result tab
-    path('app/result/tests/', TestResultListViewSet.as_view({'get': 'list'})),  # List all attempted tests of a particular test type
+    path('app/result/tests/list/', TestResultListViewSet.as_view({'get': 'list'})),  # List all attempted tests of a particular test type
+    path('app/result/tests/<int:pk>/rankList/', TestRankList.as_view({'get': 'list'})),  # Rank list of a particular test
 
     # ---------------------COMMON ENDPOINTS-----------------------
     # This is for browsable api login/logout

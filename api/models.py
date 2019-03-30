@@ -671,7 +671,7 @@ class UserTestResult(models.Model):
     testAttemptDate = models.DateField(default=timezone.now)    # Date when student attempted this test
 
     # Find relative rank of the student in the specified time frame
-    def get_rank(self, startDate=None, endDate=None, centreID=None):
+    def get_rank(self, startDate=None, endDate=None, centreID=None, courseID=None):
 		# Rank = (number of test results having marks greater than my result) + 1
         testResultsAhead = UserTestResult.objects.filter(test = self.test, marksObtained__gt=self.marksObtained)
         testResultsEqual = UserTestResult.objects.filter(test = self.test, marksObtained=self.marksObtained)
@@ -684,13 +684,16 @@ class UserTestResult(models.Model):
         if centreID:
             testResultsAhead = testResultsAhead.filter(student__centre__id=centreID)
             testResultsEqual = testResultsEqual.filter(student__centre__id=centreID)
+        if courseID:
+            testResultsAhead = testResultsAhead.filter(student__course__id=courseID)
+            testResultsEqual = testResultsEqual.filter(student__course__id=courseID)
         aggregate = testResultsAhead.aggregate(rank=Count('marksObtained'))
         # If more than one person has the same rank, arrange them in increasing order of their username
         testResultsEqual = testResultsEqual.order_by('student__user__username')
         return aggregate['rank'] + list(testResultsEqual).index(self) + 1
 
     # Find relative percentile of the student in the specified time frame
-    def get_percentile(self, startDate=None, endDate=None, centreID=None):
+    def get_percentile(self, startDate=None, endDate=None, centreID=None, courseID=None):
         # percentile = (number of test results behind me)/(total test results)*100
         testResultsBehind = UserTestResult.objects.filter(test=self.test, marksObtained__lt=self.marksObtained)
         totalResults = UserTestResult.objects.filter(test=self.test)
@@ -703,6 +706,9 @@ class UserTestResult(models.Model):
         if centreID:
             testResultsBehind = testResultsBehind.filter(student__centre__id=centreID)
             totalResults = totalResults.filter(student__centre__id=centreID)
+        if courseID:
+            testResultsBehind = testResultsBehind.filter(student__course__id=courseID)
+            totalResults = totalResults.filter(student__course__id=courseID)
         testResultsBehind = testResultsBehind.count()
         totalResults = totalResults.count()
         percentile = (testResultsBehind/totalResults)*100

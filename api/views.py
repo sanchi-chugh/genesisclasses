@@ -2862,6 +2862,25 @@ class SubjectListViewSet(viewsets.ModelViewSet):
 
         return subjects
 
+# Return details of a particular subject
+class SubjectInfoView(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        subject_id = kwargs['pk']
+        subjectObj = Subject.objects.filter(pk=subject_id, super_admin=super_admin,
+            course__in=studentObj.course.all()).distinct()
+
+        if len(subjectObj) == 0:
+            raise Http404
+
+        subjectData = SubjectSerializer(subjectObj[0], context={'request': request}).data
+        return Response({'status': 'successful', 'detail': subjectData})
+
 # Get list of all units of a particular subject
 class UnitsListViewSet(viewsets.ModelViewSet):
     model = Unit
@@ -3125,3 +3144,185 @@ class TestResultView(APIView):
                  'topperInfo': topperInfo, 'sectionalResult': sectionalResultData}
 
         return Response({'status': 'successful', 'detail': dictV})
+
+# Test detail and sectional result
+class TestAnalytics(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        # Get user's result
+        test_id = kwargs['pk']
+        testObj = get_object_or_404(Test, super_admin=super_admin, pk=test_id)
+        testResultObj = get_object_or_404(UserTestResult, test=testObj, student=studentObj)
+
+        # Get details of the test, along with it's sections
+        testData = TestAnalysisSerializer(testObj, context={'request': request}).data
+
+        return Response({'status': 'successful', 'detail': testData})
+
+# Section detail and question wise result
+class SectionAnalysis(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        # Get user's result
+        test_id = kwargs['test_pk']
+        testObj = get_object_or_404(Test, super_admin=super_admin, pk=test_id)
+        testResultObj = get_object_or_404(UserTestResult, test=testObj, student=studentObj)
+
+        # Get sectional result
+        sec_id = kwargs['sec_pk']
+        secObj = get_object_or_404(Section, test__super_admin=super_admin, pk=sec_id)
+        secData = SectionAnalysisSerializer(secObj, context={'request': request, 'student': studentObj}).data
+
+        return Response({'status': 'successful', 'detail': secData})
+
+# Result of a particular question with it's details
+class QuestionAnalysis(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        # Get user's result
+        test_id = kwargs['test_pk']
+        testObj = get_object_or_404(Test, super_admin=super_admin, pk=test_id)
+        testResultObj = get_object_or_404(UserTestResult, test=testObj, student=studentObj)
+        sec_id = kwargs['sec_pk']
+        secObj = get_object_or_404(Section, test__super_admin=super_admin, pk=sec_id)
+
+        # Get question detail
+        ques_id = kwargs['ques_pk']
+        quesObj = get_object_or_404(Question, section__test__super_admin=super_admin, pk=ques_id)
+        quesData = QuestionAnalysisSerializer(quesObj, context={'request': request, 'student': studentObj}).data
+
+        if quesObj.questionType == 'integer':
+            quesData.pop('options')
+        quesData.pop('passage')
+
+        return Response({'status': 'successful', 'detail': quesData})
+
+# Result of questions of a particular passage
+class PassageAnalysis(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+
+        # Get user's result
+        test_id = kwargs['test_pk']
+        testObj = get_object_or_404(Test, super_admin=super_admin, pk=test_id)
+        testResultObj = get_object_or_404(UserTestResult, test=testObj, student=studentObj)
+        sec_id = kwargs['sec_pk']
+        secObj = get_object_or_404(Section, test__super_admin=super_admin, pk=sec_id)
+
+        # Get passage detail
+        passage_id = kwargs['pass_pk']
+        passageObj = get_object_or_404(Passage, section=secObj, pk=passage_id)
+        passageData = PassageAnalysisSerializer(passageObj, context={'request': request, 'student': studentObj}).data
+
+        return Response({'status': 'successful', 'detail': passageData})
+
+# List all attempted tests in test result tab
+class TestResultListViewSet(viewsets.ModelViewSet):
+    model = UserTestResult
+    serializer_class = TestResultListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_serializer_context(self):
+        user = self.request.user
+        studentObj = get_object_or_404(Student, user=user)
+
+        # Get current academic yr
+        curr_date = datetime.datetime.today().strftime('%Y-%m-%d')
+        (start_date, end_date) = get_academic_yr(curr_date)
+
+        return {'request': self.request, 'student': studentObj, 'start_date': start_date, 'end_date': end_date}
+
+    def get_queryset(self):
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+        params_dict = self.request.GET
+
+        # Filter out attempted test results
+        results = self.model.objects.filter(test__typeOfTest=params_dict['typeOfTest'],
+            student=studentObj, test__super_admin=super_admin).order_by('-testAttemptDate')
+
+        # Filter out attempted tests
+        tests = []
+        for result in results:
+            tests.append(result.test)
+        return tests
+
+# Display rank list of a particular test
+class TestRankList(viewsets.ModelViewSet):
+    model = UserTestResult
+    serializer_class = StudentResultListSerializer
+    permission_classes = (permissions.IsAuthenticated, IsStudent, )
+    pagination_class = StandardResultsSetPagination
+
+    def get_serializer_context(self):
+        user = self.request.user
+        studentObj = get_object_or_404(Student, user=user)
+        params_dict = self.request.GET
+
+        # Get start_date and end_date
+        op_dict = set_optional_fields(['centre', 'course', 'start_date', 'end_date'], params_dict)
+
+        course = op_dict['course']
+        centre = op_dict['centre']
+
+        if course:
+            course = int(course)
+        if centre:
+            centre = int(centre)
+
+        return {'request': self.request, 'start_date': op_dict['start_date'],
+            'end_date': op_dict['end_date'], 'course': course, 'centre': centre}
+
+    def get_queryset(self):
+        user = self.request.user
+        super_admin = get_super_admin(user)
+        studentObj = get_object_or_404(Student, user=user)
+        params_dict = self.request.GET
+
+        # Get optional parameters
+        op_dict = set_optional_fields(['centre', 'course', 'start_date', 'end_date'], params_dict)
+
+        start_date = op_dict['start_date']
+        end_date = op_dict['end_date']
+        course = op_dict['course']
+        centre = op_dict['centre']
+
+        # Get test result objs acc to provided params
+        test_id = self.kwargs['pk']
+        UserTestResultObjs = self.model.objects.filter(test=test_id, test__super_admin=super_admin)
+        if start_date:
+            UserTestResultObjs = UserTestResultObjs.filter(testAttemptDate__gte=start_date)
+        if end_date:
+            UserTestResultObjs = UserTestResultObjs.filter(testAttemptDate__lte=end_date)
+        if centre:
+            centre = int(centre)
+            UserTestResultObjs = UserTestResultObjs.filter(student__centre__id=centre)
+        if course:
+            course = int(course)
+            UserTestResultObjs = UserTestResultObjs.filter(student__course__id=course)
+
+        # Sort results according to rank
+        unsorted_results = UserTestResultObjs.all()
+        sorted_results = sorted(unsorted_results, key=lambda x: x.get_rank(start_date, end_date, centre, course))
+        return sorted_results

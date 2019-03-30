@@ -129,6 +129,7 @@ urlpatterns = [
 
     # Unit Wise Test Endpoints
     path('app/subjects/', SubjectListViewSet.as_view({'get': 'list'})),     # List all subjects
+    path('app/subjects/<int:pk>/detail/', SubjectInfoView.as_view()),     # Details of a particular subject
     path('app/units/<int:pk>/', UnitsListViewSet.as_view({'get': 'list'})),     # List all units of a subject
     path('app/tests/practice/category/unitWise/<int:pk>/', UnitWiseTestsListViewSet.as_view({'get': 'list'})),  # List tests of a unit
 
@@ -138,6 +139,17 @@ urlpatterns = [
 
     # Test Result Endpoints
     path('app/tests/<int:pk>/result/', TestResultView.as_view()),    # Test result view
+
+    # Question Wise Test Result Endpoints
+    path('app/tests/<int:pk>/result/questionWiseAnalysis/', TestAnalytics.as_view()),    # Show sections of a question
+    path('app/tests/<int:test_pk>/result/questionWiseAnalysis/section/<int:sec_pk>/', SectionAnalysis.as_view()),  # Show ques of sec
+    # Show question/passage details and question/passage result
+    path('app/tests/<int:test_pk>/result/questionWiseAnalysis/section/<int:sec_pk>/question/<int:ques_pk>/', QuestionAnalysis.as_view()),
+    path('app/tests/<int:test_pk>/result/questionWiseAnalysis/section/<int:sec_pk>/passage/<int:pass_pk>/', PassageAnalysis.as_view()),
+
+    # For test result tab
+    path('app/result/tests/list/', TestResultListViewSet.as_view({'get': 'list'})),  # List all attempted tests of a particular test type
+    path('app/result/tests/<int:pk>/rankList/', TestRankList.as_view({'get': 'list'})),  # Rank list of a particular test
 
     # ---------------------COMMON ENDPOINTS-----------------------
     # This is for browsable api login/logout

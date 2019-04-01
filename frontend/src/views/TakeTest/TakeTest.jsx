@@ -17,6 +17,12 @@ class TakeTest extends Component {
                 <Timer 
                   initialTime={(parseInt(this.props.data.duration.split(':')[0]) * 60 + parseInt(this.props.data.duration.split(':')[1])) * 60 * 1000} 
                   direction="backward" 
+                  checkpoints={[
+                      {
+                          time: 0,
+                          callback: () => this.props.handleSubmit(),
+                      },
+                  ]}
                   formatValue={(value) => `${(value < 10 ? `0${value}` : value)} `}>
                     {() => (
                       <React.Fragment>

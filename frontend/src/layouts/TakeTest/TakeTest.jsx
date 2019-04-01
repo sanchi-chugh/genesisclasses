@@ -367,16 +367,30 @@ class TakeTestLayout extends Component {
       <div className="wrapper" id="wrapper">
         <NotificationSystem ref="notificationSystem" style={style} />
         <Modal
-          size="lg"
+          size="sm"
+          bsClass={'contain modal'}
           show={this.state.show}
           keyboard={true}>
           <Modal.Body bsClass="modal-body mymodal">
-            <h4>Centered Modal</h4>
-            <p>
-              Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
-              dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta
-              ac consectetur ac, vestibulum at eros.
-            </p>
+            <h4>Are you sure you want to submit the test?</h4>
+            <div className="labels">
+                <div style={{marginBottom:'8px'}}>
+                  <div className="disc" id="unattempted"></div>
+                  <div className="inline-labels">Unattempted <span style={{fontSize:'12px'}}> {this.state.unattempted} </span></div>
+                </div>
+                <div style={{marginBottom:'8px'}}>
+                  <div className="disc" id="review"></div>
+                  <div className="inline-labels">Marked For Review <span style={{fontSize:'12px'}}> {this.state.markedForReview} </span></div>
+                </div>
+                <div style={{marginBottom:'8px'}}>
+                  <div className="disc" id="attempted"></div>
+                  <div className="inline-labels">Attempted <span style={{fontSize:'12px'}}> {this.state.attempted} </span></div>
+                </div>
+            </div>
+            <div className="modalfooter">
+              <div className="btn-left" onClick={()=>this.setState({show:false})}>No</div>
+              <div className="btn-right" onClick={this.handleSubmit.bind(this)}>Yes</div>
+            </div>
           </Modal.Body>
         </Modal>
         <div id="main-panel" className="wrapper-test main-panel-expanded" ref="mainPanel">

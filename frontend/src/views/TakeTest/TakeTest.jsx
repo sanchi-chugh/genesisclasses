@@ -52,24 +52,20 @@ class TakeTest extends Component {
                 return(
                     <div className="section" key={item.id}>
                       <div className={"section-header " + (this.props.expanded[item.id] ? "header-expanded": '')} onClick={()=>this.props.toggle(item.id)}>
-                        <h5>Section : Part A</h5>
+                        <h5>{item.title}</h5>
                         <Glyphicon glyph="menu-down" className={"icon "+ (this.props.expanded[item.id] ? "icon-expanded" : '')}/>
                       </div>
                       <div className={"section-body " + (this.props.expanded[item.id] ? "body-expanded": '')}>
                         {item.questions.map(object=>{
                           if(object.questionType === 'passage'){
                               return (
-                                  <div>
-                                    {
-                                      object.questions.map(paraQues => {
-                                        return(
-                                            <a>
-                                              <div className="question-badge" id="type1"><span style={{margin: 'auto', padding: '4px'}}>{paraQues.quesNumber}</span></div>
-                                            </a>
-                                          )
-                                      })
-                                    }
-                                  </div>
+                                  object.questions.map(paraQues => {
+                                    return(
+                                        <a>
+                                          <div className="question-badge" id="type1"><span style={{margin: 'auto', padding: '4px'}}>{paraQues.quesNumber}</span></div>
+                                        </a>
+                                      )
+                                  })
                                 )
                           }else{
                             return(
@@ -98,27 +94,36 @@ class TakeTest extends Component {
 
                 <ParagraphType data={this.props.data.sections[this.props.sectionIndex]
                 .questions[this.props.questionIndex].questions}
+                  ans={this.props.ans}
                   paragraph={this.props.data.sections[this.props.sectionIndex]
                 .questions[this.props.questionIndex].paragraph}
+                  handleResponse={(e,qid,oid,qtype)=>this.props.handleResponse(e,qid,oid,qtype)}
                 /> :
 
                 this.props.data.sections[this.props.sectionIndex]
                 .questions[this.props.questionIndex].questionType === 'integer' ?
                 
                 <IntegerType data={this.props.data.sections[this.props.sectionIndex]
-                .questions[this.props.questionIndex]}/> :
+                .questions[this.props.questionIndex]}  
+                  ans={this.props.ans}
+                  handleResponse={(e,qid,oid,qtype)=>this.props.handleResponse(e,qid,oid,qtype)}/> :
 
                 this.props.data.sections[this.props.sectionIndex]
                 .questions[this.props.questionIndex].questionType === 'scq' ?
 
                 <SCQType data={this.props.data.sections[this.props.sectionIndex]
-                .questions[this.props.questionIndex]}/> :
+                .questions[this.props.questionIndex]}  
+                  ans={this.props.ans}
+                  handleResponse={(e,qid,oid,qtype)=>this.props.handleResponse(e,qid,oid,qtype)}
+                   /> :
 
                 this.props.data.sections[this.props.sectionIndex]
                 .questions[this.props.questionIndex].questionType === 'mcq' ?
                 
                 <MCQType data={this.props.data.sections[this.props.sectionIndex]
-                .questions[this.props.questionIndex]}/> : ''
+                .questions[this.props.questionIndex]}  
+                  ans={this.props.ans}
+                  handleResponse={(e,qid,oid,qtype)=>this.props.handleResponse(e,qid,oid,qtype)}/> : ''
               }
             </div>
           </div>

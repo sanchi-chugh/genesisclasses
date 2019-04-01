@@ -26,10 +26,10 @@ class TakeTestLayout extends Component {
       questionIndex: 0,
       quesNumber:1,
       paraQues:0,
-      ans: null,
+      ans: [],
       attempted: 0,
       unattempted: null,
-      markedForReview: 0
+      markedForReview: 0,
     };
   }
 
@@ -159,7 +159,7 @@ class TakeTestLayout extends Component {
           .questions[this.state.questionIndex-1].questions.length-1,
         questionIndex: this.state.hashMap[this.state.sectionIndex][this.state.quesNumber - 1].qindex,
         quesNumber: this.state.quesNumber - 1
-      },()=> console.log(this.state))
+      })
     }
     else{
       this.setState({
@@ -170,7 +170,6 @@ class TakeTestLayout extends Component {
   }
 
   handleNext(){
-    console.log(this.state)
     if(this.state.quesNumber >= this.state.lengthOfSection){
       this.setState({
         questionIndex: 0,
@@ -214,6 +213,88 @@ class TakeTestLayout extends Component {
     }
   }
 
+  handleAdd(obj){
+    this.setState({
+      ans:[
+        ...this.state.ans,
+        obj
+      ]
+    })
+  }
+
+  handleRemove(obj, type='none'){
+    if(type === 'none'){
+      this.setState({
+        ans: this.state.ans.filter(item=>{
+          return (item.question !== obj.question)
+        })
+      })
+    }
+    else if(type === 'mcq'){
+      this.setState({
+        ans: this.state.ans.filter(item=>{
+          return (item.option !== obj.option)
+        })
+      })
+    }
+  }
+
+  async handleResponse(e, quesId, optionId, questionType){
+    console.log(questionType)
+    if(questionType === 'scq' || questionType === 'passage' || questionType === 'integer'){
+      if(this.state.ans.some(item=>{
+        return (item.question === quesId && item.option !== optionId)
+      })){
+        await this.handleRemove({
+          question:quesId,
+          option: optionId,
+          review: false
+        })
+        this.handleAdd({
+          question:quesId,
+          option: optionId,
+          review: false
+        })
+      }
+      else if(this.state.ans.some(item=>{
+        return (item.question === quesId && item.option === optionId)
+      })){
+        this.handleRemove({
+          question:quesId,
+          option: optionId,
+          review: false
+        })
+      }
+      else{
+        console.log('yipie')
+        this.handleAdd({
+          question:quesId,
+          option: optionId,
+          review: false
+        })
+      }
+    }
+
+    if(questionType === 'mcq'){
+      if(this.state.ans.some(item=>{
+        return (item.question === quesId && item.option === optionId)
+      })){
+        this.handleRemove({
+          question:quesId,
+          option: optionId,
+          review: false
+        }, 'mcq')
+      }
+      else{
+        this.handleAdd({
+          question:quesId,
+          option: optionId,
+          review: false
+        })
+      }
+    }
+  }
+
   handleBack(){
     if(this.state.flag){
 
@@ -249,6 +330,7 @@ class TakeTestLayout extends Component {
             this.state.flag ?
             <TakeTest 
               data={this.state.data}
+              ans={this.state.ans}
               expanded={this.state.expanded}
               attempted={this.state.attempted}
               unattempted={this.state.attempted}
@@ -259,8 +341,9 @@ class TakeTestLayout extends Component {
               questionIndex={this.state.questionIndex}
               sectionIndex={this.state.sectionIndex}
               paraQues={this.state.paraQues}
+              handleResponse={(e,qid,oid,qtype)=>this.handleResponse(e,qid,oid,qtype)}
             /> :
-            <Instructions 
+            <Instructions
               data={this.state.data}
               startTest={this.startTest.bind(this)}
             />

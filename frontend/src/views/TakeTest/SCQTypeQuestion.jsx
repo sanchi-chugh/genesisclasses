@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import { Glyphicon, FormGroup, Radio } from "react-bootstrap";
+import { Glyphicon, FormGroup, Checkbox } from "react-bootstrap";
+import renderHTML from 'react-render-html';
 
 class SCQTypeQuestion extends Component {
 
@@ -8,35 +9,34 @@ class SCQTypeQuestion extends Component {
         <div>
           <div className="index-head">
             <div className="left">
-              <h4>Question : 1</h4>
+              <h4>Question : {this.props.data.quesNumber}</h4>
               <p>Single choice question</p>
             </div>
             <div className="right">
               <Glyphicon glyph="star"/>
-              <p>Marks +5, -2</p>
+              <p>Marks +{this.props.data.marksPositive}, -{this.props.data.marksNegative}</p>
             </div>
           </div>
           <div className="question">
-            <p>Lorem Ipsum is the best text for dummy production though it means nothing still it is best for use i don't know why but it is</p>
+            <p>{renderHTML(this.props.data.questionText)}</p>
           </div>
           <div className="option">
             <FormGroup>
-              <Radio name="radioGroup" bsClass="my-radio">
-                This is the first option
-                <span className="checkmark"></span>
-              </Radio> 
-              <Radio name="radioGroup" bsClass="my-radio">
-                This is the second option
-                <span className="checkmark"></span>
-              </Radio>
-              <Radio name="radioGroup" bsClass="my-radio">
-                This is the third option
-                <span className="checkmark"></span>
-              </Radio>
-              <Radio name="radioGroup" bsClass="my-radio">
-                This is the fourth option
-                <span className="checkmark"></span>
-              </Radio>
+              {this.props.data.options.map(option=>{
+                  return(
+                      <Checkbox 
+                        name={this.props.data.id} 
+                        value={option.id} 
+                        bsClass="my-radio"
+                        checked={this.props.ans.some(item=>{
+                          return item.option === option.id
+                        })}
+                        onChange={(e)=>this.props.handleResponse(e,this.props.data.id, option.id, this.props.data.questionType)}>
+                        {renderHTML(option.optionText)}
+                        <span className="checkmark"></span>
+                      </Checkbox> 
+                    )
+                })}
             </FormGroup>
           </div>
         </div>

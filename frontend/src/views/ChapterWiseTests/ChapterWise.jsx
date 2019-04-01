@@ -41,6 +41,7 @@ class ChapterWise extends Component {
         });
     });
   }
+
   fetchMore(){
     console.log('yippieee',this.state)
     Axios.get(this.state.next, {
@@ -71,6 +72,7 @@ class ChapterWise extends Component {
             this.setState({data:data, next:data.next,busy:false});
         });
     }
+
   handleUnitSelect(id){
       this.setState({
           unitSelected:id

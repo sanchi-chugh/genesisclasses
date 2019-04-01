@@ -23,10 +23,23 @@ class MCQTypeQuestion extends Component {
           </div>
           <div className="option">
             <div className="integer-options">
-              {integers.map(item=>{
+              {integers.map(int=>{
                 return(
-                    <div className="integer-option-btn" key={item} onClick={this}>
-                      {item}
+                    <div 
+                      className={this.props.ans.some(item=>{
+                        return (item.option === int && item.question === this.props.data.id)
+                      }) ? "integer-option-btn int-selected" : "integer-option-btn"} 
+                      key={int}
+                      onClick={
+                        (e) => 
+                          this.props.handleResponse(
+                            e,
+                            this.props.data.id, 
+                            int,
+                            this.props.data.questionType
+                          )
+                      }>
+                      {int}
                     </div>
                   )
               })}

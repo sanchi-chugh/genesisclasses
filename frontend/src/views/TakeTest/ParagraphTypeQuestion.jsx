@@ -5,10 +5,6 @@ import renderHTML from 'react-render-html';
 class ParagraphTypeQuestion extends Component {
 
   render() {
-<<<<<<< HEAD
-=======
-    console.log(this.props)
->>>>>>> 74d77ec13214f7aef950b64355871383d20f886d
     return (
         <div style={{width:'100%', height: '100%'}}>
           <div className="index-head-paragraph">
@@ -44,15 +40,9 @@ class ParagraphTypeQuestion extends Component {
                                     (e) => 
                                       this.props.handleResponse(
                                         e,
-<<<<<<< HEAD
                                         questions.id, 
                                         option.id, 
                                         questions.questionType
-=======
-                                        this.props.data.id, 
-                                        option.id, 
-                                        this.props.data.questionType
->>>>>>> 74d77ec13214f7aef950b64355871383d20f886d
                                       )
                                   }>
                                   {renderHTML(option.optionText)}

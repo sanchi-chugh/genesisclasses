@@ -11,15 +11,9 @@ class Instructions extends Component {
             <div className="left">
               <div className="instruction">
                 <div className="content"><strong>Category:</strong> Unit Wise Test</div>
-<<<<<<< HEAD
                 {this.props.data.subject && <div className="content"><strong>Subject:</strong> {this.props.data.subject.title}</div>}
                 <div className="content"><strong>Course:</strong> {this.props.data.course.join(', ')}</div>
                 {this.props.data.unit && <div className="content"><strong>Unit:</strong> {this.props.data.unit.title}</div>}
-=======
-                {this.props.data.subject && <div className="content"><strong>Subject:</strong> {this.props.data.subject}</div>}
-                <div className="content"><strong>Course:</strong> {this.props.data.course.join(', ')}</div>
-                {this.props.data.unit && <div className="content"><strong>Unit:</strong> {this.props.data.unit}</div>}
->>>>>>> 74d77ec13214f7aef950b64355871383d20f886d
               </div>
               <div>
                 <div className="instruction-card" id="color1">

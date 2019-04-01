@@ -113,7 +113,33 @@ class TakeTestLayout extends Component {
   }
 
   handleSubmit(){
-
+    let data = this.state.data.sections.reduce((ans, section)=>{
+      section.questions.forEach((question)=>{
+        if(question.questionType==='passage'){
+          question.questions.forEach(paraQuestion => {
+            if(this.state.ans.some(item => item.question === paraQuestion.id));
+            else{
+              ans.push({
+                question: paraQuestion.id,
+                response: [],
+                review: false
+              })
+            }
+          })
+        }else{
+          if(this.state.ans.some(item => item.question === question.id));
+          else{
+            ans.push({
+              question: question.id,
+              response: [],
+              review: false
+            })
+          }
+        }
+        return ans;
+      })
+    },this.state.ans);
+    console.log(data)
   }
 
   toggle(id){

@@ -69,6 +69,10 @@ class TakeTestLayout extends Component {
              return obj
            }, {}),
           activeId: data.sections[0].questions[0].id,
+          unattempted: data.sections.reduce((sum,item)=>{
+            sum = sum + item.totalQuestions
+            return sum
+          },0),
           lengthOfSection:data.sections[0].totalQuestions,
           quesNumber: data.sections[0].questions[0].questionType === 'passage' ?
             data.sections[0].questions[0].questions.length : 1,
@@ -240,7 +244,7 @@ class TakeTestLayout extends Component {
       ans:[
         ...this.state.ans,
         obj
-      ]
+      ],
     })
   }
 
@@ -280,6 +284,10 @@ class TakeTestLayout extends Component {
       else if(this.state.ans.some(item=>{
         return (item.question === quesId && item.option === optionId)
       })){
+        this.setState({
+          attempted: this.state.attempted - 1,
+          unattempted: this.state.unattempted + 1
+        })
         this.handleRemove({
           question:quesId,
           option: optionId,
@@ -287,6 +295,10 @@ class TakeTestLayout extends Component {
         })
       }
       else{
+        this.setState({
+          attempted: this.state.attempted + 1,
+          unattempted: this.state.unattempted - 1
+        })
         this.handleAdd({
           question:quesId,
           option: optionId,
@@ -299,13 +311,26 @@ class TakeTestLayout extends Component {
       if(this.state.ans.some(item=>{
         return (item.question === quesId && item.option === optionId)
       })){
-        this.handleRemove({
+        await this.handleRemove({
           question:quesId,
           option: optionId,
           review: false
         }, 'mcq')
+        //check whether question is still attempted or not and update accordingly
+        if(!this.state.ans.some(item=>item.question===quesId)){
+          this.setState({
+            unattempted: this.state.unattempted + 1,
+            attempted: this.state.attempted - 1
+          })
+        }
       }
       else{
+        if(!this.state.ans.some(item=>item.question===quesId)){
+          this.setState({
+            unattempted: this.state.unattempted - 1,
+            attempted: this.state.attempted + 1
+          })
+        }
         this.handleAdd({
           question:quesId,
           option: optionId,
@@ -369,7 +394,7 @@ class TakeTestLayout extends Component {
               review={this.state.review}
               expanded={this.state.expanded}
               attempted={this.state.attempted}
-              unattempted={this.state.attempted}
+              unattempted={this.state.unattempted}
               markedForReview={this.state.markedForReview}
               handleNext={this.handleNext.bind(this)}
               handlePrevious={this.handlePrevious.bind(this)}

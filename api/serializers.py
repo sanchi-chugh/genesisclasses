@@ -680,7 +680,7 @@ class PassageQuestionDetailSerializer(serializers.ModelSerializer):
     options = OptionDetailSerializer(many=True)
     class Meta:
         model = Question
-        exclude = ['section', 'intAnswer', 'valid', 'explanation', 'questionType', 'passage']
+        exclude = ['section', 'intAnswer', 'valid', 'explanation', 'passage']
 
 # Return passage details along with it's questionss
 class PassageDetailSerializer(serializers.ModelSerializer):

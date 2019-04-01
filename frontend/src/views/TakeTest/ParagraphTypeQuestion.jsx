@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Glyphicon, FormGroup, Radio } from "react-bootstrap";
+import { Glyphicon, FormGroup, Checkbox } from "react-bootstrap";
 import renderHTML from 'react-render-html';
 
 class ParagraphTypeQuestion extends Component {
@@ -30,10 +30,25 @@ class ParagraphTypeQuestion extends Component {
                         <FormGroup>
                            {questions.options.map(option=>{
                             return(
-                                <Radio name={questions.id} bsClass="my-radio">
+                                <Checkbox 
+                                  name={questions.id} 
+                                  value={option.id} 
+                                  bsClass="my-radio"
+                                  checked={this.props.ans.some(item=>{
+                                    return item.option === option.id
+                                  })}
+                                  onChange={
+                                    (e) => 
+                                      this.props.handleResponse(
+                                        e,
+                                        this.props.data.id, 
+                                        option.id, 
+                                        this.props.data.questionType
+                                      )
+                                  }>
                                   {renderHTML(option.optionText)}
                                   <span className="checkmark"></span>
-                                </Radio>
+                                </Checkbox>
                               )
                            })}
                         </FormGroup>

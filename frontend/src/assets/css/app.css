@@ -60,6 +60,7 @@
 .wrapper-test .main-body .nav-right .content{
     padding: 20px;
     width: 100%;
+    height: 100%;
 }
 
 .wrapper-test .main-body .nav-right .content .timer-units ul li{
@@ -94,6 +95,7 @@
 
 .main-body .nav-right .content .section{
     margin-top: 10px;
+    margin-right: 5px;
 }
 
 .main-body .nav-right .content .button{
@@ -123,6 +125,7 @@
     margin-top: 10px;
     padding-left: 12px;
     display: none;
+    margin-right: 10px
 }
 
 .body-expanded .question-badge{

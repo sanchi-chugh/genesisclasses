@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import NotificationSystem from "react-notification-system";
 import { Route, Switch, Redirect } from "react-router-dom";
-import { Glyphicon } from "react-bootstrap";
+import { Glyphicon, Modal } from "react-bootstrap";
 import TakeTest from "../../views/TakeTest/TakeTest";
 import Instructions from "../../views/TakeTest/Instructions";
 import axios from 'axios';
@@ -19,6 +19,7 @@ class TakeTestLayout extends Component {
       busy:true,
       data:null,
       flag:false,
+      show:false,
       hashMap:null,
       expanded:null,
       lengthOfSection:null,
@@ -113,6 +114,20 @@ class TakeTestLayout extends Component {
   }
 
   handleSubmit(){
+    let processedData = this.state.ans.reduce((array,obj) => {
+        if(array.some(item=>item.question===obj.question)){
+          let index = array.findIndex(item=>item.question === obj.question);
+          array[index].response.push(obj.option)
+        }
+        else
+          array.push({
+            question: obj.question,
+            response: [obj.option],
+            review: obj.review
+          })
+        return array
+      }, [])
+
     let data = this.state.data.sections.reduce((ans, section)=>{
       section.questions.forEach((question)=>{
         if(question.questionType==='passage'){
@@ -136,9 +151,9 @@ class TakeTestLayout extends Component {
             })
           }
         }
-        return ans;
       })
-    },this.state.ans);
+      return ans;
+    },processedData);
     console.log(data)
   }
 
@@ -272,7 +287,6 @@ class TakeTestLayout extends Component {
         })
       }
       else{
-        console.log('yipie')
         this.handleAdd({
           question:quesId,
           option: optionId,
@@ -303,7 +317,9 @@ class TakeTestLayout extends Component {
 
   handleBack(){
     if(this.state.flag){
-
+      this.setState({
+        show:true
+      })
     }else{
       this.setState({flag:false});
       toggleFullScreen();
@@ -325,6 +341,19 @@ class TakeTestLayout extends Component {
     return (
       <div className="wrapper" id="wrapper">
         <NotificationSystem ref="notificationSystem" style={style} />
+        <Modal
+          size="lg"
+          show={this.state.show}
+          keyboard={true}>
+          <Modal.Body bsClass="modal-body mymodal">
+            <h4>Centered Modal</h4>
+            <p>
+              Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
+              dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta
+              ac consectetur ac, vestibulum at eros.
+            </p>
+          </Modal.Body>
+        </Modal>
         <div id="main-panel" className="wrapper-test main-panel-expanded" ref="mainPanel">
           <div className="header">
             <div className="content">
@@ -351,6 +380,7 @@ class TakeTestLayout extends Component {
               activeId={this.state.activeId}
               handleResponse={(e,qid,oid,qtype)=>this.handleResponse(e,qid,oid,qtype)}
               handleNavigation={(sindex,qindex,pindex)=>this.handleNavigation(sindex,qindex,pindex)}
+              handleSubmit={this.handleSubmit.bind(this)}
             /> :
             <Instructions
               data={this.state.data}

@@ -48,6 +48,7 @@ class TakeTest extends Component {
                     <div className="inline-labels">Attempted <span style={{fontSize:'12px'}}> {this.props.attempted} </span></div>
                   </div>
               </div>
+              <div style={{overflowY: 'scroll', height:'60%'}}>
               {this.props.data.sections.map(section =>{
                 return(
                     <div className="section" key={section.id}>
@@ -128,8 +129,9 @@ class TakeTest extends Component {
                     </div>
                   )
               })}
+              </div>
               <div className="button">
-                <div className="submit-btn">
+                <div className="submit-btn" onClick={this.props.handleSubmit}>
                   SUBMIT TEST
                 </div>
               </div>

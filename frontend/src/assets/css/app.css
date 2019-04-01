@@ -75,8 +75,8 @@
 .wrapper-test .main-body .nav-right .content .labels .disc{
     border-radius: 100%;
     background-color: black;
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     display: inline-block
 }
 .wrapper-test .main-body .nav-right .content .labels .inline-labels{
@@ -129,11 +129,31 @@
     background-color: rgba(245, 245, 245, 1);
     width: 30px;
     height: 30px;
+    font-size: 14px;
     border-radius: 50%;
     display: inline-block;
     color: black !important;
-    margin: 10px;
+    margin: 8px;
     border: 1px solid rgba(240, 240, 240, 1);
+    padding-top: 3px;
+    text-align: center;
+}
+
+#attempted{
+    background-color: rgba(217, 210, 255, 1);
+}
+
+#review{
+    background-color: rgba(181, 223, 252, 1);
+}
+
+#unattempted{
+    background-color: rgba(245, 245, 245, 1);
+}
+
+#active{
+    background-color: rgba(247, 247, 247, 1);
+    border: none;
 }
 
 .section .body-expanded{

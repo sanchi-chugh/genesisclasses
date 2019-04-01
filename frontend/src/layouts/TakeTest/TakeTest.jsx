@@ -27,6 +27,8 @@ class TakeTestLayout extends Component {
       quesNumber:1,
       paraQues:0,
       ans: [],
+      activeId: null,
+      review: [],
       attempted: 0,
       unattempted: null,
       markedForReview: 0,
@@ -65,7 +67,10 @@ class TakeTestLayout extends Component {
                obj[item.id] = false
              return obj
            }, {}),
+          activeId: data.sections[0].questions[0].id,
           lengthOfSection:data.sections[0].totalQuestions,
+          quesNumber: data.sections[0].questions[0].questionType === 'passage' ?
+            data.sections[0].questions[0].questions.length : 1,
           unattempted:data.sections.reduce((sum, item) =>{
             return sum + item.totalQuestions;
           }, 0),
@@ -107,6 +112,10 @@ class TakeTestLayout extends Component {
     return hashMap;
   }
 
+  handleSubmit(){
+
+  }
+
   toggle(id){
     this.setState({
       expanded: this.state.data.sections.reduce((obj, item) => {
@@ -119,96 +128,68 @@ class TakeTestLayout extends Component {
     })
   }
 
+  handleNavigation(sectionIndex, questionIndex, paraQuestionIndex){
+    this.setState({
+      sectionIndex: sectionIndex,
+      questionIndex: questionIndex,
+      paraQues: paraQuestionIndex,
+      activeId: paraQuestionIndex === -1 ?
+      this.state.data.sections[sectionIndex]
+        .questions[questionIndex].id :
+      this.state.data.sections[sectionIndex]
+        .questions[questionIndex].questions[paraQuestionIndex].id
+    })
+  }
+
   handlePrevious(){
-    if(this.state.quesNumber === 1){
+    if(this.state.questionIndex === 0){
       this.setState({
-        questionIndex: this.state.hashMap[this.state.sectionIndex-1].lastPQNO !== undefined ?
-         this.state.hashMap[this.state.sectionIndex-1][
-          this.state.hashMap[this.state.sectionIndex-1].lastQNO
-        ].qindex : 
-        this.state.hashMap[this.state.sectionIndex-1][
-          this.state.hashMap[this.state.sectionIndex-1].lastQNO
-        ],
+        questionIndex: this.state.data.sections[this.state.sectionIndex-1].questions.length-1,
         sectionIndex: this.state.sectionIndex - 1,
         lengthOfSection: this.state.data.sections[this.state.sectionIndex-1].totalQuestions,
-        quesNumber: this.state.hashMap[this.state.sectionIndex-1].lastQNO,
-        paraQues: this.state.hashMap[this.state.sectionIndex-1].lastPQNO !== undefined ?
-        this.state.hashMap[this.state.sectionIndex-1].lastPQNO : 0,
-      })
-    }
-    else if(this.state.data.sections[this.state.sectionIndex]
-      .questions[this.state.questionIndex].questionType === 'passage'){
-      if(this.state.paraQues > 0){
-          this.setState({
-            paraQues: this.state.paraQues - 1,
-            quesNumber: this.state.quesNumber - 1
-          });
-        }
-      else if(this.state.paraQues <= 0){
-        this.setState({
-          paraQues: 0,
-          quesNumber: this.state.quesNumber - 1,
-          questionIndex: this.state.hashMap[this.state.sectionIndex][this.state.quesNumber - 1],
-        });
-      }
-    }
-    else if(this.state.data.sections[this.state.sectionIndex]
-      .questions[this.state.questionIndex-1].questionType === 'passage'){
-      this.setState({
-        paraQues: this.state.data.sections[this.state.sectionIndex]
-          .questions[this.state.questionIndex-1].questions.length-1,
-        questionIndex: this.state.hashMap[this.state.sectionIndex][this.state.quesNumber - 1].qindex,
-        quesNumber: this.state.quesNumber - 1
+        activeId: this.state.data.sections[this.state.sectionIndex-1].questions.slice(-1).pop()
+        .questionType === 'passage' ?
+        this.state.data.sections[this.state.sectionIndex-1].questions.slice(-1).pop()
+        .questions.slice(-1).pop().id :
+        this.state.data.sections[this.state.sectionIndex-1].questions.slice(-1).pop().id
       })
     }
     else{
       this.setState({
-        questionIndex: this.state.hashMap[this.state.sectionIndex][this.state.quesNumber - 1],
-        quesNumber: this.state.quesNumber - 1
+        questionIndex: this.state.questionIndex - 1,
+        activeId: this.state.data.sections[this.state.sectionIndex]
+        .questions[this.state.questionIndex-1].questionType === 'passage' ?
+        this.state.data.sections[this.state.sectionIndex]
+        .questions[this.state.questionIndex-1].questions.slice(-1).pop().id :
+        this.state.data.sections[this.state.sectionIndex]
+        .questions[this.state.questionIndex-1].id
       })
     }
   }
 
   handleNext(){
-    if(this.state.quesNumber >= this.state.lengthOfSection){
+    if(this.state.questionIndex >= this.state.data.sections[this.state.sectionIndex].questions.length - 1 ){
       this.setState({
         questionIndex: 0,
         sectionIndex: this.state.sectionIndex + 1,
         lengthOfSection: this.state.data.sections[this.state.sectionIndex+1].totalQuestions,
-        quesNumber: 1,
-        paraQues: 0
-      })
-    }
-    else if(this.state.data.sections[this.state.sectionIndex]
-      .questions[this.state.questionIndex].questionType === 'passage'){
-      if(this.state.paraQues < (this.state.data.sections[this.state.sectionIndex]
-            .questions[this.state.questionIndex].questions.length - 1)){
-          this.setState({
-            paraQues: this.state.paraQues + 1,
-            quesNumber: this.state.quesNumber + 1
-          });
-        }
-      else if(this.state.paraQues >= (this.state.data.sections[this.state.sectionIndex]
-            .questions[this.state.questionIndex].questions.length - 1)){
-        this.setState({
-          paraQues: 0,
-          quesNumber: this.state.quesNumber + 1,
-          questionIndex: this.state.questionIndex + 1,
-        });
-      }
-    }
-    else if(this.state.data.sections[this.state.sectionIndex]
-      .questions[this.state.questionIndex+1].questionType === 'passage'){
-      this.setState({
-        paraQues: 0,
-        questionIndex: this.state.hashMap[this.state.sectionIndex][this.state.quesNumber + 1].qindex,
-        quesNumber: this.state.quesNumber + 1
+        activeId: this.state.data.sections[this.state.sectionIndex+1]
+        .questions[0].questionType === 'passage' ?
+        this.state.data.sections[this.state.sectionIndex+1]
+        .questions[0].questions[0].id :
+        this.state.data.sections[this.state.sectionIndex+1]
+        .questions[0].id
       })
     }
     else{
       this.setState({
-        questionIndex: this.state.hashMap[this.state.sectionIndex][this.state.quesNumber + 1],
-        quesNumber: this.state.quesNumber + 1
+        questionIndex: this.state.questionIndex + 1,
+        activeId: this.state.data.sections[this.state.sectionIndex]
+        .questions[this.state.questionIndex+1].questionType === 'passage' ?
+        this.state.data.sections[this.state.sectionIndex]
+        .questions[this.state.questionIndex+1].questions[0].id :
+        this.state.data.sections[this.state.sectionIndex]
+        .questions[this.state.questionIndex+1].id
       })
     }
   }
@@ -240,7 +221,6 @@ class TakeTestLayout extends Component {
   }
 
   async handleResponse(e, quesId, optionId, questionType){
-    console.log(questionType)
     if(questionType === 'scq' || questionType === 'passage' || questionType === 'integer'){
       if(this.state.ans.some(item=>{
         return (item.question === quesId && item.option !== optionId)
@@ -331,6 +311,7 @@ class TakeTestLayout extends Component {
             <TakeTest 
               data={this.state.data}
               ans={this.state.ans}
+              review={this.state.review}
               expanded={this.state.expanded}
               attempted={this.state.attempted}
               unattempted={this.state.attempted}
@@ -341,7 +322,9 @@ class TakeTestLayout extends Component {
               questionIndex={this.state.questionIndex}
               sectionIndex={this.state.sectionIndex}
               paraQues={this.state.paraQues}
+              activeId={this.state.activeId}
               handleResponse={(e,qid,oid,qtype)=>this.handleResponse(e,qid,oid,qtype)}
+              handleNavigation={(sindex,qindex,pindex)=>this.handleNavigation(sindex,qindex,pindex)}
             /> :
             <Instructions
               data={this.state.data}

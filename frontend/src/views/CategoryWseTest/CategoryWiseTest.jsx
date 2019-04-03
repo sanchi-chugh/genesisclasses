@@ -17,7 +17,7 @@ class CategoryWiseTests extends Component {
   componentDidMount() {
     this.fetchTests(`?page=1`);
    }
-   
+
   fetchMore(){
      console.log('yippieee',this.state)
      Axios.get(this.state.next, {
@@ -59,10 +59,10 @@ class CategoryWiseTests extends Component {
         <center><h4 className="title-heading">Tests</h4></center>
         {!this.state.busy &&
         <TestList
+          {...this.props}
           fetchMore={this.fetchMore.bind(this)}
           next={this.state.next}
           data={this.state.data}
-          testFunction={this.testFunction.bind(this)}
         />}
       </div>
     );

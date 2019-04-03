@@ -132,7 +132,8 @@ class ChapterWise extends Component {
                 </Col>
                 <Col md={9} style={{backgroundColor:'white',padding:'25px',fontWeight:'500',color:'black',borderRadius:'4px'}}>
                     <h4 className="title-heading">Tests For {this.state.units[this.state.units.findIndex(obj => obj.id === this.state.unitSelected)].title}</h4>
-                    <TestList 
+                    <TestList
+                        {...this.props}
                         fetchMore={this.fetchMore.bind(this)}
                         next={this.state.next}
                         data={this.state.data}

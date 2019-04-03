@@ -4,6 +4,11 @@ import InfiniteScroll from 'react-infinite-scroller';
 import { Card } from "../../WebAppComponents/Card/Card.jsx";
 
 class TestList extends Component {
+
+    testFunction(id){
+        this.props.history.push(`/app/test/start/${id}`)
+    }
+
     render(){
         return(
             <div style={{display:'block'}}>
@@ -23,7 +28,7 @@ class TestList extends Component {
                                     subTitle={item.isStarted ? 'Take Test' : 'Not Yet Started'}
                                     color={!item.isStarted ? ' type4' : ''}
                                     content={item} disabled={!item.isStarted}
-                                    handleClick={this.props.testFunction}
+                                    handleClick={this.testFunction.bind(this,item.id)}
                                 />
                             </div>
                         );

@@ -48,6 +48,7 @@ class Home extends Component {
       this.setState({upcomingTests:data});
     });
   }
+  
   testFunction(id){
     this.props.history.push(`/app/test/start/${id}`)
   }

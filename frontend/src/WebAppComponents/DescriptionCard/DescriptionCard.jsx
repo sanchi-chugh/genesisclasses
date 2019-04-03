@@ -16,7 +16,7 @@ export class DescriptionCard extends Component {
                     <Col md={10}>
                         <div className="description">
                             <h4>{this.props.title}</h4>
-                            <p>...</p>
+                            <p>{this.props.description}</p>
                         </div>
                     </Col>
                 </Row>

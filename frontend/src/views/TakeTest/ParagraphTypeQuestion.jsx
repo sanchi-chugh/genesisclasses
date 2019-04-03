@@ -23,7 +23,13 @@ class ParagraphTypeQuestion extends Component {
                       </div>
                       <div className="question-marks">
                         <p>Marks +{questions.marksPositive}, -{questions.marksNegative}</p>
-                        <Glyphicon glyph="star"/>
+                        <Glyphicon 
+                          glyph={this.props.review.some(item=>
+                              item===questions.id) ? 'star' : 'star-empty'
+                          } 
+                          style={{cursor:'pointer',color:'rgba(210, 237, 255, 1)',fontSize:'18px'}}
+                          onClick={()=>this.props.handleReview(questions.id)}
+                          />
                       </div>
                       <div className="option">
                         <FormGroup>

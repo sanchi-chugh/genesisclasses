@@ -136,29 +136,71 @@ class TakeTestLayout extends Component {
       section.questions.forEach((question)=>{
         if(question.questionType==='passage'){
           question.questions.forEach(paraQuestion => {
-            if(this.state.ans.some(item => item.question === paraQuestion.id));
+            if(processedData.some(item => item.question === paraQuestion.id)){
+              let obj = processedData.find(item=>item.question === paraQuestion.id)
+              ans.push({
+                question: obj.question,
+                response: obj.response,
+                review: this.state.review.some(item=>item===obj.question)
+              })
+            }
             else{
               ans.push({
                 question: paraQuestion.id,
                 response: [],
-                review: false
+                review: this.state.review.some(item=>item===paraQuestion.id)
               })
             }
           })
         }else{
-          if(this.state.ans.some(item => item.question === question.id));
+          if(processedData.some(item => item.question === question.id)){
+            let obj = processedData.find(item=>item.question === question.id)
+              ans.push({
+                question: obj.question,
+                response: obj.response,
+                review: this.state.review.some(item=>item===obj.question)
+              })
+          }
           else{
             ans.push({
               question: question.id,
               response: [],
-              review: false
+              review: this.state.review.some(item=>item===question.id)
             })
           }
         }
       })
       return ans;
-    },processedData);
+    },[]);
+
     console.log(data)
+
+    this.setState({ busy: true }, () => {
+      axios.post(`/api/app/tests/${this.props.match.params.id}/submit/`, data, {
+        headers: {
+          Authorization: `Token ${localStorage.token}`,
+          'Content-Type':  'application/json'
+        },
+      })
+      .then((res) => this.setState({ busy: false},() => {
+        this.props.history.goBack()
+      }))
+      .catch((err) => this.setState({ addingStudent: false }, () => console.log(err)))
+    });
+  }
+
+  handleReview(id){
+    if(this.state.review.some(
+        item=>item===id
+      )){
+      this.setState({
+        review:this.state.review.filter(item=>item!==id)
+      })
+    }else{
+      this.setState({
+        review:[...this.state.review,id]
+      })
+    }
   }
 
   toggle(id){
@@ -352,6 +394,12 @@ class TakeTestLayout extends Component {
     }
   }
 
+  showModal(){
+    this.setState({
+      show:true
+    })
+  }
+
   startTest(){
     this.setState({
       flag:true
@@ -417,6 +465,8 @@ class TakeTestLayout extends Component {
               sectionIndex={this.state.sectionIndex}
               paraQues={this.state.paraQues}
               activeId={this.state.activeId}
+              showModal={this.showModal.bind(this)}
+              handleReview={(id)=>this.handleReview(id)}
               handleResponse={(e,qid,oid,qtype)=>this.handleResponse(e,qid,oid,qtype)}
               handleNavigation={(sindex,qindex,pindex)=>this.handleNavigation(sindex,qindex,pindex)}
               handleSubmit={this.handleSubmit.bind(this)}

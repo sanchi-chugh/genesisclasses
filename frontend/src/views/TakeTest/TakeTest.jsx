@@ -137,7 +137,7 @@ class TakeTest extends Component {
               })}
               </div>
               <div className="button">
-                <div className="submit-btn" onClick={this.props.handleSubmit}>
+                <div className="submit-btn" onClick={this.props.showModal}>
                   SUBMIT TEST
                 </div>
               </div>
@@ -152,6 +152,8 @@ class TakeTest extends Component {
                 <ParagraphType data={this.props.data.sections[this.props.sectionIndex]
                 .questions[this.props.questionIndex].questions}
                   ans={this.props.ans}
+                  review={this.props.review}
+                  handleReview={(id)=>this.props.handleReview(id)}
                   paragraph={this.props.data.sections[this.props.sectionIndex]
                 .questions[this.props.questionIndex].paragraph}
                   handleResponse={(e,qid,oid,qtype)=>this.props.handleResponse(e,qid,oid,qtype)}
@@ -163,6 +165,8 @@ class TakeTest extends Component {
                 <IntegerType data={this.props.data.sections[this.props.sectionIndex]
                 .questions[this.props.questionIndex]}  
                   ans={this.props.ans}
+                  review={this.props.review}
+                  handleReview={(id)=>this.props.handleReview(id)}
                   handleResponse={(e,qid,oid,qtype)=>this.props.handleResponse(e,qid,oid,qtype)}/> :
 
                 this.props.data.sections[this.props.sectionIndex]
@@ -171,6 +175,8 @@ class TakeTest extends Component {
                 <SCQType data={this.props.data.sections[this.props.sectionIndex]
                 .questions[this.props.questionIndex]}  
                   ans={this.props.ans}
+                  review={this.props.review}
+                  handleReview={(id)=>this.props.handleReview(id)}
                   handleResponse={(e,qid,oid,qtype)=>this.props.handleResponse(e,qid,oid,qtype)}
                    /> :
 
@@ -180,6 +186,8 @@ class TakeTest extends Component {
                 <MCQType data={this.props.data.sections[this.props.sectionIndex]
                 .questions[this.props.questionIndex]}  
                   ans={this.props.ans}
+                  review={this.props.review}
+                  handleReview={(id)=>this.props.handleReview(id)}
                   handleResponse={(e,qid,oid,qtype)=>this.props.handleResponse(e,qid,oid,qtype)}/> : ''
               }
             </div>

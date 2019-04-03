@@ -13,11 +13,13 @@ class ChapterWise extends Component {
       data: {results:[]},
       untis:[],
       busy:true,
-      next:''
+      next:'',
+      details:{}
     };
   }
 
   componentWillMount() {
+    this.fetchSubjectDetails();
     this.fetchUnits();
    }
  
@@ -42,8 +44,21 @@ class ChapterWise extends Component {
     });
   }
 
+  fetchSubjectDetails(){
+    Axios.get(`/api/app/subjects/${this.props.match.params.id}/detail/`, {
+        headers: {
+        Authorization: `Token ${localStorage.token}`
+        }
+    }).then(res => {
+      const data = res.data.detail;
+      console.log(data)
+      this.setState({
+          details:data,
+        });
+    });
+  }
+
   fetchMore(){
-    console.log('yippieee',this.state)
     Axios.get(this.state.next, {
         headers: {
         Authorization: `Token ${localStorage.token}`
@@ -80,6 +95,7 @@ class ChapterWise extends Component {
             this.fetchTests('?page=1',this.state.units.findIndex(obj => obj.id === id));
         })
   }
+
   testFunction(){
     alert('Clicked')
   }
@@ -88,8 +104,9 @@ class ChapterWise extends Component {
     return (
       <div className="content home-content">
         <DescriptionCard 
-           image={'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
-           title={'Chemistry'}
+           image={this.state.details.image !== null ? this.state.details.image : 'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
+           title={this.state.details.title}
+           description={this.state.details.description}
         //    handleClick={this.testFunction.bind(this)}
         />
         {!this.state.busy &&

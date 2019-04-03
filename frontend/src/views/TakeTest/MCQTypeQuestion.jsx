@@ -13,7 +13,13 @@ class MCQTypeQuestion extends Component {
               <p>Multiple Choice Question</p>
             </div>
             <div className="right">
-              <Glyphicon glyph="star"/>
+              <Glyphicon 
+                glyph={this.props.review.some(item=>
+                    item===this.props.data.id) ? 'star' : 'star-empty'
+                } 
+                style={{cursor:'pointer',color:'rgba(210, 237, 255, 1)',fontSize:'18px'}}
+                onClick={()=>this.props.handleReview(this.props.data.id)}
+                />
               <p>Marks +{this.props.data.marksPositive}, -{this.props.data.marksNegative}</p>
             </div>
           </div>

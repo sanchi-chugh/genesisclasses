@@ -3050,6 +3050,7 @@ class TestSubmitView(CreateAPIView):
                     # Check status of user's answer
                     if len(responses) == 0:
                         status = 'unattempted'
+                        intAnswer = None
                     else:
                         status = 'incorrect'
                         # User's answer is correct if intAnswer is user's answer

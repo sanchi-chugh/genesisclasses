@@ -718,6 +718,7 @@
     display: inline-block;
     width: 300px;
     margin: 20px;
+    margin-bottom: 0px;
 }
 .test{
     width: 200px;

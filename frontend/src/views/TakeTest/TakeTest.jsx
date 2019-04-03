@@ -8,6 +8,13 @@ import ParagraphType from "./ParagraphTypeQuestion";
 
 class TakeTest extends Component {
 
+  // componentDidMount() {
+  //     window.onpopstate  = (e) => {
+  //      //your code...
+  //      this.props.showModal();
+  //    }
+  //   }
+
   render() {
     return (
         <div className="main-body">

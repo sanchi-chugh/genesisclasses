@@ -413,9 +413,10 @@
     z-index: 4; 
     background-color: rgba(228, 242, 251, 1);}
 .side .logo img {
-    width: 260px;
-    height: 58px;
+    width: 150px;
+    height: 40px;
     transition: all 0.4s ease;
+    margin: 10px 50px;
 }
 .side .profile {
     position: relative;
@@ -729,25 +730,31 @@
 }
 
 .side-chap .chap-wrapper .chap-list-item{
-    border-radius:6px;
     height:50px;
-    font-size: 20px;
+    font-size: 14px;
     padding: 10px;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 1s ease;
+    transition: all 0.4s ease-in-out;
     border-bottom: 1px solid rgba(0,0,0,0.1);
+    color: rgba(117, 117, 117, 1);
 }
-/* .item-hidden{
-    display: none;
-    height:0px;
-} */
+
+.item-hidden{
+    height:0px !important;
+    overflow: hidden;
+    padding: 0px !important;
+}
+
 .side-chap .chap-wrapper .active{
-    box-shadow: 0 5px 15px 4px rgba(0,0,0,0.3);
-    /* border-bottom: 2px solid rgb(87, 163, 243); */
+    box-shadow: 5px 13px 14px rgba(0,0,0,0.17);
+    border-bottom: 1px solid rgb(87, 163, 243);
     background-color: rgba(1, 69, 142, 1);
-    color:rgba(228, 242, 251, 1);
-    /* display: block;
-    height:50px; */
+    color:rgba(210, 237, 255, 1) !important;
+    transition: all 0.4s ease-in-out;
+    height:50px !important;
+    padding: 10px !important;
+    transition-delay: 0.4s;
 }
 
 .test-instructions{

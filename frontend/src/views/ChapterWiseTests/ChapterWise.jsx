@@ -14,7 +14,8 @@ class ChapterWise extends Component {
       untis:[],
       busy:true,
       next:'',
-      details:{}
+      details:{},
+      count:null
     };
   }
 
@@ -67,7 +68,7 @@ class ChapterWise extends Component {
         const data = res.data;
         this.setState({
           data: {...this.state.data,
-              results:[...this.state.data.results, ...data.results]
+              results:[...this.state.data.results, ...data.results],
           },
           next:res.data.next});
     });
@@ -84,7 +85,7 @@ class ChapterWise extends Component {
         }).then(res => {
             const data = res.data
             console.log(res.data)
-            this.setState({data:data, next:data.next,busy:false});
+            this.setState({data:data, next:data.next,count:data.count,busy:false});
         });
     }
 
@@ -94,10 +95,6 @@ class ChapterWise extends Component {
         },()=>{
             this.fetchTests('?page=1',this.state.units.findIndex(obj => obj.id === id));
         })
-  }
-
-  testFunction(){
-    alert('Clicked')
   }
 
   render() {
@@ -119,11 +116,11 @@ class ChapterWise extends Component {
                                 return(
                                     <div>
                                         <div className={"chap-list-item" + (this.state.unitSelected === item.id ? ' active' : '')} key={item.id} onClick={this.handleUnitSelect.bind(this,item.id)}>
-                                            {item.title}
+                                          <p>{item.title}</p>
                                         </div>
-                                        {/* <div className={"chap-list-item item-hidden" + (this.state.unitSelected === item.id ? ' active' : '')} key={item.id} onClick={this.handleUnitSelect.bind(this,item.id)}>
-                                            {item.title}
-                                        </div> */}
+                                        <div className={"chap-list-item item-hidden" + (this.state.unitSelected === item.id ? ' active' : '')} key={item.id}>
+                                          <p>{this.state.count} Tests</p>
+                                        </div> 
                                     </div>
                                 );   
                             })}
@@ -137,7 +134,6 @@ class ChapterWise extends Component {
                         fetchMore={this.fetchMore.bind(this)}
                         next={this.state.next}
                         data={this.state.data}
-                        testFunction={this.testFunction.bind(this)}
                     />
                 </Col>
             </Row>

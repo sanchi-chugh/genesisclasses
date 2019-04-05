@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 
 import homeRoutes from "../../routes/Home";
 
@@ -18,6 +18,8 @@ class HomeLayout extends Component {
       <div className="content" ref={'content'}>
           <Switch>
             {homeRoutes.map((prop, key) => {
+              if (prop.redirect)
+                return <Redirect from={prop.path} to={prop.to} key={key} />;
               return (
                 <Route path={prop.path} exact render={routeProps => (
                   <prop.component

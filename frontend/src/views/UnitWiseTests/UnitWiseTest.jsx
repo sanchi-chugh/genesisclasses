@@ -35,16 +35,18 @@ class UnitWiseTests extends Component {
   testFunction(){
     alert('Clicked')
   }
+
   handleSubject(id){
     this.props.history.push(`/subjects/${id}`)
   }
+
   render() {
+    console.log(this.state)
     return (
       <div className="content home-content">
         <DescriptionCard 
            image={'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
-           title={'Unit Wise Test'}
-          //  handleClick={this.testFunction.bind(this)}
+           title={'sada'}
         />
         <center><h4 className="title-heading">Choose Subject</h4></center>
         <div style={{display:'block', textAlign:'center'}}>

@@ -48,8 +48,9 @@ class Home extends Component {
       this.setState({upcomingTests:data});
     });
   }
-  testFunction(){
-    alert('Clicked')
+  
+  testFunction(id){
+    this.props.history.push(`/app/test/start/${id}`)
   }
   handleUnitWise(){
     this.props.history.push('/subjects');
@@ -57,9 +58,17 @@ class Home extends Component {
   handleCategory(id){
     this.props.history.push(`/category/${id}`);
   }
+
+  handleKeyPress(event){
+    alert('pressed')
+    if(event.key == 'Enter'){
+      alert('pressed enter')
+    }
+  }
+
   render() {
     return (
-      <div className="content home-content">
+      <div className="content home-content" tabIndex="0" onKeyPress={this.handleKeyPress.bind(this)}>
         <h4 className="title-heading">Upcoming Tests</h4>
         <div style={{display:'block',width:'100%', marginBottom:'20px'}}>
           {this.state.upcomingTests.map(item=>{
@@ -70,7 +79,7 @@ class Home extends Component {
                   content={item}
                   disabled={!item.isStarted}
                   color={!item.isStarted ? ' type4' : ''}
-                  handleClick={this.testFunction.bind(this)}
+                  handleClick={this.testFunction.bind(this,item.id)}
                 />
               </div>
             )

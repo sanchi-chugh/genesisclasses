@@ -13,11 +13,14 @@ class ChapterWise extends Component {
       data: {results:[]},
       untis:[],
       busy:true,
-      next:''
+      next:'',
+      details:{},
+      count:null
     };
   }
 
   componentWillMount() {
+    this.fetchSubjectDetails();
     this.fetchUnits();
    }
  
@@ -41,8 +44,22 @@ class ChapterWise extends Component {
         });
     });
   }
+
+  fetchSubjectDetails(){
+    Axios.get(`/api/app/subjects/${this.props.match.params.id}/detail/`, {
+        headers: {
+        Authorization: `Token ${localStorage.token}`
+        }
+    }).then(res => {
+      const data = res.data.detail;
+      console.log(data)
+      this.setState({
+          details:data,
+        });
+    });
+  }
+
   fetchMore(){
-    console.log('yippieee',this.state)
     Axios.get(this.state.next, {
         headers: {
         Authorization: `Token ${localStorage.token}`
@@ -51,7 +68,7 @@ class ChapterWise extends Component {
         const data = res.data;
         this.setState({
           data: {...this.state.data,
-              results:[...this.state.data.results, ...data.results]
+              results:[...this.state.data.results, ...data.results],
           },
           next:res.data.next});
     });
@@ -68,9 +85,10 @@ class ChapterWise extends Component {
         }).then(res => {
             const data = res.data
             console.log(res.data)
-            this.setState({data:data, next:data.next,busy:false});
+            this.setState({data:data, next:data.next,count:data.count,busy:false});
         });
     }
+
   handleUnitSelect(id){
       this.setState({
           unitSelected:id
@@ -78,16 +96,14 @@ class ChapterWise extends Component {
             this.fetchTests('?page=1',this.state.units.findIndex(obj => obj.id === id));
         })
   }
-  testFunction(){
-    alert('Clicked')
-  }
 
   render() {
     return (
       <div className="content home-content">
         <DescriptionCard 
-           image={'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
-           title={'Chemistry'}
+           image={this.state.details.image !== null ? this.state.details.image : 'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
+           title={this.state.details.title}
+           description={this.state.details.description}
         //    handleClick={this.testFunction.bind(this)}
         />
         {!this.state.busy &&
@@ -100,24 +116,24 @@ class ChapterWise extends Component {
                                 return(
                                     <div>
                                         <div className={"chap-list-item" + (this.state.unitSelected === item.id ? ' active' : '')} key={item.id} onClick={this.handleUnitSelect.bind(this,item.id)}>
-                                            {item.title}
+                                          <p>{item.title}</p>
                                         </div>
-                                        {/* <div className={"chap-list-item item-hidden" + (this.state.unitSelected === item.id ? ' active' : '')} key={item.id} onClick={this.handleUnitSelect.bind(this,item.id)}>
-                                            {item.title}
-                                        </div> */}
+                                        <div className={"chap-list-item item-hidden" + (this.state.unitSelected === item.id ? ' active' : '')} key={item.id}>
+                                          <p>{this.state.count} Tests</p>
+                                        </div> 
                                     </div>
                                 );   
                             })}
                         </div>
                     </div>
                 </Col>
-                <Col md={9} style={{backgroundColor:'white',padding:'25px',fontWeight:'500',color:'black',borderRadius:'4px'}}>
+                <Col md={9} style={{backgroundColor:'white',paddingTop:'25px',fontWeight:'500',color:'black',borderRadius:'4px'}}>
                     <h4 className="title-heading">Tests For {this.state.units[this.state.units.findIndex(obj => obj.id === this.state.unitSelected)].title}</h4>
-                    <TestList 
+                    <TestList
+                        {...this.props}
                         fetchMore={this.fetchMore.bind(this)}
                         next={this.state.next}
                         data={this.state.data}
-                        testFunction={this.testFunction.bind(this)}
                     />
                 </Col>
             </Row>

@@ -5,7 +5,6 @@
     left: 0;
     width: 260px;
     display: block;
-    z-index: 1;
     color: #fff;
     font-weight: 200;
     background-size: cover;
@@ -16,18 +15,368 @@
 /* toggle sidebar */
 .side-expanded {
     width:0%;
-    /* display: none; */
+    z-index: -99 !important;
 }
-.side-expanded .logo p{
-    display: none;
-}
+
 #main-panel{
     transition: all 0.4s ease;
     background-color: #F0F0F0;
+    min-height: 100%;
 }
-#wrapper{
-    background-color: #F0F0F0;
+.wrapper-test{
+    background-color: white !important;
+    height: 100%;
 }
+
+.wrapper-test .header{
+    background-color: rgba(228, 242, 251, 1);
+    height: 65px;
+    width: 100%;
+    text-align: center;
+    padding: 20px 40px 20px 40px;
+}
+
+.wrapper-test .header h3{
+    margin: 0px;
+    color: rgba(1, 69, 142, 1);
+    display: inline-block;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.wrapper-test .main-body{
+    width: 100%;
+    height: calc(100% - 65px);
+}
+
+.wrapper-test .main-body .nav-right{
+    width: 24%;
+    height: 100%;
+    float: right;
+    background-color: white;
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.2);
+}
+
+.wrapper-test .main-body .nav-right .content{
+    padding: 20px;
+    width: 100%;
+    height: 100%;
+}
+
+.wrapper-test .main-body .nav-right .content .timer-units ul li{
+    list-style: none;
+    font-size: 10px;
+    display: inline-block;
+    color: rgba(117, 117, 117, 1);
+    padding-inline-start: 32px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.labels .disc{
+    border-radius: 100%;
+    background-color: black;
+    width: 14px;
+    height: 14px;
+    display: inline-block
+}
+
+.labels .inline-labels{
+    display: inline-block;
+    padding-inline-start: 10px;
+    font-size: 14px;
+    color: rgba(117, 117, 117, 1);
+}
+
+.wrapper-test .main-body .nav-right .content .timer{
+    text-align: center;
+    font-size: 32px;
+    color: rgba(117, 117, 117, 1);
+}
+
+.main-body .nav-right .content .section{
+    margin-top: 10px;
+    margin-right: 5px;
+}
+
+.main-body .nav-right .content .button{
+    height: 50px;
+    position: absolute;
+    width: calc(24% - 40px);
+    bottom: 0;
+}
+
+.main-body .nav-right .content .button .submit-btn{
+    width: 100%;
+    background-color: rgba(1, 69, 142, 1);
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
+    text-align: center;
+    height: 40px;
+    margin-right: 15px;
+    cursor: pointer;
+    color: white;
+    padding-top: 9px;
+    font-weight: 700;
+}
+
+.main-body .nav-right .content .section .section-body{
+    height: 0px;
+    width: 100%;
+    transition: all 0.4s;
+    margin-top: 10px;
+    padding-left: 12px;
+    display: none;
+    margin-right: 10px
+}
+
+.body-expanded .question-badge{
+    background-color: rgba(245, 245, 245, 1);
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    color: black !important;
+    margin: 8px;
+    border: 1px solid rgba(240, 240, 240, 1);
+    padding-top: 3px;
+    text-align: center;
+}
+
+#attempted{
+    background-color: rgba(217, 210, 255, 1);
+}
+
+#review{
+    background-color: rgba(181, 223, 252, 1);
+}
+
+#unattempted{
+    background-color: rgba(245, 245, 245, 1);
+}
+
+#active{
+    background-color: rgba(247, 247, 247, 1);
+    border: none;
+}
+
+.section .body-expanded{
+    min-height: 20px !important;
+    display: block !important;
+    margin-bottom: 30px;
+}
+
+.main-body .nav-right .content .section .section-header{
+    width: 100%;
+    height: 40px;
+    background-color: rgba(240, 240, 240, 1);
+    color: rgba(117, 117, 117, 1);
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.16);
+    margin: auto;
+    padding: 12px;
+    padding-inline-start: 20px;
+    display: block;
+    padding-inline-end: 20px;
+}
+
+.section .section-header .icon{
+    display: inline-block;
+    float: right;
+}
+
+.section .section-header .icon-expanded{
+    transform: rotate(180deg);
+}
+
+.section .header-expanded{
+    background-color: rgba(228, 242, 251, 1) !important;
+    color: rgba(1, 69, 142, 1) !important;
+}
+
+.section-header:hover{
+    cursor: pointer;
+}
+
+.section-header h5{
+    margin: auto;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 700 !important;    
+}
+
+.wrapper-test .main-body .body{
+    width: 76%;
+    height: 100%;
+    padding: 2%;
+}
+
+.wrapper-test .main-body .body .content{
+    width: 100%;
+    min-height: 85%;
+    background-color: white;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.16);
+    margin-bottom: 40px;
+    padding: 24px;
+}
+
+/* question (MCQ, SCQ and Integer Type) */
+.main-body .body .content .index-head{
+    height: 80px;
+    margin-bottom: 20px;
+}
+
+.content .index-head .left{
+    display: inline-block;
+}
+
+.index-head .left h4{
+    margin: 0;
+}
+
+.index-head .left p{
+    color: rgba(117, 117, 117, 1);
+    font-size: 13px;
+}
+
+.content .index-head .right{
+    display: inline-block;
+    float: right;
+    text-align: right;
+}
+
+.index-head .right p{
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+/* paragraph type question */
+.main-body .body .content .index-head-paragraph{
+    height: 40px;
+    margin-bottom: 20px;
+}
+
+.index-head-paragraph h4{
+    margin: 0;
+}
+
+.main-body .body .content .paragraph-block{
+    display: block;
+    width: 100%;
+    min-height: calc(100% - 60px);
+}
+
+.main-body .body .content .paragraph-block .paragraph-left{
+    display: inline-block;
+    width: 50%;
+    height: 53vh;
+    overflow-y: scroll;
+}
+
+.main-body .body .content .paragraph-block .question-right{
+    display: inline-block;
+    width: 50%;
+    height: 53vh;
+    overflow-y: scroll;
+    padding-left: 10px;
+}
+
+.question-right .question-marks{
+    width: 100%;
+    text-align: right;
+    padding-right: 10px;
+}
+
+.question-right .question-marks span{
+    display: inline-block;
+    padding-inline-start: 20px;
+}
+
+.question-right .question-marks p{
+    font-size: 13px;
+    display: inline-block;
+}
+
+/* Question layout in take test */
+.main-body .body .content .question{
+    min-height: 100px;
+}
+.main-body .body .content .option{
+    min-height: 200px;
+}
+
+.option .integer-options{
+    display: block;
+    width: 60%;
+    position: relative;
+    user-select: none;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none;
+}
+
+.option .integer-options .integer-option-btn{
+    display: inline-block;
+    width: 84px;
+    height: 50px;
+    border: 1px solid rgba(112, 112, 112, 1);
+    border-radius: 8px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 20px;
+    cursor: pointer;
+    color: rgba(1, 69, 142, 1);
+    padding: 8px;
+}
+
+.int-selected{
+    background-color: rgba(228, 242, 251, 1) !important;
+    border: none !important;
+}
+
+.option .integer-options .integer-option-btn-selected{
+    background-color: rgba(228, 242, 251, 1) !important;
+    border: none !important;
+}
+
+.wrapper-test .main-body .footer{
+    height: 50px;
+    position: absolute;
+    width: calc(76% - 2%);
+    bottom: 0;
+    display: block;
+    padding-inline-start: 2%;
+}
+
+.wrapper-test .main-body .footer .previous-btn{
+    display: inline-block;
+    width: calc(50% - 7.5px);
+    background-color: rgba(1, 69, 142, 1);
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
+    text-align: center;
+    height: 40px;
+    margin-right: 15px;
+    cursor: pointer;
+    color: white;
+    padding-top: 9px;
+    font-weight: 700;
+}
+
+.wrapper-test .main-body .footer .next-btn{
+    display: inline-block;
+    width: calc(50% - 7.5px);
+    background-color: rgba(1, 69, 142, 1);
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
+    text-align: center;
+    height: 40px;
+    cursor: pointer;
+    color: white;
+    padding-top: 9px;
+    font-weight: 700;
+}
+
 .main-panel-expanded {
     width:100% !important;
 }
@@ -44,8 +393,8 @@
     width: 100%;
     z-index: 4;
     padding-bottom: 30px; 
-    box-shadow: 1px 10px 10px 0px rgba(0,0,0,0.1);
-    color:grey;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.16);
+    color:rgba(117, 117, 117, 1);
 }
 .side .side-background {
     position: absolute;
@@ -62,18 +411,49 @@
     width: 100%;
     height: 60px;
     z-index: 4; 
-    background-color: #D2EDFF;}
-.side .logo p {
-    float: left;
-    font-size: 20px;
-    margin: 10px 10px;
-    color: #FFFFFF;
-    line-height: 20px;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+    background-color: rgba(228, 242, 251, 1);}
+.side .logo img {
+    width: 150px;
+    height: 40px;
+    transition: all 0.4s ease;
+    margin: 10px 50px;
+}
 .side .profile {
     position: relative;
     height: 100px;
-    margin:5px}
+    margin:5px;
+    padding: 10px;
+    padding-left: 20px;
+}
+
+.side .profile .avatar{
+    display: inline-block;
+}
+
+.side .profile .avatar img{
+    width: 80px;
+    height: 80px;
+    border-radius: 80px;
+    margin: auto;
+}
+
+.side .profile .name{
+    display: inline-block;
+    padding-left: 10px;
+    margin: 4px;
+}
+
+.side .profile .name p{
+    font-size: 18px;
+    color: black;
+    padding: 0;
+    margin: 0;
+}
+
+.side .profile .name a{
+    color: rgba(1, 69, 142, 1);
+    font-weight: 500;
+}
 
 .side .side-wrapper > .nav > {
     margin-top: 10px;
@@ -92,7 +472,7 @@
 }
 
 .side .side-wrapper .active{
-    background-color: #01458E;
+    background-color: rgba(1, 69, 142, 1);
     color:#F0F0F0;
 }
 
@@ -105,7 +485,7 @@
     position: fixed !important;
     width: calc(100% - 260px);
     height:60px;
-    background-color: #01458E !important;
+    background-color: rgba(1, 69, 142, 1) !important;
     z-index: 10;
     transition: all 0.4s ease;
     user-select: none;
@@ -142,28 +522,24 @@
 
 .title-heading{
     margin:0;
-    color:grey;
+    color:rgba(117, 117, 117, 1);
     margin-left: 20px;
     font-weight: 400;
-    font-size: 28px;
+    font-size: 22px;
 }
 
 .home-content{
-    margin-top: 65px;
-    margin-left: 20px;
+    margin-top: 50px;
+    margin-left: 0px;
 }
 
 .card-app{
-    box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23) !important;
+    box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.16);
     margin: 0px !important;
     margin-bottom: 30px !important;
     transition: all 0.1s ease;
     position: relative;
     height: 100% !important;
-}
-
-.card-app:hover{
-    transform: scale(1.05);
 }
 
 .card-app .disabled{
@@ -212,13 +588,13 @@
     word-wrap: break-word;
     word-break: normal;
     margin:2px;
-    color: grey;
+    color: rgba(117, 117, 117, 1);
     padding: 4px 10px;
     box-shadow: 0 1px rgba(0,0,0,0.1);
 }
 
 .card-app .content .info .details{
-    font-size:14px;
+    font-size:12px;
     word-wrap: break-word;
     word-break: normal;
     margin:2px;
@@ -230,51 +606,53 @@
     font-weight: 400;
     color: black;
     display: inline-block;
-    width: 65%;
+    width: 60%;
 }
 
 .card-app .content .info .details .value{
     font-weight: 400;
-    color: grey;
+    color: rgba(117, 117, 117, 1);
     display: inline-block;
     word-wrap: break-word;
     word-break: normal;
     float: right;
-    width: 35%;
+    width: 40%;
 }
 
 #test-title{
     font-size: 16px;
     margin-bottom:5px;
-    font-weight: 400;
+    font-weight: 700;
     word-wrap: break-word;
     word-break: normal;
-    color: #01458E;
+    color: rgba(1, 69, 142, 1);
     text-align: center;
     padding: 10px;
-    box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+    box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.16);
 }
 
 .card-app .content .title{
     width:100%;
     height: 20%;
-    background-color: #D2EDFF;
+    background-color: rgba(228, 242, 251, 1);
     border-radius: 0 0 4px 4px;
     text-align: center;
     padding:10px 0px 10px 0px;
-    font-weight: 500;
-    color: #01458E !important;
+    font-weight: 900;
+    color: rgba(1, 69, 142, 1) !important;
+    box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.16);
 }
 
 .card-app .content .sub-title{
     width:100%;
     height: 10%;
-    background-color: #01458E;
+    background-color: rgba(1, 69, 142, 1);
     border-radius: 0 0 4px 4px;
     text-align: center;
     padding:5px 0px 5px 0px;
-    font-weight: 500;
-    color:#D2EDFF;
+    font-weight: 900;
+    color:rgba(228, 242, 251, 1);
+    box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.16);
 }
 
 .card-app .content .type1{
@@ -290,8 +668,8 @@
 }
 
 .card-app .content .type4{
-    background-color: #D2EDFF  !important;
-    color: #01458E;
+    background-color: rgba(228, 242, 251, 1)  !important;
+    color: rgba(1, 69, 142, 1);
 }
 
 .card-desc{
@@ -318,14 +696,17 @@
 }
 
 .card-desc .content .description h4{
-    font-weight: 300;
-    color:#01458E;
+    font-weight: 500;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-weight: 24px;
+    color:rgba(1, 69, 142, 1);
 }
 
 .card-desc .content .image img{
-    box-shadow: 0 5px 10px rgba(0,0,0,0.19), 0 3px 6px rgba(0,0,0,0.20) !important;
-    height:160px;
-    width:160px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16) !important;
+    height:145px;
+    width:145px;
 }
 
 .home-cards{
@@ -338,6 +719,7 @@
     display: inline-block;
     width: 300px;
     margin: 20px;
+    margin-bottom: 0px;
 }
 .test{
     width: 200px;
@@ -348,25 +730,154 @@
 }
 
 .side-chap .chap-wrapper .chap-list-item{
-    border-radius:6px;
     height:50px;
-    font-size: 20px;
+    font-size: 14px;
     padding: 10px;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 1s ease;
+    transition: all 0.4s ease-in-out;
     border-bottom: 1px solid rgba(0,0,0,0.1);
+    color: rgba(117, 117, 117, 1);
 }
-/* .item-hidden{
-    display: none;
-    height:0px;
-} */
+
+.item-hidden{
+    height:0px !important;
+    overflow: hidden;
+    padding: 0px !important;
+}
+
 .side-chap .chap-wrapper .active{
-    box-shadow: 0 5px 15px 4px rgba(0,0,0,0.3);
-    /* border-bottom: 2px solid rgb(87, 163, 243); */
-    background-color: #01458E;
-    color:#D2EDFF;
-    /* display: block;
-    height:50px; */
+    box-shadow: 5px 13px 14px rgba(0,0,0,0.17);
+    border-bottom: 1px solid rgb(87, 163, 243);
+    background-color: rgba(1, 69, 142, 1);
+    color:rgba(210, 237, 255, 1) !important;
+    transition: all 0.4s ease-in-out;
+    height:50px !important;
+    padding: 10px !important;
+    transition-delay: 0.4s;
+}
+
+.test-instructions{
+    width: 100%;
+    height: calc(100% - 65px);
+    padding: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 0px;
+}
+
+.test-instructions .footer{
+    position: absolute;
+    bottom: 5px;
+    width: 100%;
+    background-color: darkblue;
+    height: 35px;
+    left: 0;
+    text-align: center;
+    padding: 5px;
+}
+
+.footer p{
+    color: white;
+    width: 100%;
+    font-weight: 900;
+    margin: auto;
+}
+.home-content:focus{
+    outline: none;
+}
+
+.footer p:hover{
+    cursor: pointer;
+}
+
+.test-instructions .upper-section{
+    width: 100%;
+    background-color: white;
+    height: 270px;
+    margin-bottom: 20px;
+}
+
+.test-instructions .lower-section{
+    width: 100%;
+    height: 240px;
+    background-color: white;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
+}
+.upper-section .left{
+    display: inline-block;
+    width: 72%;
+    height: 100%
+}
+.upper-section .left .instruction{
+    width: 100%;
+    height: 112px;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.instruction .content{
+    font-size: 16px;
+    padding-inline-end: 20px;
+    display: inline-block;
+    width: 50%;
+    padding-bottom: 20px;
+}
+
+.upper-section .left .instruction-card{
+    display: inline-block;
+    width: calc(33.33% - 13.33px);
+    height: 140px;
+    border: 1px solid rgba(228, 228, 228, 1);
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
+    margin-right: 20px;
+    padding: 20px;
+}
+
+.instruction-card .content{
+    position: absolute;
+}
+
+.instruction-card h4{
+    margin: 0;
+}
+
+.instruction-card h3{
+    color:  rgba(1, 69, 142, 1);
+    margin: 0;
+ }
+
+.upper-section .right{
+    display: inline-block;
+    width: calc(28% - 20px);
+    height: 100%;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
+    margin-left: 20px;
+}
+
+.upper-section .right .description{
+    position: absolute;
+    padding: 10px;
+    padding-top: 20px;
+}
+
+.right .description h4{
+    color: rgba(1, 69, 142, 1);
+    font-size: 20px;
+    margin: 0;
+}
+
+.lower-section .description{
+    position: absolute;
+    padding: 10px;
+    padding-top: 20px;
+}
+
+.lower-section .description h4{
+    color: rgba(1, 69, 142, 1);
+    font-size: 20px;
+    margin: 0;
 }
 
 @media (max-width: 991px){
@@ -377,4 +888,213 @@
         width:100%;
         z-index:4 !important;
     }
+}
+
+#color1{
+    background-color: rgba(221, 235, 245, 1); 
+    /* blue light */
+}
+
+#color2{
+    background-color: rgba(228, 223, 252, 1); 
+    /* purple */
+}
+
+#color3{
+    background-color: rgba(249, 230, 221, 1);
+    /* pink */
+}
+
+/* custom radio button */
+.my-radio label {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  font-size: 15px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default radio button */
+.my-radio label input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Create a custom radio button */
+.my-radio .checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: white;   
+  border-radius: 100%;
+  border: 2px solid rgba(1, 69, 142, 1);
+}
+
+/* On mouse-over, add a rgba(117, 117, 117, 1) background color */
+.my-radio label:hover input ~ .checkmark {
+  background-color: white;
+}
+
+/* When the radio button is checked, add a blue background */
+.my-radio label input:checked ~ .checkmark {
+  background-color: white;  
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.my-radio .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.my-radio label input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.my-radio label .checkmark:after {
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(1, 69, 142, 1);
+}
+
+/* Custom checkbox */
+.my-checkbox label {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 30px;
+  cursor: pointer;
+  font-size: 15px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default checkbox */
+.my-checkbox label input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Create a custom checkbox */
+.my-checkbox .checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: white;   
+  border: 2px solid rgba(1, 69, 142, 1);
+}
+
+/* On mouse-over, add a rgba(117, 117, 117, 1) background color */
+.my-checkbox label:hover input ~ .checkmark {
+  background-color: white;
+}
+
+/* When the checkbox is checked, add a blue background */
+.my-checkbox label input:checked ~ .checkmark {
+    background: rgba(1, 69, 142, 1);
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.my-checkbox .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the checkmark when checked */
+.my-checkbox label input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the checkmark/indicator */
+.my-checkbox label .checkmark:after {
+  top: -2px;
+  left: 4px;
+  width: 8px;
+  height: 16px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+/* My modal */
+.contain .modal-dialog{
+    margin-top: 12%;
+    width: 25%;
+    box-shadow: none !important;
+    height: 280px;
+}
+.contain .modal-content{
+    box-shadow: none;
+    border: none;
+    border-radius: 0px;
+    height: 100%
+}
+
+.contain .modalfooter{
+    display: block;
+    width: 100%;
+    height: 50px;
+    bottom: 10px;
+    position: absolute;
+    left: 0;
+}
+
+.contain .modalfooter .btn-left{
+    display: inline-block;
+    font-size: 16px;
+    text-align: center;
+    height: 40px;
+    padding-top: 8px;
+    background-color: rgba(117, 117, 117, 1);
+    width: calc(50% - 8px);
+    float: left;
+    color: white;
+    font-weight: 700;
+    margin-right: 16px;
+    cursor: pointer;
+}
+
+.contain .modalfooter .btn-right{
+    display: inline-block;
+    font-size: 16px;
+    text-align: center;
+    height: 40px;
+    padding-top: 8px;
+    background-color: rgba(1, 69, 142, 1);
+    width: calc(50% - 8px);
+    float: right;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.mymodal{
+    height: 100%;
+}
+
+.mymodal h4{
+    margin-top: 15px;
 }

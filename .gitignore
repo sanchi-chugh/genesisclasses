@@ -8,3 +8,4 @@ webpack-stats.*
 media
 .vscode
 node_modules
+venv

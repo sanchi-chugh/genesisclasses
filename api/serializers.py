@@ -172,6 +172,11 @@ class NestedQuestionAnalysisSerializer(serializers.ModelSerializer):
             return 'unattempted'
         return quesResult[0].status
 
+class NestedUserTestResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserTestResult
+        exclude = ['testAttemptDate', 'student', 'test', 'id']
+
 class NestedStudentQuestionResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserQuestionWiseResponse
@@ -827,6 +832,7 @@ class TestAnalysisSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field='title',
     )
+    analytics = serializers.SerializerMethodField()
     class Meta:
         model = Test
         exclude = ['doc', 'typeOfTest', 'active', 'super_admin', 'startTime', 'endtime']
@@ -835,6 +841,11 @@ class TestAnalysisSerializer(serializers.ModelSerializer):
         sectionObjs = Section.objects.filter(test=obj).order_by('sectionNumber')
         sectionData = NestedSectionAnalysisSerializer(sectionObjs, many=True).data
         return sectionData
+
+    def get_analytics(self, obj):
+        userResult = UserTestResult.objects.filter(student=self.context['studentObj'], test=obj)[0]
+        userResultData = NestedUserTestResultSerializer(userResult).data
+        return userResultData
 
 # Return question wise analysis of a section
 class SectionAnalysisSerializer(serializers.ModelSerializer):
@@ -857,6 +868,7 @@ class SectionAnalysisSerializer(serializers.ModelSerializer):
 class QuestionAnalysisSerializer(serializers.ModelSerializer):
     options = OptionDetailSerializer(many=True)
     userResult = serializers.SerializerMethodField()
+    correctOptions = serializers.SerializerMethodField()
     class Meta:
         model = Question
         exclude = ['valid']
@@ -876,6 +888,12 @@ class QuestionAnalysisSerializer(serializers.ModelSerializer):
         else:
             quesResultData.pop('userIntAnswer')
         return quesResultData
+    
+    def get_correctOptions(self, obj):
+        if obj.questionType == 'integer':
+            return []
+        optionObjs = Option.objects.filter(correct=True, question=obj)
+        return [optionObj.id for optionObj in optionObjs]
 
 # Return question analysis of a particular passage
 class PassageAnalysisSerializer(serializers.ModelSerializer):

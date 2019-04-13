@@ -114,28 +114,34 @@ class TestResultsLayout extends Component {
     })
   }
 
-  handlePrevious(){
+  async handlePrevious(){
     if(this.state.questionIndex === 0){
+      if (this.state.questions[this.state.sectionIndex - 1] === null){
+        const index = this.state.sectionIndex + 1;
+        const newSet = await this.getData(this.state.data.sections[index].questions);
+        await this.setState(prevState =>{
+          const { questions } = prevState;
+          questions[index] = newSet;
+        })
+      }
+      const reviewDetails = await this.state.questions[this.state.sectionIndex - 1]
+        .questions[this.state.questions[this.state.sectionIndex-1].questions.length-1]
+      const questionDetails = await this.getData(reviewDetails.question);
       this.setState({
-        questionIndex: this.state.data.sections[this.state.sectionIndex-1].questions.length-1,
+        questionIndex: this.state.questions[this.state.sectionIndex-1].questions.length-1,
         sectionIndex: this.state.sectionIndex - 1,
-        lengthOfSection: this.state.data.sections[this.state.sectionIndex-1].totalQuestions,
-        activeId: this.state.data.sections[this.state.sectionIndex-1].questions.slice(-1).pop()
-        .questionType === 'passage' ?
-        this.state.data.sections[this.state.sectionIndex-1].questions.slice(-1).pop()
-        .questions.slice(-1).pop().id :
-        this.state.data.sections[this.state.sectionIndex-1].questions.slice(-1).pop().id
+        questionDetails: questionDetails,
+        reviewDetails: reviewDetails
       })
     }
     else{
+      const reviewDetails = await this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex-1]
+      const questionDetails = await this.getData(reviewDetails.question);
+
       this.setState({
         questionIndex: this.state.questionIndex - 1,
-        activeId: this.state.data.sections[this.state.sectionIndex]
-        .questions[this.state.questionIndex-1].questionType === 'passage' ?
-        this.state.data.sections[this.state.sectionIndex]
-        .questions[this.state.questionIndex-1].questions.slice(-1).pop().id :
-        this.state.data.sections[this.state.sectionIndex]
-        .questions[this.state.questionIndex-1].id
+        questionDetails: questionDetails,
+        reviewDetails: reviewDetails
       })
     }
   }

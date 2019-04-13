@@ -3161,7 +3161,7 @@ class TestAnalytics(APIView):
         testResultObj = get_object_or_404(UserTestResult, test=testObj, student=studentObj)
 
         # Get details of the test, along with it's sections
-        testData = TestAnalysisSerializer(testObj, context={'request': request}).data
+        testData = TestAnalysisSerializer(testObj, context={'request': request, 'studentObj': studentObj}).data
 
         return Response({'status': 'successful', 'detail': testData})
 

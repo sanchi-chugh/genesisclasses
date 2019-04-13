@@ -173,8 +173,6 @@ class TakeTestLayout extends Component {
       return ans;
     },[]);
 
-    console.log(data)
-
     this.setState({ busy: true }, () => {
       axios.post(`/api/app/tests/${this.props.match.params.id}/submit/`, data, {
         headers: {
@@ -194,11 +192,13 @@ class TakeTestLayout extends Component {
         item=>item===id
       )){
       this.setState({
-        review:this.state.review.filter(item=>item!==id)
+        review:this.state.review.filter(item=>item!==id),
+        markedForReview: this.state.markedForReview - 1
       })
     }else{
       this.setState({
-        review:[...this.state.review,id]
+        review:[...this.state.review,id],
+        markedForReview: this.state.markedForReview + 1
       })
     }
   }

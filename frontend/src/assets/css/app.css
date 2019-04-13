@@ -906,6 +906,88 @@
     margin: 0;
 }
 
+.login-wrapper{
+    background-color: rgba(245, 245, 245, 1) !important;
+}
+
+.wrapper > .header{
+    height: 80px;
+    background-color: rgba(210, 237, 255, 1);
+}
+
+.wrapper > .header img{
+    width: 180px;
+    margin: 15px 70px;
+}
+
+.login-card{
+    width: 32%;
+    margin: 10px;
+}
+
+.login-card .card-head{
+    color: rgba(1, 69, 142, 1);
+    font-size: 24px;
+    font-weight: 900;
+    background-color: rgba(210, 237, 255, 1);
+    padding: 15px;
+}
+
+.login-card h5{
+    font-size: 20px;
+    color: rgba(153, 153, 153, 1);
+    margin-top: 24px;
+    margin-bottom: -8px;
+}
+
+.login-card label{
+    float: left;
+}
+
+.login-form{
+    padding: 20px 30px;
+}
+
+.login-btn{
+    width: 100%;
+    background-color: rgba(1, 69, 142, 1);
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    border: none;
+    outline: none;
+    height: 35px;
+}
+
+.study{
+    position: absolute;
+    right: 31%;
+    width: 108px;
+    height: 108px;
+    top: 78%;
+}
+
+.footer-login{
+    height: 30px;
+    position: absolute;
+    bottom: 0;
+    background-color: #01458E;
+    color: white;
+    width: 100%;
+    text-align: center;
+    vertical-align: middle;
+    /* display: flex; */
+    font-weight: 600;
+    padding: 6px;
+}
+
+.forgot{
+    color: rgba(1, 69, 142, 1);
+    font-size: 12px;
+    margin: 20px;
+    font-weight: 900;
+}
+
 @media (max-width: 991px){
     #main-panel{
         width: calc(100% - 260px);

@@ -24,7 +24,7 @@ class ParagraphTypeQuestion extends Component {
                       <div className="question-marks">
                         <p>Marks +{questions.marksPositive}, -{questions.marksNegative}</p>
                         <Glyphicon 
-                          glyph={this.props.reviewDetails.status === 'Correct' ? 'ok-sign' : 'remove-sign'} 
+                          glyph={this.props.reviewDetails.status === 'Correct' ? 'ok-circle' : 'remove-circle'} 
                           style={{
                             cursor:'pointer',
                             color:this.props.reviewDetails.status === 'Correct'? 

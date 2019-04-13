@@ -1,41 +1,22 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
+import {
+  Grid,
+  Row,
+  Col,
+  FormGroup,
+  ControlLabel,
+  FormControl,
+  Form
+} from "react-bootstrap";
+import { FormInputs } from "../../components/FormInputs/FormInputs.jsx";
+import { Card } from "../../components/Card/Card.jsx";
+import Button from "../../components/CustomButton/CustomButton.jsx";
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { Link } from 'react-router-dom';
 import { login } from '../../auth';
 
-const styles = theme => ({
-  container: {
-    width: '100%',
-    maxWidth : '400px',
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    marginTop: '50px',
-    marginBottom: '50px',
-  },
-  textField: {
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit,
-    width: '80%',
-  },
-  card: {
-    minWidth: '230px',
-    paddingTop: '30px',
-    paddingBottom: '50px',
-  },
-  button: {
-    width: '80%',
-    marginTop: '20px',
-  },
-  forgot: {
-    textDecoration: 'none',
-  },
-});
+import appLogo from "../../assets/img/app_logo.png";
+import study from "../../assets/img/study.png";
 
 class LoginScreen extends React.Component {
   constructor(props){
@@ -63,6 +44,7 @@ class LoginScreen extends React.Component {
   }
 
   userLogin(event){
+    event.preventDefault();
     this.setState({ busy: true });
     login(this.state.username, this.state.password, (isLoggedIn, res) => {
       console.log(isLoggedIn)
@@ -83,74 +65,72 @@ class LoginScreen extends React.Component {
   }
 
   render() {
-    const { classes } = this.props;
     return(
-      <div className={classes.container} >
-        <LinearProgress
-          style={
-            this.state.busy ? 
-              {visibility: 'visible'} :
-              {visibility: 'hidden'}
+      <div className="wrapper login-wrapper">
+        <div className="header">
+            <div className="logo">
+              <img src={appLogo} />
+            </div>
+        </div>
+        <center>
+        <div className="login-card">
+          <Card 
+            plain
+            content={
+              <div className="card" style={{margin:0}}>
+                <div className="card-head">
+                  Education Panel
+                </div>
+                <h5>Login to access your account</h5>
+                <form onSubmit={(event) => this.userLogin(event)} className="login-form">
+                  <FormInputs
+                    ncols={["col-md-12"]}
+                    proprieties={[
+                      {
+                        label: `Username *`,
+                        type: "text",
+                        bsClass: "form-control",
+                        placeholder: "Username",
+                        name:'username',
+                        value: this.state.username,
+                        onChange: this.setUsername.bind(this)
+                      }
+                    ]}
+                  />
+                  <FormInputs
+                    ncols={["col-md-12"]}
+                    proprieties={[
+                      {
+                        label: "Passoword *",
+                        type: "password",
+                        bsClass: "form-control",
+                        placeholder: "Password",
+                        name:'password',
+                        value: this.state.password,
+                        onChange: this.setPassword.bind(this)
+                      }
+                    ]}
+                  />
+                  <button type="submit" disabled={this.state.busy} className="login-btn">
+                    Login
+                  </button>
+                  <Link to={"/forgot-password/"}>
+                    <div className="forgot"> Forgot Password? </div>
+                  </Link>
+                  <img src={study} className="study"/>
+                  <h5 style={{fontSize:12}}>Reset your userId by calling 124669009</h5>
+                </form>
+              </div>
             }
-          color="primary"
-        />
-        <Card className={classes.card}>
-          <CardContent>
-            <center>
-              <Typography variant="headline" component="h2">
-                Login
-              </Typography>
-              <Typography style={
-                this.state.error ? 
-                  {visibility: 'visible'} :
-                  {visibility: 'hidden'}
-                }
-              >
-                Invalid Credentials
-              </Typography>
-              <form noValidate autoComplete="off">
-                <TextField
-                  id="required"
-                  label="Username"
-                  defaultValue = ""
-                  className={classes.textField}
-                  margin="normal"
-                  onChange = {(event) => this.setUsername(event)}
-                  error={this.state.error}
-                />
-                <br />
-                <TextField
-                  id="password-input"
-                  label="Password"
-                  className={classes.textField}
-                  defaultValue = ""
-                  type="password"
-                  margin="normal"
-                  error={this.state.error}
-                  onChange = {(event) => this.setPassword(event)}
-                />
-                <br /> <br />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  className={classes.button}
-                  onClick={(event) => this.userLogin(event)}
-                  disabled={this.state.busy}
-                >
-                  Login
-                </Button>
-                <br />
-                <br />
-                <Link className={classes.forgot} to={"/forgot-password/"}>
-                  <Typography> Forgot Password? </Typography>
-                </Link>
-              </form>
-            </center>
-          </CardContent>
-        </Card>
+          />
+        </div>
+        </center>
+        <div className="footer-login">
+          Admission Cum Scholarship Test
+        </div>
       </div>
     );
   }
 }
 
-export default withStyles(styles, { withTheme : true })(LoginScreen);
+export default LoginScreen;

@@ -5,6 +5,7 @@ import renderHTML from 'react-render-html';
 class MCQTypeQuestion extends Component {
 
   render() {
+    console.log(this.props)
     return (
         <div>
           <div className="index-head">
@@ -14,10 +15,13 @@ class MCQTypeQuestion extends Component {
             </div>
             <div className="right">
               <Glyphicon 
-                glyph={true ? 'star' : 'star-empty'
+                glyph={this.props.reviewDetails.status === 'Correct' ? 'ok-sign' : 'remove-sign'
                 } 
-                style={{cursor:'pointer',color:'rgba(210, 237, 255, 1)',fontSize:'18px'}}
-                onClick={()=>this.props.handleReview(this.props.questionDetails.id)}
+                style={{
+                  cursor:'pointer',
+                  color:this.props.reviewDetails.status === 'Correct'? 
+                    'rgba(49, 143, 9, 1)' : 'rgba(255, 0, 0, 1)',
+                  fontSize:'18px'}}
                 />
               <p>Marks +{this.props.questionDetails.marksPositive}, -{this.props.questionDetails.marksNegative}</p>
             </div>
@@ -32,17 +36,11 @@ class MCQTypeQuestion extends Component {
                     <Checkbox 
                       name={option.id} 
                       bsClass="my-checkbox"
-                      checked={false}
-                      onChange={
-                        (e) => 
-                          this.props.handleResponse(
-                            e,
-                            this.props.questionDetails.id, 
-                            option.id, 
-                            this.props.questionDetails.questionType
-                          )
-                        }
-                      >
+                      checked={
+                          this.props.questionDetails.userResult.userChoices.some(item=>{
+                            return item === option.id
+                          })
+                        }>
                       {renderHTML(option.optionText)}
                       <span className="checkmark"></span>
                     </Checkbox>

@@ -5,7 +5,6 @@ import renderHTML from 'react-render-html';
 class ParagraphTypeQuestion extends Component {
 
   render() {
-    console.log(this.props)
     return (
         <div style={{width:'100%', height: '100%'}}>
           <div className="index-head-paragraph">
@@ -25,9 +24,12 @@ class ParagraphTypeQuestion extends Component {
                       <div className="question-marks">
                         <p>Marks +{questions.marksPositive}, -{questions.marksNegative}</p>
                         <Glyphicon 
-                          glyph={true ? 'star' : 'star-empty'} 
-                          style={{cursor:'pointer',color:'rgba(210, 237, 255, 1)',fontSize:'18px'}}
-                          onClick={()=>this.props.handleReview(questions.id)}
+                          glyph={this.props.reviewDetails.status === 'Correct' ? 'ok-sign' : 'remove-sign'} 
+                          style={{
+                            cursor:'pointer',
+                            color:this.props.reviewDetails.status === 'Correct'? 
+                              'rgba(49, 143, 9, 1)' : 'rgba(255, 0, 0, 1)',
+                            fontSize:'18px'}}
                           />
                       </div>
                       <div className="option">
@@ -36,7 +38,12 @@ class ParagraphTypeQuestion extends Component {
                             return(
                                 <Checkbox 
                                   name={questions.id} 
-                                  value={option.id} 
+                                  value={option.id}
+                                  checked={
+                                  questions.userResult.userChoices.some(item=>{
+                                      return item === option.id
+                                    })
+                                  } 
                                   bsClass="my-radio">
                                   {renderHTML(option.optionText)}
                                   <span className="checkmark"></span>

@@ -331,6 +331,12 @@
     padding: 8px;
 }
 
+.correctInt{
+    background-color: rgba(49, 143, 9, 1) !important;
+    border: none !important;
+    color: #fff !important;
+}
+
 .int-selected{
     background-color: rgba(228, 242, 251, 1) !important;
     border: none !important;

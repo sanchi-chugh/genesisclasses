@@ -66,8 +66,7 @@ class TestResultsLayout extends Component {
         },
     }).then(res => {
         const data = res.data.detail;
-        console.log(data)
-        return data;
+          return data;
     });
   }
 
@@ -106,11 +105,6 @@ class TestResultsLayout extends Component {
       paraQues: paraQuestionIndex,
       questionDetails: questionDetails,
       reviewDetails: reviewDetails
-      // activeId: paraQuestionIndex === -1 ?
-      // this.state.data.sections[sectionIndex]
-      //   .questions[questionIndex].id :
-      // this.state.data.sections[sectionIndex]
-      //   .questions[questionIndex].questions[paraQuestionIndex].id
     })
   }
 
@@ -178,14 +172,8 @@ class TestResultsLayout extends Component {
   }
 
   handleBack(){
-    if(this.state.flag){
-      this.setState({
-        show:true
-      })
-    }else{
-      this.setState({flag:false});
-      this.props.history.goBack();
-    }
+    this.setState({flag:false});
+    this.props.history.goBack();
   }
 
   render() {

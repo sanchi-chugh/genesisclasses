@@ -3,7 +3,7 @@ import { Glyphicon, FormGroup, Checkbox } from "react-bootstrap";
 import renderHTML from 'react-render-html';
 
 const integers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-class MCQTypeQuestion extends Component {
+class IntegerTypeQuestion extends Component {
 
   render() {
     return (
@@ -15,10 +15,13 @@ class MCQTypeQuestion extends Component {
             </div>
             <div className="right">
               <Glyphicon 
-                glyph={true ? 'star' : 'star-empty'
+                glyph={this.props.reviewDetails.status === 'Correct' ? 'ok-sign' : 'remove-sign'
                 } 
-                style={{cursor:'pointer',color:'rgba(210, 237, 255, 1)',fontSize:'18px'}}
-                onClick={()=>this.props.handleReview(this.props.questionDetails.id)}
+                style={{
+                  cursor:'pointer',
+                  color:this.props.reviewDetails.status === 'Correct'? 
+                    'rgba(49, 143, 9, 1)' : 'rgba(255, 0, 0, 1)',
+                  fontSize:'18px'}}
                 />
               <p>Marks +{this.props.questionDetails.marksPositive}, -{this.props.questionDetails.marksNegative}</p>
             </div>
@@ -31,17 +34,12 @@ class MCQTypeQuestion extends Component {
               {integers.map(int=>{
                 return(
                     <div 
-                      className={false ? "integer-option-btn int-selected" : "integer-option-btn"} 
-                      key={int}
-                      onClick={
-                        (e) => 
-                          this.props.handleResponse(
-                            e,
-                            this.props.questionDetails.id, 
-                            int,
-                            this.props.questionDetails.questionType
-                          )
-                      }>
+                      className={'integer-option-btn '+
+                        (this.props.questionDetails.intAnswer === int
+                          ? "correctInt" : 
+                         this.props.questionDetails.userResult.userIntAnswer === int
+                          ? "int-selected" : "")}
+                      key={int}>
                       {int}
                     </div>
                   )
@@ -53,4 +51,4 @@ class MCQTypeQuestion extends Component {
   }
 }
 
-export default MCQTypeQuestion;
+export default IntegerTypeQuestion;

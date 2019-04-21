@@ -2,6 +2,7 @@ import Home from "../views/Home/Home";
 import UnitWiseTests from "../views/UnitWiseTests/UnitWiseTest";
 import CategoryWiseTests from "../views/CategoryWseTest/CategoryWiseTest";
 import ChapterWise from "../views/ChapterWiseTests/ChapterWise";
+import EditProfile from "../views/EditProfile/EditProfile";
 
 const homeRoutes = [
   {
@@ -27,6 +28,12 @@ const homeRoutes = [
     name: "Category",
     icon: "pe-7s-graph",
     component: CategoryWiseTests
+  },
+  {
+    path: "/editProfile",
+    name: "Edit Profile",
+    icon: "pe-7s-graph",
+    component: EditProfile
   },
   { redirect: true, path: "/", to: "/", name: "Home" }
 ];

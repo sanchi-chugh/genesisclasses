@@ -987,6 +987,21 @@
     font-weight: 900;
 }
 
+.edit-profile-container{
+    min-height: 50%;
+    width: auto;
+}
+
+.edit-profile-form{
+    padding: 20px;
+    background-color: white;
+    display: inline-block;
+    box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.16);
+    margin-inline-start: 20px;
+    margin-top: 20px;
+    width: 48%;
+}
+
 @media (max-width: 991px){
     #main-panel{
         width: calc(100% - 260px);

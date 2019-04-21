@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 
 import webappRoutes from "../../routes/Webapp.jsx";
 import appLogo from "../../assets/img/app_logo.png";
@@ -23,7 +23,7 @@ class Sidebar extends Component {
               </span>
               <span className='name'>
                 <p>{this.props.user.first_name !== null ? this.props.user.first_name :''}{this.props.user.last_name !== null ? ' '+this.props.user.last_name :''}</p>
-                <a>Edit Profile</a>
+                <Link to="/editProfile" >Edit Profile</Link>
               </span>
             </div>
           </div>

@@ -14,6 +14,7 @@ class TestList extends Component {
     }
 
     render(){
+        console.log(this.props.next)
         return(
             <div style={{display:'block'}}>
                 <InfiniteScroll
@@ -29,7 +30,7 @@ class TestList extends Component {
                         return(
                             <div className="test inline" key={item.id}>
                                 <Card
-                                    subTitle={item.attempted ? 'Results' : item.isStarted ? 'Take Test' : 'Not Yet Started'}
+                                    subTitle={item.attempted ? 'View Result' : item.isStarted ? 'Take Test' : 'Not Yet Started'}
                                     color={!item.isStarted ? ' type4' : ''}
                                     content={item}
                                     disabled={!item.isStarted}

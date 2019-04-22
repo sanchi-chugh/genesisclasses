@@ -2,7 +2,9 @@ import React, { Component } from "react";
 import moment from 'moment';
 
 export class Card extends Component {
+
   render() {
+    console.log(this.props)
     return (
       <div className="card card-app">
           <div className={"content " + (this.props.disabled ? 'disabled' : '')} onClick={()=>{
@@ -31,7 +33,7 @@ export class Card extends Component {
                   Duration
                 </div>
                 <div className="value">
-                  {parseInt(this.props.content.duration.split(':')[0]) * 60 + parseInt(this.props.content.duration.split(':')[1]) }
+                  {parseInt(this.props.content.duration.split(':')[0]) * 60 + parseInt(this.props.content.duration.split(':')[1]) } mins
                 </div>
               </div>
 
@@ -51,7 +53,10 @@ export class Card extends Component {
                       Start Date
                     </div>
                     <div className="value">
-                      {moment(new Date(this.props.content.startTime)).format("DD-MM-YY")}
+                      {
+                        this.props.content.startTime ?
+                        moment(new Date(this.props.content.startTime)).format("MMM DD, YYYY")
+                        :'...'}
                     </div>
                   </div>
 
@@ -61,7 +66,7 @@ export class Card extends Component {
                     </div>
                     <div className="value">
                       {
-                        this.props.content.startTime !== null ?
+                        this.props.content.startTime ?
                         this.props.content.startTime.split("(")[1].split(")")[0]
                         : '...'}
                     </div>
@@ -74,7 +79,10 @@ export class Card extends Component {
                       End Date
                     </div>
                     <div className="value">
-                      {moment(new Date(this.props.content.endtime)).format("DD-MM-YY")}
+                      {
+                        this.props.content.endtime ?
+                        moment(new Date(this.props.content.endtime)).format("MMM DD, YYYY")
+                        :'...'}
                     </div>
                   </div>
 
@@ -84,7 +92,7 @@ export class Card extends Component {
                     </div>
                     <div className="value">
                       {
-                        this.props.content.endtime !== null ?
+                        this.props.content.endtime ?
                         this.props.content.endtime.split("(")[1].split(")")[0]
                         : '...'}
                     </div>

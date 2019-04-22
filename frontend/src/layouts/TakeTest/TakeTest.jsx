@@ -181,9 +181,9 @@ class TakeTestLayout extends Component {
         },
       })
       .then((res) => this.setState({ busy: false},() => {
-        this.props.history.goBack()
+        this.props.history.push(`/app/test/result/${this.props.match.params.id}`)
       }))
-      .catch((err) => this.setState({ addingStudent: false }, () => console.log(err)))
+      .catch((err) => this.setState({ busy: false }, () => console.log(err)))
     });
   }
 

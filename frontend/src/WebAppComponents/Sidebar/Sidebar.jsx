@@ -1,12 +1,12 @@
 import React, { Component } from "react";
 import { NavLink, Link } from "react-router-dom";
-
+import { Glyphicon } from "react-bootstrap";
 import webappRoutes from "../../routes/Webapp.jsx";
 import appLogo from "../../assets/img/app_logo.png";
 
 class Sidebar extends Component {
   activeRoute(routeName) {
-    return this.props.location.pathname.indexOf(routeName) > -1 ? "active" : "";
+    return this.props.location.pathname === (routeName) ? "active" : "";
   }
   render() {
     console.log(this.props.user)
@@ -42,7 +42,7 @@ class Sidebar extends Component {
                       className="nav-link"
                       activeClassName="active"
                     >
-                      {/* <i className={prop.icon} /> */}
+                      <Glyphicon glyph={prop.icon} />
                       <p>{prop.name}</p>
                     </NavLink>
                   </li>

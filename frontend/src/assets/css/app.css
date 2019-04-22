@@ -467,14 +467,17 @@
 .side .side-wrapper > .nav  > li > a {
     margin: 0;
     line-height: 30px;
-    font-size: 12px;
-    font-weight: 600;
-    color:#F0F0F0;
+    color: rgba(176, 190, 197, 1);
     text-transform: uppercase;
+    padding: 10px 24px;
 }
 
 .side .side-wrapper > .nav  > li > a >p{
     margin: 5px;
+    font-weight: 700 !important;
+    font-size: 13px;
+    display: inline-block;
+    margin-left: 24px;
 }
 
 .side .side-wrapper .active{

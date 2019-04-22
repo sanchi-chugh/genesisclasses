@@ -75,7 +75,10 @@ class AddQuestions extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState(this.props.history.goBack(),{ addingQuestion: false, QuestionAdded:true },this.props.handleClick('tr','Added Successfully')))
+      .then((res) => this.setState({ addingQuestion: false, QuestionAdded:true },() =>{
+        this.props.handleClick('tr','Added Successfully');
+        this.props.history.goBack();
+      }))
       .catch((err) => this.setState({ addingQuestion: false }, () => console.log(err)))
   }
 

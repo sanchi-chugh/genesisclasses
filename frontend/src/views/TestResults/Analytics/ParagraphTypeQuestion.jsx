@@ -24,10 +24,10 @@ class ParagraphTypeQuestion extends Component {
                       <div className="question-marks">
                         <p>Marks +{questions.marksPositive}, -{questions.marksNegative}</p>
                         <Glyphicon 
-                          glyph={this.props.reviewDetails.status === 'Correct' ? 'ok-circle' : 'remove-circle'} 
+                          glyph={this.props.reviewDetails.status === 'correct' ? 'ok-circle' : 'remove-circle'} 
                           style={{
                             cursor:'pointer',
-                            color:this.props.reviewDetails.status === 'Correct'? 
+                            color:this.props.reviewDetails.status === 'correct'? 
                               'rgba(49, 143, 9, 1)' : 'rgba(255, 0, 0, 1)',
                             fontSize:'18px'}}
                           />
@@ -42,11 +42,16 @@ class ParagraphTypeQuestion extends Component {
                                   checked={
                                   questions.userResult.userChoices.some(item=>{
                                       return item === option.id
+                                    }) || questions.correctOptions.some(item=>{
+                                      return item === option.id
                                     })
                                   } 
                                   bsClass="my-radio">
                                   {renderHTML(option.optionText)}
-                                  <span className="checkmark"></span>
+                                  <span className={"checkmark " + (questions.correctOptions.some(item=>{
+                                                                    return item === option.id
+                                                                  }) ? 'correct' : '')}>
+                                  </span>
                                 </Checkbox>
                               )
                            })}

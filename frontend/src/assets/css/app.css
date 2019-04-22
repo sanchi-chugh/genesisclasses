@@ -1044,6 +1044,15 @@
   cursor: pointer;
 }
 
+/* radio green */
+.my-radio .correct{
+    border-color: rgba(49, 143, 9, 1) !important;
+}
+
+.my-radio label .correct:after {  
+    background: rgba(49, 143, 9, 1) !important;
+}
+
 /* Create a custom radio button */
 .my-radio .checkmark {
   position: absolute;
@@ -1086,6 +1095,16 @@
     height: 12px;
     border-radius: 50%;
     background: rgba(1, 69, 142, 1);
+}
+
+/* radio green */
+.my-checkbox .correct{
+    border-color: rgba(49, 143, 9, 1) !important;
+}
+
+/* When the checkbox is checked, add a green background */
+.my-checkbox label input:checked ~ .correct {
+    background: rgba(49, 143, 9, 1) !important;
 }
 
 /* Custom checkbox */

@@ -15,11 +15,11 @@ class SCQTypeQuestion extends Component {
             </div>
             <div className="right">
               <Glyphicon 
-                glyph={this.props.reviewDetails.status === 'Correct' ? 'ok-circle' : 'remove-circle'
+                glyph={this.props.reviewDetails.status === 'correct' ? 'ok-circle' : 'remove-circle'
                 } 
                 style={{
                   cursor:'pointer',
-                  color:this.props.reviewDetails.status === 'Correct'? 
+                  color:this.props.reviewDetails.status === 'correct'? 
                     'rgba(49, 143, 9, 1)' : 'rgba(255, 0, 0, 1)',
                   fontSize:'18px'}}
                 />
@@ -33,17 +33,22 @@ class SCQTypeQuestion extends Component {
             <FormGroup>
               {this.props.questionDetails.options.map(option=>{
                   return(
-                      <Checkbox 
+                      <Checkbox
                         name={this.props.questionDetails.id} 
                         value={option.id} 
                         bsClass="my-radio"
                         checked={
                           this.props.questionDetails.userResult.userChoices.some(item=>{
                             return item === option.id
+                          }) || this.props.questionDetails.correctOptions.some(item=>{
+                            return item === option.id
                           })
                         }>
                         {renderHTML(option.optionText)}
-                        <span className="checkmark"></span>
+                        <span className={"checkmark " + (this.props.questionDetails.correctOptions.some(item=>{
+                                                          return item === option.id
+                                                        }) ? 'correct' : '')}>
+                        </span>
                       </Checkbox> 
                     )
                 })}

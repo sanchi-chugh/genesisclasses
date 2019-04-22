@@ -15,11 +15,11 @@ class MCQTypeQuestion extends Component {
             </div>
             <div className="right">
               <Glyphicon 
-                glyph={this.props.reviewDetails.status === 'Correct' ? 'ok-circle' : 'remove-circle'
+                glyph={this.props.reviewDetails.status === 'correct' ? 'ok-circle' : 'remove-circle'
                 } 
                 style={{
                   cursor:'pointer',
-                  color:this.props.reviewDetails.status === 'Correct'? 
+                  color:this.props.reviewDetails.status === 'correct'? 
                     'rgba(49, 143, 9, 1)' : 'rgba(255, 0, 0, 1)',
                   fontSize:'18px'}}
                 />
@@ -39,10 +39,15 @@ class MCQTypeQuestion extends Component {
                       checked={
                           this.props.questionDetails.userResult.userChoices.some(item=>{
                             return item === option.id
+                          }) || this.props.questionDetails.correctOptions.some(item=>{
+                            return item === option.id
                           })
                         }>
                       {renderHTML(option.optionText)}
-                      <span className="checkmark"></span>
+                      <span className={"checkmark " + (this.props.questionDetails.correctOptions.some(item=>{
+                                                        return item === option.id
+                                                      }) ? 'correct' : '')}>
+                      </span>
                     </Checkbox>
                   )
                 })}

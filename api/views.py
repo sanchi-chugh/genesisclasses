@@ -161,10 +161,6 @@ class SubjectChoiceView(viewsets.ReadOnlyModelViewSet):
     model = Subject
     serializer_class = SubjectChoiceSerializer
     permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
-    pagination_class = StandardResultsSetPagination
-    # Making endpoint searchable
-    filter_backends = (filters.SearchFilter, )
-    search_fields = ('title', 'course__title')
     
     def get_queryset(self):
         super_admin = get_super_admin(self.request.user)

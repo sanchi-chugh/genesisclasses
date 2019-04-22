@@ -129,6 +129,9 @@ class NestedStudentSerializer(serializers.ModelSerializer):
         return obj.user.email
 
 class NestedSectionAnalysisSerializer(serializers.ModelSerializer):
+    questionsInReview = serializers.SerializerMethodField()
+    questionsAttempted = serializers.SerializerMethodField()
+    questionsUnattempted = serializers.SerializerMethodField()
     questions = serializers.SerializerMethodField()
     class Meta:
         model = Section
@@ -136,12 +139,29 @@ class NestedSectionAnalysisSerializer(serializers.ModelSerializer):
 
     def get_questions(self, obj):
         return DOMAIN + 'api/app/tests/' + str(obj.test.pk) + '/result/questionWiseAnalysis/section/' + str(obj.pk) + '/'
+    
+    def get_questionsInReview(self, obj):
+        reviewQuesObjs = UserQuestionWiseResponse.objects.filter(
+            student=self.context['studentObj'], question__section=obj, isMarkedForReview=True)
+        return [ques.pk for ques in reviewQuesObjs]
+
+    def get_questionsAttempted(self, obj):
+        quesObjs = UserQuestionWiseResponse.objects.filter(student=self.context['studentObj'], question__section=obj)
+        correctAnsObjs = quesObjs.filter(status='correct')
+        incorrectAnsObjs = quesObjs.filter(status='incorrect')
+        return [ques.pk for ques in correctAnsObjs] + [ques.pk for ques in incorrectAnsObjs]
+    
+    def get_questionsUnattempted(self, obj):
+        unattemptedQuesObjs = UserQuestionWiseResponse.objects.filter(
+            student=self.context['studentObj'], question__section=obj, status='unattempted')
+        return [ques.pk for ques in unattemptedQuesObjs]
 
 class NestedQuestionAnalysisSerializer(serializers.ModelSerializer):
     question = serializers.SerializerMethodField()
     passage_id = serializers.SerializerMethodField()
     isMarkedForReview = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    quesNumber = serializers.SerializerMethodField()
     class Meta:
         model = Question
         fields = ('id', 'passage_id', 'questionType', 'quesNumber', 'question', 'isMarkedForReview', 'status')
@@ -171,11 +191,22 @@ class NestedQuestionAnalysisSerializer(serializers.ModelSerializer):
         if len(quesResult) == 0:
             return 'unattempted'
         return quesResult[0].status
+    
+    def get_quesNumber(self, obj):
+        prevSections = Section.objects.filter(sectionNumber__lt=obj.section.sectionNumber)
+        prevQuesCount = Question.objects.filter(section__test=obj.section.test, section__in=prevSections).count()
+        return prevQuesCount + obj.quesNumber
 
 class NestedUserTestResultSerializer(serializers.ModelSerializer):
+    markedForReview = serializers.SerializerMethodField()
     class Meta:
         model = UserTestResult
         exclude = ['testAttemptDate', 'student', 'test', 'id']
+
+    def get_markedForReview(self, obj):
+        questionResponsesObjCount = UserQuestionWiseResponse.objects.filter(
+            student=obj.student, question__section__test=obj.test, isMarkedForReview=True).count()
+        return questionResponsesObjCount
 
 class NestedStudentQuestionResponseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -676,16 +707,28 @@ class OptionDetailSerializer(serializers.ModelSerializer):
 # Return question details for attempting the test
 class QuestionDetailSerializer(serializers.ModelSerializer):
     options = OptionDetailSerializer(many=True)
+    quesNumber = serializers.SerializerMethodField()
     class Meta:
         model = Question
         exclude = ['section', 'intAnswer', 'valid', 'explanation']
 
+    def get_quesNumber(self, obj):
+        prevSections = Section.objects.filter(sectionNumber__lt=obj.section.sectionNumber)
+        prevQuesCount = Question.objects.filter(section__test=obj.section.test, section__in=prevSections).count()
+        return prevQuesCount + obj.quesNumber
+
 # Return question details of passage type questions
 class PassageQuestionDetailSerializer(serializers.ModelSerializer):
     options = OptionDetailSerializer(many=True)
+    quesNumber = serializers.SerializerMethodField()
     class Meta:
         model = Question
         exclude = ['section', 'intAnswer', 'valid', 'explanation', 'passage']
+
+    def get_quesNumber(self, obj):
+        prevSections = Section.objects.filter(sectionNumber__lt=obj.section.sectionNumber)
+        prevQuesCount = Question.objects.filter(section__test=obj.section.test, section__in=prevSections).count()
+        return prevQuesCount + obj.quesNumber
 
 # Return passage details along with it's questionss
 class PassageDetailSerializer(serializers.ModelSerializer):
@@ -839,7 +882,7 @@ class TestAnalysisSerializer(serializers.ModelSerializer):
 
     def get_sections(self, obj):
         sectionObjs = Section.objects.filter(test=obj).order_by('sectionNumber')
-        sectionData = NestedSectionAnalysisSerializer(sectionObjs, many=True).data
+        sectionData = NestedSectionAnalysisSerializer(sectionObjs, many=True, context=self.context).data
         return sectionData
 
     def get_analytics(self, obj):

@@ -53,10 +53,10 @@ class Home extends Component {
     this.props.history.push(`/app/test/start/${id}`)
   }
   handleUnitWise(){
-    this.props.history.push('/subjects');
+    this.props.history.push('/home/subjects');
   }
   handleCategory(id){
-    this.props.history.push(`/category/${id}`);
+    this.props.history.push(`/home/category/${id}`);
   }
 
   handleKeyPress(event){

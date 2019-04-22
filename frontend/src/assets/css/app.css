@@ -548,12 +548,8 @@
     height: 100% !important;
 }
 
-.card-app .disabled{
-    position: absolute;
-    height: 105%;
-    width: 100%;
-    background-color: rgba(0,0,0,0);
-    cursor: not-allowed;
+.disabled{
+    cursor: not-allowed !important;
 }
 
 /* .card-app .disabled:hover{

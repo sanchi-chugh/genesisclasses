@@ -24,7 +24,7 @@ class HomeLayout extends Component {
                 <Route path={prop.path} exact render={routeProps => (
                   <prop.component
                     {...routeProps}
-                    {...this.props}
+                    user={this.props.user}
                     handleClick={this.props.handleClick}
                   />
                 )} key={key} />

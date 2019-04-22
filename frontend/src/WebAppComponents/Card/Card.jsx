@@ -5,11 +5,10 @@ export class Card extends Component {
   render() {
     return (
       <div className="card card-app">
-        {this.props.disabled &&
-          <div className={"disabled"}>
-          </div>
-        }
-          <div className="content" onClick={this.props.handleClick}>
+          <div className={"content " + (this.props.disabled ? 'disabled' : '')} onClick={()=>{
+            if(!this.props.disabled)
+                this.props.handleClick();
+          }}>
             {this.props.image && 
             <div className="img">
               <img src={this.props.image} alt="placeholder"/>

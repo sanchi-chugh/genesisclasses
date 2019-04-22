@@ -38,6 +38,7 @@ class CategoryWiseTests extends Component {
         if(page===`?page=1`){
             page=""
         }
+        console.log('catgory id', this.props)
         Axios.get( `/api/app/tests/practice/category/${this.props.match.params.id}/${page}`, {
             headers: {
             Authorization: `Token ${localStorage.token}`

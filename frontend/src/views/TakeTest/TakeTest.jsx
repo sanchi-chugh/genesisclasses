@@ -77,7 +77,11 @@ class TakeTest extends Component {
                                     return(
                                         <a>
                                           <div 
-                                            className="question-badge"
+                                            className={'question-badge ' + (this.props.activeId === paraQues.id
+                                                                            ? 'active'
+                                                                            : this.props.ans.some(item => item.question === paraQues.id)
+                                                                            ? 'attempted'
+                                                                            : 'unattempted')}
                                             onClick={
                                               () => {
                                                 let sectionIndex = this.props.data.sections.findIndex(item=>{
@@ -93,13 +97,8 @@ class TakeTest extends Component {
                                               }
                                             }
                                             id={
-                                                this.props.activeId === paraQues.id
-                                              ? 'active'
-                                              : this.props.ans.some(item => item.question === paraQues.id)
-                                              ? 'attempted'
-                                              : this.props.review.some(item => item.question === paraQues.id)
-                                              ?  'review'
-                                              : 'unattempted'
+                                                (this.props.review.some(item => item === paraQues.id)
+                                                ?  "review-border" : 'test')
                                             }>
                                             {paraQues.quesNumber}
                                           </div>
@@ -111,7 +110,11 @@ class TakeTest extends Component {
                             return(
                                 <a>
                                   <div 
-                                    className="question-badge"
+                                    className={'question-badge ' + (this.props.activeId === question.id
+                                                                            ? 'active'
+                                                                            : this.props.ans.some(item => item.question === question.id)
+                                                                            ? 'attempted'
+                                                                            : 'unattempted')}
                                     onClick={
                                       () => {
                                         let sectionIndex = this.props.data.sections.findIndex(item=>{
@@ -124,13 +127,8 @@ class TakeTest extends Component {
                                       }
                                     }
                                     id={
-                                        this.props.activeId === question.id
-                                      ? 'active'
-                                      : this.props.ans.some(item => item.question === question.id)
-                                      ? 'attempted' 
-                                      : this.props.review.some(item => item.question === question.id)
-                                      ?  'review'
-                                      : 'unattempted'
+                                        (this.props.review.some(item => item === question.id)
+                                        ?  "review-border" : 'test')
                                     }>
                                     {question.quesNumber}
                                   </div>

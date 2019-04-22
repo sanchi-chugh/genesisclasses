@@ -5,8 +5,12 @@ import { Card } from "../../WebAppComponents/Card/Card.jsx";
 
 class TestList extends Component {
 
-    testFunction(id){
-        this.props.history.push(`/app/test/start/${id}`)
+    testFunction(item){
+        if(item.attempted){
+            this.props.history.push(`/app/test/result/${item.id}`)
+        }else{
+            this.props.history.push(`/app/test/start/${item.id}`)
+        }
     }
 
     render(){
@@ -25,10 +29,11 @@ class TestList extends Component {
                         return(
                             <div className="test inline" key={item.id}>
                                 <Card
-                                    subTitle={item.isStarted ? 'Take Test' : 'Not Yet Started'}
+                                    subTitle={item.attempted ? 'Results' : item.isStarted ? 'Take Test' : 'Not Yet Started'}
                                     color={!item.isStarted ? ' type4' : ''}
-                                    content={item} disabled={!item.isStarted}
-                                    handleClick={this.testFunction.bind(this,item.id)}
+                                    content={item}
+                                    disabled={!item.isStarted}
+                                    handleClick={this.testFunction.bind(this,item)}
                                 />
                             </div>
                         );

@@ -40,7 +40,7 @@ class Home extends Component {
         Authorization: `Token ${localStorage.token}`
         }
     }).then(res => {
-      console.log(res.data)
+      console.log('upcoming tests list', res.data)
       const data = res.data.map(item => {
         item.sno = res.data.indexOf(item) + 1;
         return item;

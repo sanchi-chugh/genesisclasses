@@ -571,6 +571,10 @@
     cursor: not-allowed !important;
 }
 
+.disabled-btn{
+    cursor: not-allowed !important;
+    background-color: rgba(1, 69, 142, 0.2) !important;
+}
 /* .card-app .disabled:hover{
     transform: scale(1) !important;
 } */

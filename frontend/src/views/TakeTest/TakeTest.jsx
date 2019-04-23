@@ -198,10 +198,10 @@ class TakeTest extends Component {
             </div>
           </div>
           <div className="footer">
-            <div className="previous-btn" onClick={this.props.handlePrevious}>
+            <div className={"previous-btn " + (this.props.disabled.prev ? 'disabled-btn' : '')} onClick={this.props.handlePrevious}>
               PREVIOUS
             </div>
-            <div className="next-btn" onClick={this.props.handleNext}>
+            <div className={"next-btn " + (this.props.disabled.next ? 'disabled-btn' : '')} onClick={this.props.handleNext}>
               NEXT
             </div>
           </div>

@@ -32,7 +32,8 @@ class BulkStudents extends Component {
           formData:{
             number:'',
             course:[],
-            endAccessDate:''
+            endAccessDate:'',
+            joiningDate:''
           },
           id:null,
           subject:null,
@@ -118,6 +119,7 @@ class BulkStudents extends Component {
       formData.append('course',this.state.formData.course.join(','))
       formData.append('centre',this.state.centreId)
       formData.append('endAccessDate', this.state.formData.endAccessDate )
+      formData.append('joiningDate', this.state.formData.joiningDate )
       axios.post('/api/users/students/bulk/create/', formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,

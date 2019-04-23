@@ -14,6 +14,8 @@ class TakeTestLayout extends Component {
   constructor(props) {
     super(props);
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.ref = {}
+    this.window = {}
     this.state = {
       expanded:false,
       busy:true,
@@ -36,7 +38,7 @@ class TakeTestLayout extends Component {
       disabled:{
         next: false,
         prev: true
-      }
+      },
     };
   }
 
@@ -219,7 +221,7 @@ class TakeTestLayout extends Component {
     })
   }
 
-  handleNavigation(sectionIndex, questionIndex, paraQuestionIndex){
+  async handleNavigation(sectionIndex, questionIndex, paraQuestionIndex){
     let bool = {
       next: false,
       prev: false
@@ -238,7 +240,7 @@ class TakeTestLayout extends Component {
         prev: true
       }
     }
-    this.setState({
+    await this.setState({
       sectionIndex: sectionIndex,
       questionIndex: questionIndex,
       paraQues: paraQuestionIndex,
@@ -249,6 +251,12 @@ class TakeTestLayout extends Component {
       this.state.data.sections[sectionIndex]
         .questions[questionIndex].questions[paraQuestionIndex].id
     })
+    if(paraQuestionIndex !== -1){
+      let id = this.state.data.sections[sectionIndex]
+        .questions[questionIndex].questions[paraQuestionIndex].id;
+      console.log(this.ref, id)
+      this.window.scrollTop =  this.ref[id].offsetTop - 200
+    }
   }
 
   handlePrevious(){
@@ -448,6 +456,16 @@ class TakeTestLayout extends Component {
     }
   }
 
+  setRefs(ref, id){
+    this.ref[id] = React.createRef();
+    this.ref[id] = ref;
+  }
+
+  setWindow(ref){
+    this.window = React.createRef();
+    this.window = ref
+  }
+
   showModal(){
     this.setState({
       show:true
@@ -515,6 +533,7 @@ class TakeTestLayout extends Component {
               handleNext={this.handleNext.bind(this)}
               handlePrevious={this.handlePrevious.bind(this)}
               toggle={(id) => {this.toggle(id)}}
+              ref={this.ref}
               disabled={this.state.disabled}
               questionIndex={this.state.questionIndex}
               sectionIndex={this.state.sectionIndex}
@@ -525,6 +544,8 @@ class TakeTestLayout extends Component {
               handleResponse={(e,qid,oid,qtype)=>this.handleResponse(e,qid,oid,qtype)}
               handleNavigation={(sindex,qindex,pindex)=>this.handleNavigation(sindex,qindex,pindex)}
               handleSubmit={this.handleSubmit.bind(this)}
+              setRefs={(ref, id) => this.setRefs(ref,id)}
+              setWindow={(ref) => this.setWindow(ref)}
             /> :
             <Instructions
               data={this.state.data}

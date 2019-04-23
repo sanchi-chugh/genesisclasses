@@ -14,10 +14,10 @@ class ParagraphTypeQuestion extends Component {
             <div className="paragraph-left">
               {renderHTML(this.props.paragraph)}
             </div>
-            <div className="question-right">
+            <div className="question-right" ref={(ref) => this.props.setWindow(ref)}>
               {this.props.data.map(questions=>{
                 return(
-                    <div>
+                    <div ref={ ref => this.props.setRefs(ref, questions.id)}>
                       <div className="question">
                         <p>{renderHTML(questions.questionText)}</p>
                       </div>

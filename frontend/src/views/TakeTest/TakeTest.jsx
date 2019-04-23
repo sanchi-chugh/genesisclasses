@@ -158,6 +158,9 @@ class TakeTest extends Component {
                 .questions[this.props.questionIndex].questions}
                   ans={this.props.ans}
                   review={this.props.review}
+                  ref={this.props.ref}
+                  setRefs={(ref, id) => this.props.setRefs(ref, id)}
+                  setWindow={(ref) => this.props.setWindow(ref)}
                   handleReview={(id)=>this.props.handleReview(id)}
                   paragraph={this.props.data.sections[this.props.sectionIndex]
                 .questions[this.props.questionIndex].paragraph}

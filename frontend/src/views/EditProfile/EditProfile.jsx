@@ -5,9 +5,11 @@ import {
   Col,
   FormGroup,
   ControlLabel,
-  FormControl
+  FormControl,
+  Badge
 } from "react-bootstrap";
 
+import { Checkbox, Icon} from 'antd';
 import { FormInputs } from "../../components/FormInputs/FormInputs.jsx";
 import { Card } from "../../WebAppComponents/Card/Card.jsx";
 import Axios from "axios";
@@ -166,6 +168,57 @@ class EditProfile extends Component {
             />
           </div>
           <div className="edit-profile-form">
+            <FormInputs
+              ncols={["col-md-12"]}
+              proprieties={[
+                {
+                  label: "Email address *",
+                  type: "email",
+                  bsClass: "form-control",
+                  placeholder: "Email",
+                  name:'email',
+                  value:this.state.user.email,
+                  onChange:this.handleFormDataChange.bind(this)
+                },
+              ]}
+            />
+            <ControlLabel className="form-input">Image</ControlLabel>
+              {   this.state.user.image === null ? 
+                    <Col  md={12}>
+                        <div>No Image Available</div>
+                    </Col>:
+                  <Row md={12}>
+                    <Col xs={4}>
+                        <a href={this.state.user.image} target="_blank">{this.state.user.image.split('/')[4]}</a> 
+                    </Col>
+                    <Col xs={4}>
+                        <Checkbox onChange={this.handleFormDataChange.bind(this)} name="clear" >CLEAR</Checkbox><br/>
+                    </Col>
+                  </Row>
+              }
+              <br/>
+            <FormControl
+                type="file"
+                placeholder="Image"
+                name='image'
+                onChange={this.handleFormDataChange.bind(this)}
+            /> <br/>
+            <Row xs={12} style={{marginBottom:'5px'}}>
+              <b><Col md={5}>Courses</Col></b>
+              <Col md={7}>{this.state.user.course.map(item => {return (<Badge style={{marginRight:2}}>{item.title}</Badge>)})}</Col>
+            </Row>
+            <Row xs={12} style={{marginBottom:'5px'}}>
+              <b><Col md={5}>Centre</Col></b>
+              <Col md={7}>{this.state.user.centre}</Col>
+            </Row>
+            <Row xs={12} style={{marginBottom:'5px'}}>
+              <b><Col md={5}>Joining Data</Col></b>
+              <Col md={7}>{this.state.user.joiningDate}</Col>
+            </Row>
+            <Row xs={12} style={{marginBottom:'5px'}}>
+              <b><Col md={5}>End Access Date</Col></b>
+              <Col md={7}>{this.state.user.endAccessDate}</Col>
+            </Row>
           </div>
         </div>
       </div>

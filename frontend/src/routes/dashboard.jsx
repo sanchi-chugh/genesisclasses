@@ -9,29 +9,17 @@ import Students from "../layouts/Students/Students";
 import Tests from "../layouts/Tests/Tests";
 
 const dashboardRoutes = [
-  {
-    path: "/dashboard",
-    name: "Dashboard",
-    icon: "pe-7s-graph",
-    component: Dashboard
-  },
+  // {
+  //   path: "/dashboard",
+  //   name: "Dashboard",
+  //   icon: "pe-7s-graph",
+  //   component: Dashboard
+  // },
   {
     path: "/students",
     name: "Students",
     icon: "pe-7s-user",
     component: Students
-  },
-  {
-    path: "/tests",
-    name: "Tests",
-    icon: "pe-7s-culture",
-    component: Tests
-  },
-  {
-    path: "/course",
-    name: "Courses",
-    icon: "pe-7s-study",
-    component: Courses
   },
   {
     path: "/bulkStudents",
@@ -40,16 +28,16 @@ const dashboardRoutes = [
     component: BulkStudents
   },
   {
-    path: "/units",
-    name: "Units",
-    icon: "pe-7s-study",
-    component: Units
+    path: "/centre",
+    name: "Centres",
+    icon: "pe-7s-culture",
+    component: Centres
   },
   {
-    path: "/subjects",
-    name: "Subjects",
+    path: "/course",
+    name: "Courses",
     icon: "pe-7s-study",
-    component: Subjects
+    component: Courses
   },
   {
     path: "/categories",
@@ -58,12 +46,24 @@ const dashboardRoutes = [
     component: Categories
   },
   {
-    path: "/centre",
-    name: "Centres",
-    icon: "pe-7s-culture",
-    component: Centres
+    path: "/subjects",
+    name: "Subjects",
+    icon: "pe-7s-study",
+    component: Subjects
   },
-  { redirect: true, path: "/", to: "/dashboard", name: "Dashboard" }
+  {
+    path: "/units",
+    name: "Units",
+    icon: "pe-7s-study",
+    component: Units
+  },
+  {
+    path: "/tests",
+    name: "Tests",
+    icon: "pe-7s-culture",
+    component: Tests
+  },
+  { redirect: true, path: "/", to: "/centre", name: "Dashboard" }
 ];
 
 export default dashboardRoutes;

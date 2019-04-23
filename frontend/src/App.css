@@ -2,7 +2,7 @@
 
 .loader {
     border: 6px solid #f3f3f3; /* Light grey */
-    border-top: 6px solid #424242; /* Dark grey */
+    border-top: 6px solid rgba(1, 69, 142, 1); /* Dark grey */
     border-radius: 50%;
     width: 40px;
     height: 40px;

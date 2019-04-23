@@ -66,7 +66,7 @@ class AddQuestions extends Component {
       formData.append('explanation',this.state.formData.explanation)
       formData.append('intAnswer',this.state.formData.intAnswer)
       formData.append('questionType',this.state.type)
-      formData.append('passage', res.data.passage)
+      formData.append('passage', res !== null ? res.data.passage : null)
       formData.append('marksPositive',this.state.formData.marksPositive)
       formData.append('marksNegative',this.state.formData.marksNegative)
       formData.append('section',this.props.match.params.id)
@@ -125,7 +125,6 @@ class AddQuestions extends Component {
   }
 
   render() {
-
     return (
       <div className="content">
         <Grid fluid>

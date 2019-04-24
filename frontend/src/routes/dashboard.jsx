@@ -16,16 +16,16 @@ const dashboardRoutes = [
   //   component: Dashboard
   // },
   {
-    path: "/students",
-    name: "Students",
-    icon: "pe-7s-user",
-    component: Students
-  },
-  {
     path: "/bulkStudents",
     name: "Bulk Students",
     icon: "pe-7s-study",
     component: BulkStudents
+  },
+  {
+    path: "/students",
+    name: "Students",
+    icon: "pe-7s-user",
+    component: Students
   },
   {
     path: "/centre",

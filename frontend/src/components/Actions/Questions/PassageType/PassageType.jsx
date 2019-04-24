@@ -6,6 +6,7 @@ import {
 
 import { FormInputs } from "../../../../components/FormInputs/FormInputs.jsx";
 import { Editor } from 'react-draft-wysiwyg';
+import renderHTML from 'react-render-html';
 
 import '../../../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import '../../../../../node_modules/antd/dist/antd.css'; 
@@ -16,7 +17,15 @@ class PassageType extends Component {
 
     return (
       <div>
-        <FormGroup>
+        
+        { this.props.flag 
+
+            ? 
+
+            renderHTML(this.props.data.paragraph)
+
+            : 
+         <FormGroup>
             <ControlLabel  className='form-input'>PARAGRAPH *</ControlLabel>
             <Editor
                 editorState={this.props.formData.passage}
@@ -25,6 +34,8 @@ class PassageType extends Component {
                 onEditorStateChange={this.props.onEditorStateChange2}
             /><hr/>
         </FormGroup>
+        }
+
          <FormGroup>
             <ControlLabel  className='form-input'>QUESTION *</ControlLabel>
             <Editor

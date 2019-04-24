@@ -162,9 +162,10 @@ class NestedQuestionAnalysisSerializer(serializers.ModelSerializer):
     isMarkedForReview = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     quesNumber = serializers.SerializerMethodField()
+    passageIndex = serializers.SerializerMethodField()
     class Meta:
         model = Question
-        fields = ('id', 'passage_id', 'questionType', 'quesNumber', 'question', 'isMarkedForReview', 'status')
+        fields = ('id', 'passage_id', 'questionType', 'quesNumber', 'question', 'isMarkedForReview', 'status', 'passageIndex')
 
     def get_question(self, obj):
         if obj.questionType == 'passage':
@@ -196,6 +197,13 @@ class NestedQuestionAnalysisSerializer(serializers.ModelSerializer):
         prevSections = Section.objects.filter(sectionNumber__lt=obj.section.sectionNumber)
         prevQuesCount = Question.objects.filter(section__test=obj.section.test, section__in=prevSections).count()
         return prevQuesCount + obj.quesNumber
+
+    def get_passageIndex(self, obj):
+        if obj.questionType == 'passage':
+            passage_id = obj.passage.pk
+            firstPassageQues = Question.objects.filter(passage__id=passage_id).order_by('quesNumber')[0]
+            return obj.quesNumber - firstPassageQues.quesNumber + 1
+        return None
 
 class NestedUserTestResultSerializer(serializers.ModelSerializer):
     markedForReview = serializers.SerializerMethodField()
@@ -904,6 +912,7 @@ class SectionAnalysisSerializer(serializers.ModelSerializer):
         for ques in questions:
             if ques['questionType'] != 'passage':
                 ques.pop('passage_id')
+                ques.pop('passageIndex')
 
         return questions
 

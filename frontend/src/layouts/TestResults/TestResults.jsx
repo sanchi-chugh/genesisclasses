@@ -173,7 +173,14 @@ class TestResultsLayout extends Component {
 
   handleBack(){
     this.setState({flag:false});
-    this.props.history.goBack();
+    console.log(this.props)
+    if(this.props.history.location.pathname.split('/')[1] === 'app'){
+      console.log('app')
+      this.props.history.push('/')
+    }else{
+      console.log('back')
+      this.props.history.goBack();
+    }
   }
 
   render() {

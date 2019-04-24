@@ -14,6 +14,8 @@ class TakeTestLayout extends Component {
   constructor(props) {
     super(props);
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.ref = {}
+    this.window = {}
     this.state = {
       expanded:false,
       busy:true,
@@ -33,6 +35,10 @@ class TakeTestLayout extends Component {
       attempted: 0,
       unattempted: null,
       markedForReview: 0,
+      disabled:{
+        next: false,
+        prev: true
+      },
     };
   }
 
@@ -181,9 +187,9 @@ class TakeTestLayout extends Component {
         },
       })
       .then((res) => this.setState({ busy: false},() => {
-        this.props.history.goBack()
+        this.props.history.push(`/app/test/result/${this.props.match.params.id}`)
       }))
-      .catch((err) => this.setState({ addingStudent: false }, () => console.log(err)))
+      .catch((err) => this.setState({ busy: false }, () => console.log(err)))
     });
   }
 
@@ -215,25 +221,61 @@ class TakeTestLayout extends Component {
     })
   }
 
-  handleNavigation(sectionIndex, questionIndex, paraQuestionIndex){
-    this.setState({
+  async handleNavigation(sectionIndex, questionIndex, paraQuestionIndex){
+    let bool = {
+      next: false,
+      prev: false
+    }
+    if(sectionIndex >= this.state.data.sections.length - 1 &&
+      questionIndex >= this.state.data.sections[sectionIndex].questions.length - 1){
+      bool = {
+        next: true,
+        prev: false
+      }
+    }else if(
+        sectionIndex === 0 && questionIndex === 0
+      ){
+      bool = {
+        next: false,
+        prev: true
+      }
+    }
+    await this.setState({
       sectionIndex: sectionIndex,
       questionIndex: questionIndex,
       paraQues: paraQuestionIndex,
+      disabled: bool,
       activeId: paraQuestionIndex === -1 ?
       this.state.data.sections[sectionIndex]
         .questions[questionIndex].id :
       this.state.data.sections[sectionIndex]
         .questions[questionIndex].questions[paraQuestionIndex].id
     })
+    if(paraQuestionIndex !== -1){
+      let id = this.state.data.sections[sectionIndex]
+        .questions[questionIndex].questions[paraQuestionIndex].id;
+      console.log(this.ref, id)
+      this.window.scrollTop =  this.ref[id].offsetTop - 200
+    }
   }
 
   handlePrevious(){
+    let bool = {
+      next: false,
+      prev: false
+    }
     if(this.state.questionIndex === 0){
+      if(this.state.data.sections[this.state.sectionIndex-1].questions.length-1 === 0){
+        bool = {
+          prev: true,
+          next: false
+        }
+      }
       this.setState({
         questionIndex: this.state.data.sections[this.state.sectionIndex-1].questions.length-1,
         sectionIndex: this.state.sectionIndex - 1,
         lengthOfSection: this.state.data.sections[this.state.sectionIndex-1].totalQuestions,
+        disabled: bool,
         activeId: this.state.data.sections[this.state.sectionIndex-1].questions.slice(-1).pop()
         .questionType === 'passage' ?
         this.state.data.sections[this.state.sectionIndex-1].questions.slice(-1).pop()
@@ -242,8 +284,15 @@ class TakeTestLayout extends Component {
       })
     }
     else{
+      if((this.state.questionIndex === 1) && this.state.sectionIndex === 0){
+        bool = {
+          prev: true,
+          next: false
+        }
+      }
       this.setState({
         questionIndex: this.state.questionIndex - 1,
+        disabled: bool,
         activeId: this.state.data.sections[this.state.sectionIndex]
         .questions[this.state.questionIndex-1].questionType === 'passage' ?
         this.state.data.sections[this.state.sectionIndex]
@@ -255,11 +304,16 @@ class TakeTestLayout extends Component {
   }
 
   handleNext(){
+    let bool = {
+      next: false,
+      prev: false
+    }
     if(this.state.questionIndex >= this.state.data.sections[this.state.sectionIndex].questions.length - 1 ){
       this.setState({
         questionIndex: 0,
         sectionIndex: this.state.sectionIndex + 1,
         lengthOfSection: this.state.data.sections[this.state.sectionIndex+1].totalQuestions,
+        disabled: bool,
         activeId: this.state.data.sections[this.state.sectionIndex+1]
         .questions[0].questionType === 'passage' ?
         this.state.data.sections[this.state.sectionIndex+1]
@@ -269,8 +323,16 @@ class TakeTestLayout extends Component {
       })
     }
     else{
+      if(this.state.sectionIndex === this.state.data.sections.length - 1 
+        && this.state.questionIndex >= this.state.data.sections[this.state.sectionIndex].questions.length - 2){
+        bool = {
+          next: true,
+          prev: false
+        }
+      }
       this.setState({
         questionIndex: this.state.questionIndex + 1,
+        disabled:bool,
         activeId: this.state.data.sections[this.state.sectionIndex]
         .questions[this.state.questionIndex+1].questionType === 'passage' ?
         this.state.data.sections[this.state.sectionIndex]
@@ -394,6 +456,16 @@ class TakeTestLayout extends Component {
     }
   }
 
+  setRefs(ref, id){
+    this.ref[id] = React.createRef();
+    this.ref[id] = ref;
+  }
+
+  setWindow(ref){
+    this.window = React.createRef();
+    this.window = ref
+  }
+
   showModal(){
     this.setState({
       show:true
@@ -461,6 +533,8 @@ class TakeTestLayout extends Component {
               handleNext={this.handleNext.bind(this)}
               handlePrevious={this.handlePrevious.bind(this)}
               toggle={(id) => {this.toggle(id)}}
+              ref={this.ref}
+              disabled={this.state.disabled}
               questionIndex={this.state.questionIndex}
               sectionIndex={this.state.sectionIndex}
               paraQues={this.state.paraQues}
@@ -470,6 +544,8 @@ class TakeTestLayout extends Component {
               handleResponse={(e,qid,oid,qtype)=>this.handleResponse(e,qid,oid,qtype)}
               handleNavigation={(sindex,qindex,pindex)=>this.handleNavigation(sindex,qindex,pindex)}
               handleSubmit={this.handleSubmit.bind(this)}
+              setRefs={(ref, id) => this.setRefs(ref,id)}
+              setWindow={(ref) => this.setWindow(ref)}
             /> :
             <Instructions
               data={this.state.data}

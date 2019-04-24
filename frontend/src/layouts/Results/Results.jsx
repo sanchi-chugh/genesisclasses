@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
 
-import homeRoutes from "../../routes/Home";
+import resultsRoutes from "../../routes/results";
 
-class HomeLayout extends Component {
+class ResultsLayout extends Component {
 
   componentDidUpdate(e) {
     if (e.history.action === "PUSH") {
@@ -17,14 +17,13 @@ class HomeLayout extends Component {
     return (
       <div className="content" ref={'content'}>
           <Switch>
-            {homeRoutes.map((prop, key) => {
+            {resultsRoutes.map((prop, key) => {
               if (prop.redirect)
                 return <Redirect from={prop.path} to={prop.to} key={key} />;
               return (
                 <Route path={prop.path} exact render={routeProps => (
                   <prop.component
                     {...routeProps}
-                    user={this.props.user}
                     handleClick={this.props.handleClick}
                   />
                 )} key={key} />
@@ -36,4 +35,4 @@ class HomeLayout extends Component {
   }
 }
 
-export default HomeLayout;
+export default ResultsLayout;

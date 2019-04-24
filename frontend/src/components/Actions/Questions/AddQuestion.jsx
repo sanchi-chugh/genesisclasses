@@ -66,7 +66,7 @@ class AddQuestions extends Component {
       formData.append('explanation',this.state.formData.explanation)
       formData.append('intAnswer',this.state.formData.intAnswer)
       formData.append('questionType',this.state.type)
-      formData.append('passage', res.data.passage)
+      formData.append('passage', res !== null ? res.data.passage : null)
       formData.append('marksPositive',this.state.formData.marksPositive)
       formData.append('marksNegative',this.state.formData.marksNegative)
       formData.append('section',this.props.match.params.id)
@@ -75,7 +75,10 @@ class AddQuestions extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState(this.props.history.goBack(),{ addingQuestion: false, QuestionAdded:true },this.props.handleClick('tr','Added Successfully')))
+      .then((res) => this.setState({ addingQuestion: false, QuestionAdded:true },() =>{
+        this.props.handleClick('tr','Added Successfully');
+        this.props.history.goBack();
+      }))
       .catch((err) => this.setState({ addingQuestion: false }, () => console.log(err)))
   }
 
@@ -122,7 +125,6 @@ class AddQuestions extends Component {
   }
 
   render() {
-
     return (
       <div className="content">
         <Grid fluid>

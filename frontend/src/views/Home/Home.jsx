@@ -40,7 +40,7 @@ class Home extends Component {
         Authorization: `Token ${localStorage.token}`
         }
     }).then(res => {
-      console.log(res.data)
+      console.log('upcoming tests list', res.data)
       const data = res.data.map(item => {
         item.sno = res.data.indexOf(item) + 1;
         return item;
@@ -53,10 +53,10 @@ class Home extends Component {
     this.props.history.push(`/app/test/start/${id}`)
   }
   handleUnitWise(){
-    this.props.history.push('/subjects');
+    this.props.history.push('/home/subjects');
   }
   handleCategory(id){
-    this.props.history.push(`/category/${id}`);
+    this.props.history.push(`/home/category/${id}`);
   }
 
   handleKeyPress(event){

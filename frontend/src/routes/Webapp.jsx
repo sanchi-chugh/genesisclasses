@@ -1,13 +1,20 @@
 import HomeLayout from "../layouts/Home/Home";
+import ResultsLayout from "../layouts/Results/Results";
 
 const webappRoutes = [
   {
-    path: "/",
+    path: "/results",
+    name: "Results",
+    icon: "certificate",
+    component: ResultsLayout
+  },
+  {
+    path: "/home",
     name: "Home",
-    icon: "pe-7s-graph",
+    icon: "home",
     component: HomeLayout
   },
-  { redirect: true, path: "/", to: "/", name: "Home" }
+  { redirect: true, path: "/", to: "/home", name: "Webapp" }
 ];
 
 export default webappRoutes;

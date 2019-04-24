@@ -69,6 +69,7 @@ class Webapp extends Component {
                 <Route path={prop.path} render={routeProps => (
                   <prop.component
                     {...routeProps}
+                    user={this.props.user}
                     handleClick={this.handleNotificationClick}
                     expanded={this.state.expanded}
                   />

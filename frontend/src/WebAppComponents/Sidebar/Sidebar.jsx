@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { NavLink } from "react-router-dom";
-
+import { NavLink, Link } from "react-router-dom";
+import { Glyphicon } from "react-bootstrap";
 import webappRoutes from "../../routes/Webapp.jsx";
 import appLogo from "../../assets/img/app_logo.png";
 
@@ -9,7 +9,6 @@ class Sidebar extends Component {
     return this.props.location.pathname.indexOf(routeName) > -1 ? "active" : "";
   }
   render() {
-    console.log(this.props.user)
     return (
       <div id="side" className={"side" + (this.props.expanded ? " side-expanded" : "")}>
         <div className="logo">
@@ -23,12 +22,12 @@ class Sidebar extends Component {
               </span>
               <span className='name'>
                 <p>{this.props.user.first_name !== null ? this.props.user.first_name :''}{this.props.user.last_name !== null ? ' '+this.props.user.last_name :''}</p>
-                <a>Edit Profile</a>
+                <Link to="/home/editProfile" >Edit Profile</Link>
               </span>
             </div>
           </div>
           <ul className="nav">
-            {webappRoutes.map((prop, key) => {
+            {webappRoutes.slice().reverse().map((prop, key) => {
               if (!prop.redirect)
                 return (
                   <li
@@ -42,7 +41,7 @@ class Sidebar extends Component {
                       className="nav-link"
                       activeClassName="active"
                     >
-                      {/* <i className={prop.icon} /> */}
+                      <Glyphicon glyph={prop.icon} />
                       <p>{prop.name}</p>
                     </NavLink>
                   </li>

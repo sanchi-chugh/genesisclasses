@@ -2,31 +2,38 @@ import Home from "../views/Home/Home";
 import UnitWiseTests from "../views/UnitWiseTests/UnitWiseTest";
 import CategoryWiseTests from "../views/CategoryWseTest/CategoryWiseTest";
 import ChapterWise from "../views/ChapterWiseTests/ChapterWise";
+import EditProfile from "../views/EditProfile/EditProfile";
 
 const homeRoutes = [
   {
-    path: "/",
+    path: "/home/",
     name: "Home",
     icon: "pe-7s-graph",
     component: Home
   },
   {
-    path: "/subjects",
+    path: "/home/subjects/",
     name: "Subjects",
     icon: "pe-7s-graph",
     component: UnitWiseTests
   },
   {
-    path: "/subjects/:id", //subjectID
+    path: "/home/subjects/:id", //subjectID
     name: "Units",
     icon: "pe-7s-graph",
     component: ChapterWise
   },
   {
-    path: "/category/:id", //categoryPK
+    path: "/home/category/:id", //categoryPK
     name: "Category",
     icon: "pe-7s-graph",
     component: CategoryWiseTests
+  },
+  {
+    path: "/home/editProfile",
+    name: "Edit Profile",
+    icon: "pe-7s-graph",
+    component: EditProfile
   },
   { redirect: true, path: "/", to: "/", name: "Home" }
 ];

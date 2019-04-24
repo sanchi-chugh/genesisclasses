@@ -84,7 +84,7 @@ class ChapterWise extends Component {
             }
         }).then(res => {
             const data = res.data
-            console.log(res.data)
+            console.log('tests list', res.data)
             this.setState({data:data, next:data.next,count:data.count,busy:false});
         });
     }

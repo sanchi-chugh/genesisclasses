@@ -22,15 +22,15 @@ class HeaderLinks extends Component {
             <i className="fa fa-dashboard" />
             <p className="hidden-lg hidden-md">Dashboard</p>
           </NavItem>
-          <NavItem eventKey={3} href="#">
-            <i className="fa fa-search" />
-            <p className="hidden-lg hidden-md">Search</p>
-          </NavItem>
+          {/*<NavItem eventKey={3} href="#">
+                      <i className="fa fa-search" />
+                      <p className="hidden-lg hidden-md">Search</p>
+                    </NavItem>*/}
         </Nav>
         <Nav pullRight>
-          <NavItem eventKey={1} href="#">
-            Profile
-          </NavItem>
+          {/*<NavItem eventKey={1} href="#">
+                      Profile
+                    </NavItem>*/}
           <NavItem eventKey={3} onClick={this.logout.bind(this)}>
             Log out
           </NavItem>

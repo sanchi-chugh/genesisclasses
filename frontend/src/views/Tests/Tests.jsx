@@ -292,9 +292,17 @@ class Tests extends Component {
 
   renderTypeOfTest(cell, row, enumObject, rowIndex) {
     return (
-        <Row md={12}>
-            <Col md={6}><div>{row.typeOfTest}{row.typeOfTest === 'upcoming' ? row.startTime + " - " + row.endtime : null }</div></Col>
-        </Row>
+        <div>
+          <Row md={12}>
+            <Col md={12}><div>{row.typeOfTest.toUpperCase()}</div></Col>
+          </Row>
+          <Row md={12}>
+            <Col md={12}><div>{row.typeOfTest === 'upcoming' ? row.startTime : null }</div></Col>
+          </Row>
+          <Row md={12}>
+            <Col md={12}><div>{row.typeOfTest === 'upcoming' ? row.endtime : null }</div></Col>
+          </Row>
+        </div>
     )
   }
 

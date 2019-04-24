@@ -37,7 +37,7 @@ class UnitWiseTests extends Component {
   }
 
   handleSubject(id){
-    this.props.history.push(`/subjects/${id}`)
+    this.props.history.push(`/home/subjects/${id}`)
   }
 
   render() {

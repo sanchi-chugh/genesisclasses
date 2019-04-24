@@ -16,15 +16,15 @@ class TestAnalytics extends Component {
               <div className="labels">
                   <div style={{marginBottom:'8px'}}>
                     <div className="disc" id="unattempted"></div>
-                    <div className="inline-labels">Unattempted <span style={{fontSize:'12px'}}> {this.props.unattempted} </span></div>
+                    <div className="inline-labels">Unattempted <span style={{fontSize:'12px'}}> {this.props.data.analytics.unattempted} </span></div>
                   </div>
                   <div style={{marginBottom:'8px'}}>
                     <div className="disc" id="review"></div>
-                    <div className="inline-labels">Marked For Review <span style={{fontSize:'12px'}}> {this.props.markedForReview} </span></div>
+                    <div className="inline-labels">Marked For Review <span style={{fontSize:'12px'}}> {this.props.data.analytics.markedForReview} </span></div>
                   </div>
                   <div style={{marginBottom:'8px'}}>
                     <div className="disc" id="attempted"></div>
-                    <div className="inline-labels">Attempted <span style={{fontSize:'12px'}}> {this.props.attempted} </span></div>
+                    <div className="inline-labels">Attempted <span style={{fontSize:'12px'}}> {this.props.data.analytics.correct + this.props.data.analytics.incorrect} </span></div>
                   </div>
               </div>
               <div style={{overflowY: 'scroll', height:'60%'}}>

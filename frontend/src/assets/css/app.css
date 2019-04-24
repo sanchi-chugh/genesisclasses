@@ -130,7 +130,6 @@
 }
 
 .body-expanded .question-badge{
-    background-color: rgba(245, 245, 245, 1);
     width: 30px;
     height: 30px;
     font-size: 14px;
@@ -147,8 +146,8 @@
     background-color: rgba(217, 210, 255, 1);
 }
 
-#review{
-    background-color: rgba(181, 223, 252, 1);
+#review-border{
+    border: 2px dotted rgba(181, 223, 252, 1) !important;
 }
 
 #unattempted{
@@ -158,6 +157,18 @@
 #active{
     background-color: rgba(247, 247, 247, 1);
     border: none;
+}
+
+#review{
+    background-color: rgba(181, 223, 252, 1);
+}
+
+.attempted{
+    background-color: rgba(217, 210, 255, 1);
+}
+
+.unattempted{
+    background-color: rgba(245, 245, 245, 1);
 }
 
 .section .body-expanded{
@@ -467,14 +478,17 @@
 .side .side-wrapper > .nav  > li > a {
     margin: 0;
     line-height: 30px;
-    font-size: 12px;
-    font-weight: 600;
-    color:#F0F0F0;
+    color: rgba(176, 190, 197, 1);
     text-transform: uppercase;
+    padding: 10px 24px;
 }
 
 .side .side-wrapper > .nav  > li > a >p{
     margin: 5px;
+    font-weight: 700 !important;
+    font-size: 13px;
+    display: inline-block;
+    margin-left: 24px;
 }
 
 .side .side-wrapper .active{
@@ -535,7 +549,7 @@
 }
 
 .home-content{
-    margin-top: 50px;
+    margin-top: 45px;
     margin-left: 0px;
 }
 
@@ -548,14 +562,14 @@
     height: 100% !important;
 }
 
-.card-app .disabled{
-    position: absolute;
-    height: 105%;
-    width: 100%;
-    background-color: rgba(0,0,0,0);
-    cursor: not-allowed;
+.disabled{
+    cursor: not-allowed !important;
 }
 
+.disabled-btn{
+    cursor: not-allowed !important;
+    background-color: rgba(1, 69, 142, 0.2) !important;
+}
 /* .card-app .disabled:hover{
     transform: scale(1) !important;
 } */
@@ -797,16 +811,16 @@
     bottom: 5px;
     width: 100%;
     background-color: darkblue;
-    height: 35px;
+    height: 50px;
     left: 0;
     text-align: center;
-    padding: 5px;
+    padding: 14px;
 }
 
 .footer p{
     color: white;
     width: 100%;
-    font-weight: 900;
+    font-weight: 900 !important;
     margin: auto;
 }
 .home-content:focus{
@@ -964,7 +978,6 @@
     right: 31%;
     width: 108px;
     height: 108px;
-    top: 78%;
 }
 
 .footer-login{
@@ -986,6 +999,24 @@
     font-size: 12px;
     margin: 20px;
     font-weight: 900;
+}
+
+.edit-profile-container{
+    height: inherit;
+    width: auto;
+}
+
+.edit-profile-form{
+    padding: 20px;
+    background-color: white;
+    display: inline-block;
+    box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.16);
+    margin-inline-start: 20px;
+    margin-top: 20px;
+    width: 48%;
+    min-height: 514px;
+    height: 100%;
+    overflow: hidden;
 }
 
 @media (max-width: 991px){
@@ -1034,6 +1065,15 @@
   cursor: pointer;
 }
 
+/* radio green */
+.my-radio .correct{
+    border-color: rgba(49, 143, 9, 1) !important;
+}
+
+.my-radio label .correct:after {  
+    background: rgba(49, 143, 9, 1) !important;
+}
+
 /* Create a custom radio button */
 .my-radio .checkmark {
   position: absolute;
@@ -1076,6 +1116,16 @@
     height: 12px;
     border-radius: 50%;
     background: rgba(1, 69, 142, 1);
+}
+
+/* radio green */
+.my-checkbox .correct{
+    border-color: rgba(49, 143, 9, 1) !important;
+}
+
+/* When the checkbox is checked, add a green background */
+.my-checkbox label input:checked ~ .correct {
+    background: rgba(49, 143, 9, 1) !important;
 }
 
 /* Custom checkbox */

@@ -149,7 +149,17 @@ class TestResultsLayout extends Component {
   }
 
   async handlePrevious(){
+    let bool = {
+      next: false,
+      prev: false
+    }
     if(this.state.questionIndex === 0){
+      if(this.state.questions[this.state.sectionIndex-1].questions.length-1 === 0){
+        bool = {
+          prev: true,
+          next: false
+        }
+      }
       if (this.state.questions[this.state.sectionIndex - 1] === null){
         const index = this.state.sectionIndex + 1;
         const newSet = await this.getData(this.state.data.sections[index].questions);
@@ -165,17 +175,25 @@ class TestResultsLayout extends Component {
         questionIndex: this.state.questions[this.state.sectionIndex-1].questions.length-1,
         sectionIndex: this.state.sectionIndex - 1,
         questionDetails: questionDetails,
-        reviewDetails: reviewDetails
+        reviewDetails: reviewDetails,
+        disabled: bool
       })
     }
     else{
+      if((this.state.questionIndex === 1) && this.state.sectionIndex === 0){
+        bool = {
+          prev: true,
+          next: false
+        }
+      }
       const reviewDetails = await this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex-1]
       const questionDetails = await this.getData(reviewDetails.question);
 
       this.setState({
         questionIndex: this.state.questionIndex - 1,
         questionDetails: questionDetails,
-        reviewDetails: reviewDetails
+        reviewDetails: reviewDetails,
+        disabled: bool
       })
     }
   }

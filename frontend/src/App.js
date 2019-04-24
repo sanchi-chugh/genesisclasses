@@ -12,6 +12,8 @@ class App extends React.Component {
     this.state = {
       user: null,
       busy: true,
+      email: null,
+      username: null
     }
     this.getUser = this.getUser.bind(this);
   }
@@ -26,10 +28,13 @@ class App extends React.Component {
       headers: {Authorization: `Token ${localStorage.token}`}
     })
     .then((res) => {
-      this.setState({ user: res.data.profile, busy: false },
+      let user = res.data.profile;
+      user.email = res.data.email;
+      user.username = res.data.username;
+      this.setState({ user: user, busy: false},
                     () => {
                       if (callBack)
-                        callBack(res.data.profile)
+                        callBack(user)
                     });
     })
     .catch(() => {
@@ -72,7 +77,9 @@ class App extends React.Component {
               }) 
               :
                 studentRoutes.map((prop, key) => {
-                  return <Route path={prop.path} render={(props) => <prop.component {...props} user={user} logout={this.logout.bind(this)} /> } key={key} />;
+                  return <Route path={prop.path} render={(props) => <prop.component {...props} 
+                    user={user} 
+                    logout={this.logout.bind(this)} /> } key={key} />;
               })
             }
             </Switch>

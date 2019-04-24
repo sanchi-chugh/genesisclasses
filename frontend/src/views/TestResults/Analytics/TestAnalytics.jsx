@@ -29,6 +29,7 @@ class TestAnalytics extends Component {
               </div>
               <div style={{overflowY: 'scroll', height:'60%'}}>
               {this.props.data.sections.map(section =>{
+                let sectionIndex = this.props.data.sections.findIndex(item=> item === section);
                 return(
                     <div className="section" key={section.id}>
                       <div className={"section-header " + (this.props.expanded[section.id] ? "header-expanded": '')} onClick={()=>this.props.toggle(section.id)}>
@@ -36,13 +37,16 @@ class TestAnalytics extends Component {
                         <Glyphicon glyph="menu-down" className={"icon "+ (this.props.expanded[section.id] ? "icon-expanded" : '')}/>
                       </div>
                       <div className={"section-body " + (this.props.expanded[section.id] ? "body-expanded": '')}>
-                        {this.props.expanded[section.id] ?
-                            this.props.questions[this.props.data.sections.findIndex(item=> item === section)]
+                        { this.props.expanded[section.id] ?
+                            this.props.questions[sectionIndex]
                             .questions.map(question=>{
                           return(
                               <a>
                                 <div 
-                                  className="question-badge"
+                                className={'question-badge ' + (this.props.data.sections[sectionIndex]
+                                                                .questionsAttempted.some(item => item === question.id)
+                                                                            ? 'attempted'
+                                                                            : 'unattempted')}
                                   onClick={
                                     () => {
                                       let sectionIndex = this.props.data.sections.findIndex(item=>{
@@ -52,10 +56,18 @@ class TestAnalytics extends Component {
                                         .findIndex(item=> item === section)].questions.findIndex(item=>{
                                           return item === question
                                       })
-                                      this.props.handleNavigation(sectionIndex, questionIndex, -1)
+                                      let paraQuestionIndex = this.props.questions[this.props.data.sections
+                                        .findIndex(item=> item === section)].questions.findIndex(item=>{
+                                          return item === question && item.questionType === 'passage'
+                                      })
+                                      this.props.handleNavigation(sectionIndex, questionIndex, paraQuestionIndex)
                                     }
                                   }
-                                  >
+                                  id={
+                                      (this.props.data.sections[sectionIndex]
+                                      .questionsInReview.some(item => item === question.id)
+                                      ?  "review-border" : 'test')
+                                  }>
                                   {question.quesNumber}
                                 </div>
                               </a>
@@ -79,6 +91,8 @@ class TestAnalytics extends Component {
                 .questions[this.props.questionIndex].questions}
                   ans={this.props.ans}
                   reviewDetails={this.props.reviewDetails}
+                  setRefs={(ref, id) => this.props.setRefs(ref, id)}
+                  setWindow={(ref) => this.props.setWindow(ref)}
                   questionDetails={this.props.questionDetails}
                   handleReview={(id)=>this.props.handleReview(id)}
                   handleResponse={(e,qid,oid,qtype)=>this.props.handleResponse(e,qid,oid,qtype)}
@@ -121,10 +135,10 @@ class TestAnalytics extends Component {
             </div>
           </div>
           <div className="footer">
-            <div className="previous-btn" onClick={this.props.handlePrevious}>
+            <div className={"previous-btn " + (this.props.disabled.prev ? 'disabled-btn' : '')} onClick={this.props.handlePrevious}>
               PREVIOUS
             </div>
-            <div className="next-btn" onClick={this.props.handleNext}>
+            <div className={"next-btn " + (this.props.disabled.next ? 'disabled-btn' : '')} onClick={this.props.handleNext}>
               NEXT
             </div>
           </div>

@@ -147,7 +147,7 @@
 }
 
 #review-border{
-    border: 2px dotted rgba(181, 223, 252, 1) !important;
+    border: 2px dotted rgba(1, 69, 142, 1) !important;
 }
 
 #unattempted{
@@ -160,7 +160,7 @@
 }
 
 #review{
-    background-color: rgba(181, 223, 252, 1);
+    background-color: rgba(1, 69, 142, 1);
 }
 
 .attempted{

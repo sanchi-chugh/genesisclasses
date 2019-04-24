@@ -40,9 +40,7 @@ class MCQTypeQuestion extends Component {
                       checked={
                           this.props.questionDetails.userResult.userChoices.some(item=>{
                             return item === option.id
-                          }) || this.props.questionDetails.correctOptions.some(item=>{
-                            return item === option.id
-                          })
+                          }) 
                         }>
                       {renderHTML(option.optionText)}
                       <Glyphicon 
@@ -57,9 +55,7 @@ class MCQTypeQuestion extends Component {
                           'rgba(49, 143, 9, 1)' : 'rgba(255, 0, 0, 1)',
                         fontSize:'18px'}}
                       />
-                      <span className={"checkmark " + (this.props.questionDetails.correctOptions.some(item=>{
-                                                        return item === option.id
-                                                      }) ? 'correct' : '')}>
+                      <span className={"checkmark "}>
                       </span>
                     </Checkbox>
                   )

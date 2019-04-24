@@ -139,22 +139,22 @@ class NestedSectionAnalysisSerializer(serializers.ModelSerializer):
 
     def get_questions(self, obj):
         return DOMAIN + 'api/app/tests/' + str(obj.test.pk) + '/result/questionWiseAnalysis/section/' + str(obj.pk) + '/'
-    
+
     def get_questionsInReview(self, obj):
         reviewQuesObjs = UserQuestionWiseResponse.objects.filter(
             student=self.context['studentObj'], question__section=obj, isMarkedForReview=True)
-        return [ques.pk for ques in reviewQuesObjs]
+        return [response.question.pk for response in reviewQuesObjs]
 
     def get_questionsAttempted(self, obj):
         quesObjs = UserQuestionWiseResponse.objects.filter(student=self.context['studentObj'], question__section=obj)
         correctAnsObjs = quesObjs.filter(status='correct')
         incorrectAnsObjs = quesObjs.filter(status='incorrect')
-        return [ques.pk for ques in correctAnsObjs] + [ques.pk for ques in incorrectAnsObjs]
-    
+        return [response.question.pk for response in correctAnsObjs] + [response.question.pk for response in incorrectAnsObjs]
+
     def get_questionsUnattempted(self, obj):
         unattemptedQuesObjs = UserQuestionWiseResponse.objects.filter(
             student=self.context['studentObj'], question__section=obj, status='unattempted')
-        return [ques.pk for ques in unattemptedQuesObjs]
+        return [response.question.pk for response in unattemptedQuesObjs]
 
 class NestedQuestionAnalysisSerializer(serializers.ModelSerializer):
     question = serializers.SerializerMethodField()

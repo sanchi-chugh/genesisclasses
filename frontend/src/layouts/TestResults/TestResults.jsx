@@ -189,12 +189,16 @@ class TestResultsLayout extends Component {
       const reviewDetails = await this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex-1]
       const questionDetails = await this.getData(reviewDetails.question);
 
-      this.setState({
+      await this.setState({
         questionIndex: this.state.questionIndex - 1,
         questionDetails: questionDetails,
         reviewDetails: reviewDetails,
         disabled: bool
       })
+      if(reviewDetails.questionType === 'passage'){
+        let id = this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex].id
+        this.window.scrollTop =  this.ref[id].offsetTop - 200
+      }
     }
   }
 
@@ -232,12 +236,16 @@ class TestResultsLayout extends Component {
       }
       const reviewDetails = await this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex+1]
       const questionDetails = await this.getData(reviewDetails.question);
-      this.setState({
+      await this.setState({
         questionIndex: this.state.questionIndex + 1,
         questionDetails: questionDetails,
         reviewDetails: reviewDetails,
         disabled: bool
       })
+      if(reviewDetails.questionType === 'passage'){
+        let id = this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex].id
+        this.window.scrollTop =  this.ref[id].offsetTop - 200
+      }
     }
   }
 

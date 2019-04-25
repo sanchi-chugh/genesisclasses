@@ -170,7 +170,7 @@ class Subjects extends Component {
       formData.append('title',this.state.formData.title)
       formData.append('course',this.state.formData.course.join(','))
       formData.append('description',this.state.formData.description)
-      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : formData.append('image','')
+      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : ''
       axios.put(`/api/subjects/edit/${this.state.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`

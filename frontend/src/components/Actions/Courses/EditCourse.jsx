@@ -3,13 +3,15 @@ import { Button,
          Modal, 
          FormGroup, 
          FormControl,
-         ControlLabel} from "react-bootstrap";
+         ControlLabel,
+         HelpBlock} from "react-bootstrap";
 
 import LinearProgress from '@material-ui/core/LinearProgress';
 
 class EditCourse extends Component {
 
   render() {
+    const { errors } = this.props;
     return ( 
             <Modal
                 show={this.props.show}
@@ -23,11 +25,6 @@ class EditCourse extends Component {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    { 
-                        this.props.courseUpdated 
-                        ?
-                        <center><b><p>Updated Successully</p></b></center>
-                        :
                     <form>
                         <FormGroup
                         controlId="formBasicText"
@@ -36,9 +33,17 @@ class EditCourse extends Component {
                         <FormControl
                             type="text"
                             value={this.props.value}
+                            required
                             placeholder="Course Name Cannot Be Empty"
                             onChange={this.props.handleTextChange}
                         />
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "title") && 
+                                    errors.title.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         </FormGroup>
                         <LinearProgress
                         style={
@@ -49,7 +54,6 @@ class EditCourse extends Component {
                         color="primary"
                         />
                     </form>
-                    }
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>

@@ -60,15 +60,15 @@ class Centres extends Component {
   }
 
   handleHideEditModal() {
-    this.setState({ show: false, updatingCentre:false, centreUpdated:false, value:''});
+    this.setState({ show: false, updatingCentre:false, centreUpdated:false, value:'', errors:{}});
   }
 
   handleHideAddModal() {
-    this.setState({ show3: false, addingCentre:false, centreAdded:false,value:''});
+    this.setState({ show3: false, addingCentre:false, centreAdded:false,value:'', errors:{}});
   }
 
   handleHideDeleteModal() {
-    this.setState({ show2: false, deletingCentre:false, centreDeleted:false, transferData:false, centre:''});
+    this.setState({ show2: false, deletingCentre:false, centreDeleted:false, transferData:false, centre:'', errors:{}});
   }
 
   handleAdd(e){

@@ -43,8 +43,15 @@ class AddQuestions extends Component {
         paragraph: EditorState.createEmpty()
       },
       addingQuestion:false,
-      QuestionAdded:false
+      QuestionAdded:false,
+      flag:false // for adding question in a paragraph
     };
+  }
+  
+  componentDidMount(){
+    if(this.props.location.data !== undefined){
+      this.setState({flag: true, type:'passage'})
+    }
   }
 
   handleAddPassage(callback){
@@ -66,7 +73,7 @@ class AddQuestions extends Component {
       formData.append('explanation',this.state.formData.explanation)
       formData.append('intAnswer',this.state.formData.intAnswer)
       formData.append('questionType',this.state.type)
-      formData.append('passage', res !== null ? res.data.passage : null)
+      formData.append('passage', res !== null ? res.data.passage : this.state.flag ? this.props.location.data.id :  null)
       formData.append('marksPositive',this.state.formData.marksPositive)
       formData.append('marksNegative',this.state.formData.marksNegative)
       formData.append('section',this.props.match.params.id)
@@ -85,9 +92,10 @@ class AddQuestions extends Component {
   handleAdd(e){
     e.preventDefault();
     this.setState({ addingQuestion: true }, () => {
-      if(this.state.type === 'passage'){
+      if(this.state.type === 'passage' && !this.state.flag){
         this.handleAddPassage(this.handleAddUtil.bind(this));
-      }else{
+      }
+      else{
         this.handleAddUtil();
       }
     });
@@ -160,6 +168,8 @@ class AddQuestions extends Component {
                     { this.state.type === 'passage'?
                           <PassageType 
                             formData = {this.state.formData}
+                            flag={this.state.flag}
+                            data={this.props.location.data}
                             onEditorStateChange = {this.onEditorStateChange.bind(this)}
                             onEditorStateChange2 = {this.onEditorStateChange2.bind(this)}
                             handleFormDataChange = {this.handleFormDataChange.bind(this)}

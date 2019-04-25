@@ -14,6 +14,8 @@ class TestResultsLayout extends Component {
   constructor(props) {
     super(props);
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.ref = {}
+    this.window = {}
     this.state = {
       busy: true,
       flag: true,
@@ -23,7 +25,11 @@ class TestResultsLayout extends Component {
       sectionIndex: 0,
       activeId: null,
       questionDetails: null,
-      reviewDetails: null
+      reviewDetails: null,
+      disabled:{
+        next: false,
+        prev: true
+      },
     };
   }
 
@@ -40,12 +46,13 @@ class TestResultsLayout extends Component {
         },
     }).then(async (res) => {
         const data = res.data.detail;
+        console.log(data)
         const questions = await this.getData(data.sections[0].questions);
         const reviewDetails = await questions.questions[0];
         const questionDetails = await this.getData(reviewDetails.question);
         this.setState({
           data:data,
-          questions: [questions, null, null, null, null, null, null, null],
+          questions: [questions, ...Array(data.sections.length-1).fill(null)],
           reviewDetails: reviewDetails,
           questionDetails: questionDetails,
           expanded: data.sections.reduce((obj, item) => {
@@ -68,6 +75,16 @@ class TestResultsLayout extends Component {
         const data = res.data.detail;
           return data;
     });
+  }
+
+  setRefs(ref, id){
+    this.ref[id] = React.createRef();
+    this.ref[id] = ref;
+  }
+
+  setWindow(ref){
+    this.window = React.createRef();
+    this.window = ref
   }
 
   async toggle(id){
@@ -96,20 +113,53 @@ class TestResultsLayout extends Component {
   }
 
   async handleNavigation(sectionIndex, questionIndex, paraQuestionIndex){
+    let bool = {
+      next: false,
+      prev: false
+    }
+    if(sectionIndex >= this.state.questions.length - 1 &&
+      questionIndex >= this.state.questions[sectionIndex].questions.length - 1){
+      bool = {
+        next: true,
+        prev: false
+      }
+    }else if(
+        sectionIndex === 0 && questionIndex === 0
+      ){
+      bool = {
+        next: false,
+        prev: true
+      }
+    }
     const reviewDetails = await this.state.questions[sectionIndex].questions[questionIndex]
     const questionDetails = await this.getData(reviewDetails.question);
-    
-    this.setState({
+    await this.setState({
       sectionIndex: sectionIndex,
       questionIndex: questionIndex,
       paraQues: paraQuestionIndex,
       questionDetails: questionDetails,
-      reviewDetails: reviewDetails
+      reviewDetails: reviewDetails,
+      disabled: bool
     })
+    console.log('para ', paraQuestionIndex, questionIndex )
+    if(paraQuestionIndex !== -1){
+      let id = this.state.questions[sectionIndex].questions[paraQuestionIndex].id
+      this.window.scrollTop =  this.ref[id].offsetTop - 200
+    }
   }
 
   async handlePrevious(){
+    let bool = {
+      next: false,
+      prev: false
+    }
     if(this.state.questionIndex === 0){
+      if(this.state.questions[this.state.sectionIndex-1].questions.length-1 === 0){
+        bool = {
+          prev: true,
+          next: false
+        }
+      }
       if (this.state.questions[this.state.sectionIndex - 1] === null){
         const index = this.state.sectionIndex + 1;
         const newSet = await this.getData(this.state.data.sections[index].questions);
@@ -125,22 +175,38 @@ class TestResultsLayout extends Component {
         questionIndex: this.state.questions[this.state.sectionIndex-1].questions.length-1,
         sectionIndex: this.state.sectionIndex - 1,
         questionDetails: questionDetails,
-        reviewDetails: reviewDetails
+        reviewDetails: reviewDetails,
+        disabled: bool
       })
     }
     else{
+      if((this.state.questionIndex === 1) && this.state.sectionIndex === 0){
+        bool = {
+          prev: true,
+          next: false
+        }
+      }
       const reviewDetails = await this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex-1]
       const questionDetails = await this.getData(reviewDetails.question);
 
-      this.setState({
+      await this.setState({
         questionIndex: this.state.questionIndex - 1,
         questionDetails: questionDetails,
-        reviewDetails: reviewDetails
+        reviewDetails: reviewDetails,
+        disabled: bool
       })
+      if(reviewDetails.questionType === 'passage'){
+        let id = this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex].id
+        this.window.scrollTop =  this.ref[id].offsetTop - 200
+      }
     }
   }
 
   async handleNext(){
+    let bool = {
+      next: false,
+      prev: false
+    }
     if(this.state.questionIndex >= this.state.questions[this.state.sectionIndex].questions.length - 1 ){
       if (this.state.questions[this.state.sectionIndex + 1] === null){
         const index = this.state.sectionIndex + 1;
@@ -156,18 +222,30 @@ class TestResultsLayout extends Component {
         questionIndex: 0,
         sectionIndex: this.state.sectionIndex + 1,
         questionDetails: questionDetails,
-        reviewDetails: reviewDetails
+        reviewDetails: reviewDetails,
+        disabled: bool
       })
     }
     else{
+      if(this.state.sectionIndex >= this.state.questions.length - 1 
+        && this.state.questionIndex >= this.state.questions[this.state.sectionIndex].questions.length - 2){
+        bool = {
+          next: true,
+          prev: false
+        }
+      }
       const reviewDetails = await this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex+1]
       const questionDetails = await this.getData(reviewDetails.question);
-
-      this.setState({
+      await this.setState({
         questionIndex: this.state.questionIndex + 1,
         questionDetails: questionDetails,
-        reviewDetails: reviewDetails
+        reviewDetails: reviewDetails,
+        disabled: bool
       })
+      if(reviewDetails.questionType === 'passage'){
+        let id = this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex].id
+        this.window.scrollTop =  this.ref[id].offsetTop - 200
+      }
     }
   }
 
@@ -213,11 +291,14 @@ class TestResultsLayout extends Component {
               questionIndex={this.state.questionIndex}
               sectionIndex={this.state.sectionIndex}
               activeId={this.state.activeId}
+              disabled={this.state.disabled}
               questionDetails={this.state.questionDetails}
               reviewDetails={this.state.reviewDetails}
               handleNavigation={this.handleNavigation.bind(this)}
               handlePrevious={this.handlePrevious.bind(this)}
               handleNext={this.handleNext.bind(this)}
+              setRefs={(ref, id) => this.setRefs(ref,id)}
+              setWindow={(ref) => this.setWindow(ref)}
             /> :
             <Results />
           } 

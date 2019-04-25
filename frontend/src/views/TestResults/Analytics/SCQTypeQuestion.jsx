@@ -15,8 +15,9 @@ class SCQTypeQuestion extends Component {
             </div>
             <div className="right">
               <Glyphicon 
-                glyph={this.props.reviewDetails.status === 'correct' ? 'ok-circle' : 'remove-circle'
-                } 
+                glyph={this.props.reviewDetails.status === 'correct' ? 'ok-circle' 
+                  : this.props.reviewDetails.status === 'incorrect' ? 'remove-circle' : ''
+                }
                 style={{
                   cursor:'pointer',
                   color:this.props.reviewDetails.status === 'correct'? 

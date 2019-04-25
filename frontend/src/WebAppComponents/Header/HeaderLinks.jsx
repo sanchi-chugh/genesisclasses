@@ -13,14 +13,18 @@ class HeaderLinks extends Component {
           <li href="#">
             <a ><Glyphicon glyph="menu-hamburger" style={{color:'white', fontSize: '18px'}} onClick={this.props.toggle}/></a>
           </li>
-          <li>
+          {/*
+            <li>
             <a ><Glyphicon glyph="search" style={{color:'white', fontSize: '18px'}}/></a>
           </li>
+          */}
         </ul>
         <ul className="right">
-          <li>
-           <a ><Glyphicon glyph="cog" style={{color:'white', fontSize: '18px'}}/></a>
+          {/*
+            <li>
+            <a ><Glyphicon glyph="cog" style={{color:'white', fontSize: '18px'}}/></a>
           </li>
+          */}
           <li>
             <a ><Glyphicon glyph="log-out" style={{color:'white', fontSize: '18px'}} onClick={this.logout.bind(this)}/></a>
           </li>

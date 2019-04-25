@@ -254,7 +254,6 @@ class TakeTestLayout extends Component {
     if(paraQuestionIndex !== -1){
       let id = this.state.data.sections[sectionIndex]
         .questions[questionIndex].questions[paraQuestionIndex].id;
-      console.log(this.ref, id)
       this.window.scrollTop =  this.ref[id].offsetTop - 200
     }
   }

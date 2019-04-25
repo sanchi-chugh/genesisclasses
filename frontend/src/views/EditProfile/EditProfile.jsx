@@ -12,7 +12,9 @@ import {
 import { Checkbox, Icon} from 'antd';
 import { FormInputs } from "../../components/FormInputs/FormInputs.jsx";
 import { Card } from "../../WebAppComponents/Card/Card.jsx";
-import Axios from "axios";
+import axios from "axios";
+import { LinearProgress } from "@material-ui/core";
+import Button from "../../components/CustomButton/CustomButton.jsx";
 
 
 class EditProfile extends Component {
@@ -21,7 +23,9 @@ class EditProfile extends Component {
     super();
     this.state = {
       busy: true,
-      user: null
+      user: null,
+      updatingStudent: false,
+      studentUpdated: false
     };
   }
 
@@ -33,8 +37,69 @@ class EditProfile extends Component {
     })
    }
 
-  handleFormDataChange(){
+  handleEdit(e){
+    e.preventDefault();
+    this.setState({ updatingStudent: true }, () => {
+      var formData = new FormData();
+      formData.append('first_name',this.state.user.first_name)
+      formData.append('last_name',this.state.user.last_name)
+      formData.append('contact_number',this.state.user.contact_number)
+      formData.append('email',this.state.user.email)
+      formData.append('endAccessDate',this.state.user.endAccessDate)
+      formData.append('joiningDate',this.state.user.joiningDate)
+      formData.append('course',this.state.user.course.join(','))
+      formData.append('centre',this.state.user.centre)
+      formData.append('father_name',this.state.user.father_name)
+      formData.append('gender',this.state.user.gender)
+      if(this.state.user.dateOfBirth !== null && this.state.user.dateOfBirth !== '')
+        formData.append('dateOfBirth',this.state.user.dateOfBirth)
+      else
+        formData.append('dateOfBirth','')
+      formData.append('address',this.state.user.address)
+      formData.append('city',this.state.user.city)
+      formData.append('state',this.state.user.state)
+      formData.append('pinCode',this.state.user.pinCode)
+      if(this.state.user.clear){
+        formData.append('image','')
+      }else if(this.state.user.file !== null){
+        formData.append('image',this.state.user.file,this.state.user.file.name)
+      }
+      axios.put(`/api/app/profile/update/`, formData, {
+        headers: {
+          Authorization: `Token ${localStorage.token}`,
+        },
+      })
+      .then((res) => this.setState({ updatingStudent: false, studentUpdated:true },()=>{
+        this.props.handleClick('tr','Updated Successfully');
+      }))
+      .catch((err) => this.setState({ updatingStudent: false }, () => console.log(err)))
+    });
+  }
 
+  handleFormDataChange(e) {
+    if(e.target.name === 'image'){
+      if(e.target.files.length){
+        let file = e.target.files[0]
+        this.setState({ 
+          user: {
+          ...this.state.user,
+          file : file,
+          image:URL.createObjectURL(e.target.files[0])
+      }});
+      }
+    }else if(e.target.name==='clear'){
+      this.setState({ 
+        user:{
+          ...this.state.user,
+          clear: e.target.checked
+        }
+      });
+    }else{
+      this.setState({ user: {
+        ...this.state.user,
+        [e.target.name] : e.target.value
+    }});
+    }
   }
 
   render() {
@@ -45,6 +110,7 @@ class EditProfile extends Component {
       <div className="content home-content">
         <h4 className="title-heading">Edit Profile</h4>
         <div className="edit-profile-container">
+          <form onSubmit={this.handleEdit.bind(this)}>
           <div className="edit-profile-form">
             <FormInputs
               ncols={["col-md-6", "col-md-6"]}
@@ -189,7 +255,7 @@ class EditProfile extends Component {
                     </Col>:
                   <Row md={12}>
                     <Col xs={4}>
-                        <a href={this.state.user.image} target="_blank">{this.state.user.image.split('/')[4]}</a> 
+                        <a href={this.state.user.image} target="_blank">{this.state.user.image.split('/')[3]}</a> 
                     </Col>
                     <Col xs={4}>
                         <Checkbox onChange={this.handleFormDataChange.bind(this)} name="clear" >CLEAR</Checkbox><br/>
@@ -219,7 +285,20 @@ class EditProfile extends Component {
               <b><Col md={5}>End Access Date</Col></b>
               <Col md={7}>{this.state.user.endAccessDate}</Col>
             </Row>
+            <LinearProgress
+            style={
+                this.state.updatingStudent ? 
+                {visibility: 'visible'} :
+                {visibility: 'hidden'}
+                }
+            color="primary"
+            />
+            <Button bsStyle="success" pullRight fill type="submit">
+              EDIT PROFILE
+            </Button>
+            <div className="clearfix" />
           </div>
+         </form>
         </div>
       </div>
     );

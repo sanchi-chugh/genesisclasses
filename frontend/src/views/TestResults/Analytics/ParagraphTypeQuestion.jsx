@@ -5,6 +5,7 @@ import renderHTML from 'react-render-html';
 class ParagraphTypeQuestion extends Component {
 
   render() {
+    console.log(this.props)
     return (
         <div style={{width:'100%', height: '100%'}}>
           <div className="index-head-paragraph">
@@ -14,17 +15,19 @@ class ParagraphTypeQuestion extends Component {
             <div className="paragraph-left">
               {renderHTML(this.props.questionDetails.paragraph)}
             </div>
-            <div className="question-right">
+            <div className="question-right" ref={(ref) => this.props.setWindow(ref)}>
               {this.props.questionDetails.questions.map(questions=>{
                 return(
-                    <div>
+                    <div ref={ ref => this.props.setRefs(ref, questions.id)}>
                       <div className="question">
                         <p>{renderHTML(questions.questionText)}</p>
                       </div>
                       <div className="question-marks">
                         <p>Marks +{questions.marksPositive}, -{questions.marksNegative}</p>
-                        <Glyphicon 
-                          glyph={this.props.reviewDetails.status === 'correct' ? 'ok-circle' : 'remove-circle'} 
+                        <Glyphicon
+                          glyph={this.props.reviewDetails.status === 'correct' ? 'ok-circle' 
+                            : this.props.reviewDetails.status === 'incorrect' ? 'remove-circle' : ''
+                          }
                           style={{
                             cursor:'pointer',
                             color:this.props.reviewDetails.status === 'correct'? 

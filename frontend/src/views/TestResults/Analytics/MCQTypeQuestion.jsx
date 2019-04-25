@@ -15,7 +15,8 @@ class MCQTypeQuestion extends Component {
             </div>
             <div className="right">
               <Glyphicon 
-                glyph={this.props.reviewDetails.status === 'correct' ? 'ok-circle' : 'remove-circle'
+                glyph={this.props.reviewDetails.status === 'correct' ? 'ok-circle' 
+                  : this.props.reviewDetails.status === 'incorrect' ? 'remove-circle' : ''
                 } 
                 style={{
                   cursor:'pointer',
@@ -39,14 +40,22 @@ class MCQTypeQuestion extends Component {
                       checked={
                           this.props.questionDetails.userResult.userChoices.some(item=>{
                             return item === option.id
-                          }) || this.props.questionDetails.correctOptions.some(item=>{
-                            return item === option.id
-                          })
+                          }) 
                         }>
                       {renderHTML(option.optionText)}
-                      <span className={"checkmark " + (this.props.questionDetails.correctOptions.some(item=>{
-                                                        return item === option.id
-                                                      }) ? 'correct' : '')}>
+                      <Glyphicon 
+                      glyph={this.props.questionDetails.correctOptions.some(item => item === option.id) ? 'ok-circle' 
+                         : 'remove-circle'
+                      }
+                      style={{
+                        display: 'inline-block',
+                        verticalAlign:'middle',
+                        cursor:'pointer',
+                        color:this.props.questionDetails.correctOptions.some(item => item === option.id)? 
+                          'rgba(49, 143, 9, 1)' : 'rgba(255, 0, 0, 1)',
+                        fontSize:'18px'}}
+                      />
+                      <span className={"checkmark "}>
                       </span>
                     </Checkbox>
                   )

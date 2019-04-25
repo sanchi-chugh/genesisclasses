@@ -31,7 +31,7 @@ class ViewPassage extends Component {
           },
           formData:{
             passage: EditorState.createEmpty()
-          }
+          },
         };
     }
 
@@ -106,7 +106,7 @@ class ViewPassage extends Component {
     }
 
     handleAddButton(obj){
-      this.props.history.push({pathname:`/tests/sections/questions/add/${this.props.match.params.id}`})
+      this.props.history.push({pathname:`/tests/sections/questions/add/${this.state.data.details.section.id}`, data:this.state.data.details})
     }
 
     renderQuestion(cell, row, enumObject, rowIndex) {

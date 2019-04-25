@@ -39,7 +39,8 @@ class BulkStudents extends Component {
           subject:null,
           bulkAdded:false,
           addingBulk:false,
-          page:1
+          page:1,
+          errors: {}
         };
       }
   
@@ -100,7 +101,8 @@ class BulkStudents extends Component {
         course:[],
       },
       centreId:'',
-      centreName:'Select Centre'
+      centreName:'Select Centre',
+      errors: {}
     });
   }
 
@@ -125,8 +127,12 @@ class BulkStudents extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState({ addingBulk: false, bulkAdded:true }, this.fetchBulkStudents(`?page=1`)))
-      .catch((err) => this.setState({ addingBulk: false }, () => console.log(err)))
+      .then((res) => this.setState({ addingBulk: false, bulkAdded:true }, ()=>{
+        this.fetchBulkStudents(`?page=1`);
+        this.props.handleClick('tr','Added Successfully');
+        this.handleHideAddModal();
+      }))
+      .catch((err) => this.setState({ addingBulk: false, errors: err.response.data }, () => console.log(err)))
     });
   }
 
@@ -149,7 +155,7 @@ class BulkStudents extends Component {
     }else{
       this.setState({ formData: {
         ...this.state.formData,
-        [e.target.name] : e.target.value
+        [e.target.name] : e.target.value.trimLeft()
     }});
     }
   }
@@ -244,6 +250,7 @@ class BulkStudents extends Component {
                 centreName={this.state.centreName}
                 handleFormDataChange={this.handleFormDataChange.bind(this)}
                 handleSelect={this.handleSelect.bind(this)}
+                errors={this.state.errors}
               />
             </Col>
           </Row>

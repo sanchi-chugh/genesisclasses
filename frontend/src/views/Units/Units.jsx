@@ -302,7 +302,7 @@ class Units extends Component {
     }else{
       this.setState({ formData: {
         ...this.state.formData,
-        [e.target.name] : e.target.value
+        [e.target.name] : e.target.value.trimLeft()
     }});
     }
   }

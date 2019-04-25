@@ -4,6 +4,7 @@ import { Button,
          FormGroup, 
          FormControl,
          ControlLabel,
+         HelpBlock
          } from "react-bootstrap";
 
 import { Checkbox, Menu, Dropdown, Icon} from 'antd';
@@ -14,6 +15,7 @@ import '../../../../node_modules/antd/dist/antd.css';
 class AddBulkStudents extends Component {
 
   render() {
+    const { errors } = this.props;
     const menu = (
         <Menu>
           {this.props.centres.map(item =>{
@@ -39,11 +41,6 @@ class AddBulkStudents extends Component {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    { 
-                        this.props.bulkAdded 
-                        ?
-                        <center><b><p>Added Successfully</p></b></center>
-                        :
                     <form>
                         <FormGroup
                         controlId="formBasicText"
@@ -54,8 +51,16 @@ class AddBulkStudents extends Component {
                                 value={this.props.formData.number}
                                 placeholder="Number Of Students"
                                 name='number'
+                                required
                                 onChange={this.props.handleFormDataChange}
                             />
+                            {
+                                Object.keys(errors)
+                                    .some(item=> item === "number") && 
+                                        errors.number.map(err=>
+                                            <HelpBlock>{err}</HelpBlock>
+                                        )
+                            }
                             <br/>
                             <ControlLabel>Access Date</ControlLabel>
                             <FormControl
@@ -63,8 +68,16 @@ class AddBulkStudents extends Component {
                                 value={this.props.formData.endAccessDate}
                                 placeholder="Access Date"
                                 name='endAccessDate'
+                                required
                                 onChange={this.props.handleFormDataChange}
                             />
+                            {
+                                Object.keys(errors)
+                                    .some(item=> item === "endAccessDate") && 
+                                        errors.endAccessDate.map(err=>
+                                            <HelpBlock>{err}</HelpBlock>
+                                        )
+                            }
                             <br/>
                             <ControlLabel>Joining Date</ControlLabel>
                             <FormControl
@@ -72,8 +85,16 @@ class AddBulkStudents extends Component {
                                 value={this.props.formData.joiningDate}
                                 placeholder="Joining Date"
                                 name='joiningDate'
+                                required
                                 onChange={this.props.handleFormDataChange}
                             />
+                            {
+                                Object.keys(errors)
+                                    .some(item=> item === "joiningDate") && 
+                                        errors.joiningDate.map(err=>
+                                            <HelpBlock>{err}</HelpBlock>
+                                        )
+                            }
                             <br/>
                             <ControlLabel>Centre Name</ControlLabel>
                             <center>
@@ -84,6 +105,13 @@ class AddBulkStudents extends Component {
                                 </a>
                             </Dropdown>
                             </center>
+                            {
+                                Object.keys(errors)
+                                    .some(item=> item === "centre") && 
+                                        errors.centre.map(err=>
+                                            <HelpBlock>{err}</HelpBlock>
+                                        )
+                            }
                             <br/>
                             <ControlLabel>Courses</ControlLabel>
                             <br/>
@@ -97,6 +125,13 @@ class AddBulkStudents extends Component {
                                                 onChange={this.props.handleFormDataChange}
                                             >{props.title}</Checkbox>);
                                 })} 
+                            {
+                                Object.keys(errors)
+                                    .some(item=> item === "course") && 
+                                        errors.course.map(err=>
+                                            <HelpBlock>{err}</HelpBlock>
+                                        )
+                            }
                             </FormGroup>
                         </FormGroup>
                         <LinearProgress
@@ -108,7 +143,6 @@ class AddBulkStudents extends Component {
                         color="primary"
                         />
                     </form>
-                    }
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>

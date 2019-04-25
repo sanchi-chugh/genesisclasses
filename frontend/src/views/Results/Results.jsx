@@ -69,6 +69,10 @@ class Results extends Component {
       <div className="content home-content">
         <h4 className="title-heading">Upcoming Tests Results</h4>
           {
+            !this.state.busy && this.state.data.results.length === 0 &&
+            <div className="no-tests-placeholder">No Tests Attempted</div>
+          }
+          {
             !this.state.busy &&
               <TestList
                 {...this.props}

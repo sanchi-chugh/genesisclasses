@@ -35,7 +35,7 @@ const homeRoutes = [
     icon: "pe-7s-graph",
     component: EditProfile
   },
-  { redirect: true, path: "/", to: "/", name: "Home" }
+  { redirect: true, path: "/", to: "/home/", name: "Home" }
 ];
 
 export default homeRoutes;

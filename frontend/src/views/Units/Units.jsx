@@ -82,7 +82,7 @@ class Units extends Component {
         Authorization: `Token ${localStorage.token}`
         }
     }).then(res => {
-        const data = res.data.results;
+        const data = res.data;
         this.setState({subjects:data,
                        next:res.data.next});
     });

@@ -1,14 +1,11 @@
 import Dashboard from "../layouts/Dashboard/Dashboard.jsx";
 import Webapp from "../layouts/Webapp/Webapp.jsx";
-import TakeTest from "../layouts/TakeTest/TakeTest.jsx"
-import TestResults from "../layouts/TestResults/TestResults.jsx"
+import TakeTest from "../layouts/TakeTest/TakeTest.jsx";
+import TestResults from "../layouts/TestResults/TestResults.jsx";
 
 export var appRoutes = [
     { 
         path: "/", name: "Dashboard", component: Dashboard
-    },
-    { 
-        path: "/dashboard", name: "Dashboard", component: Dashboard 
     },
 ];
 

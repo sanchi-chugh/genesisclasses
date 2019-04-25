@@ -9,6 +9,8 @@ import {
   Badge
 } from "react-bootstrap";
 
+import moment from 'moment';
+
 import { Checkbox, Icon} from 'antd';
 import { FormInputs } from "../../components/FormInputs/FormInputs.jsx";
 import { Card } from "../../WebAppComponents/Card/Card.jsx";
@@ -33,11 +35,15 @@ class EditProfile extends Component {
     console.log(this.props.user)
     this.setState({
       busy:false,
-      user:this.props.user
+      user:{
+        ...this.props.user,
+        dateOfBirth: moment(new Date(this.props.user.dateOfBirth)).format("YYYY-MM-DD"),
+        file: null
+      }
     })
    }
 
-  handleEdit(e){
+  async handleEdit(e){
     e.preventDefault();
     this.setState({ updatingStudent: true }, () => {
       var formData = new FormData();
@@ -45,8 +51,8 @@ class EditProfile extends Component {
       formData.append('last_name',this.state.user.last_name)
       formData.append('contact_number',this.state.user.contact_number)
       formData.append('email',this.state.user.email)
-      formData.append('endAccessDate',this.state.user.endAccessDate)
-      formData.append('joiningDate',this.state.user.joiningDate)
+      formData.append('endAccessDate',moment(new Date(this.state.user.endAccessDate)).format("YYYY-MM-DD"))
+      formData.append('joiningDate',moment(new Date(this.state.user.joiningDate)).format("YYYY-MM-DD"))
       formData.append('course',this.state.user.course.join(','))
       formData.append('centre',this.state.user.centre)
       formData.append('father_name',this.state.user.father_name)
@@ -59,6 +65,11 @@ class EditProfile extends Component {
       formData.append('city',this.state.user.city)
       formData.append('state',this.state.user.state)
       formData.append('pinCode',this.state.user.pinCode)
+      if(this.props.flag){
+        formData.append('username', this.state.user.username)
+        formData.append('password1', this.state.user.password1)
+        formData.append('password2', this.state.user.password2)
+      }
       if(this.state.user.clear){
         formData.append('image','')
       }else if(this.state.user.file !== null){
@@ -69,7 +80,13 @@ class EditProfile extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState({ updatingStudent: false, studentUpdated:true },()=>{
+      .then((res) => this.setState({ updatingStudent: false, studentUpdated:true },async ()=>{
+        if(this.props.flag){
+          await this.props.completeProfile();
+          this.props.history.push("/");
+        }else{
+          this.props.history.push('/home/editProfile')
+        }
         this.props.handleClick('tr','Updated Successfully');
       }))
       .catch((err) => this.setState({ updatingStudent: false }, () => console.log(err)))
@@ -108,7 +125,7 @@ class EditProfile extends Component {
     }
     return (
       <div className="content home-content">
-        <h4 className="title-heading">Edit Profile</h4>
+        <h4 className="title-heading">{this.props.flag ? "Complete Details" : "Edit Profile"}</h4>
         <div className="edit-profile-container">
           <form onSubmit={this.handleEdit.bind(this)}>
           <div className="edit-profile-form">
@@ -248,6 +265,50 @@ class EditProfile extends Component {
                 },
               ]}
             />
+            { this.props.flag && <div>
+                    <FormInputs
+                          ncols={["col-md-12"]}
+                          proprieties={[
+                            {
+                              label: "Username *",
+                              type: "text",
+                              bsClass: "form-control",
+                              placeholder: "Username",
+                              name:'username',
+                              value:this.state.user.username,
+                              onChange:this.handleFormDataChange.bind(this)
+                            },
+                          ]}
+                        />
+                        <FormInputs
+                          ncols={["col-md-12"]}
+                          proprieties={[
+                            {
+                              label: "Password *",
+                              type: "password",
+                              bsClass: "form-control",
+                              placeholder: "Password",
+                              name:'password1',
+                              value:this.state.user.password1,
+                              onChange:this.handleFormDataChange.bind(this)
+                            },
+                          ]}
+                        />
+                        <FormInputs
+                          ncols={["col-md-12"]}
+                          proprieties={[
+                            {
+                              label: "Confirm Password *",
+                              type: "password",
+                              bsClass: "form-control",
+                              placeholder: "Password",
+                              name:'password2',
+                              value:this.state.user.password2,
+                              onChange:this.handleFormDataChange.bind(this)
+                            },
+                          ]}
+                        />
+                    </div>}
             <ControlLabel className="form-input">Image</ControlLabel>
               {   this.state.user.image === null ? 
                     <Col  md={12}>
@@ -269,22 +330,26 @@ class EditProfile extends Component {
                 name='image'
                 onChange={this.handleFormDataChange.bind(this)}
             /> <br/>
-            <Row xs={12} style={{marginBottom:'5px'}}>
-              <b><Col md={5}>Courses</Col></b>
-              <Col md={7}>{this.state.user.course.map(item => {return (<Badge style={{marginRight:2}}>{item.title}</Badge>)})}</Col>
-            </Row>
-            <Row xs={12} style={{marginBottom:'5px'}}>
-              <b><Col md={5}>Centre</Col></b>
-              <Col md={7}>{this.state.user.centre}</Col>
-            </Row>
-            <Row xs={12} style={{marginBottom:'5px'}}>
-              <b><Col md={5}>Joining Data</Col></b>
-              <Col md={7}>{this.state.user.joiningDate}</Col>
-            </Row>
-            <Row xs={12} style={{marginBottom:'5px'}}>
-              <b><Col md={5}>End Access Date</Col></b>
-              <Col md={7}>{this.state.user.endAccessDate}</Col>
-            </Row>
+            {!this.props.flag && 
+              <div>
+                <Row xs={12} style={{marginBottom:'5px'}}>
+                  <b><Col md={5}>Courses</Col></b>
+                  <Col md={7}>{this.state.user.course.map(item => {return (<Badge style={{marginRight:2}}>{item.title}</Badge>)})}</Col>
+                </Row>
+                <Row xs={12} style={{marginBottom:'5px'}}>
+                  <b><Col md={5}>Centre</Col></b>
+                  <Col md={7}>{this.state.user.centre}</Col>
+                </Row>
+                <Row xs={12} style={{marginBottom:'5px'}}>
+                  <b><Col md={5}>Joining Data</Col></b>
+                  <Col md={7}>{this.state.user.joiningDate}</Col>
+                </Row>
+                <Row xs={12} style={{marginBottom:'5px'}}>
+                  <b><Col md={5}>End Access Date</Col></b>
+                  <Col md={7}>{this.state.user.endAccessDate}</Col>
+                </Row>
+              </div>
+            }
             <LinearProgress
             style={
                 this.state.updatingStudent ? 

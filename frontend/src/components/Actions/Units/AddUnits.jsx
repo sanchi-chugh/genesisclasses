@@ -6,6 +6,7 @@ import { Button,
          ControlLabel,
          DropdownButton,
          MenuItem,
+         Col
          } from "react-bootstrap";
 
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -56,28 +57,20 @@ class AddUnits extends Component {
                             onChange={this.props.handleFormDataChange}
                         />
                         <br/>
-                        <ControlLabel>Subjects (Courses)</ControlLabel>
-                        <div>
-                            <DropdownButton open={this.props.dropdown} onToggle={this.props.toggle} title={this.props.subject} id="dropdown-size-medium" style={{width:'300px',borderWidth:1}}>
-                                <div style={{height:"200px",width:"500px",overflow:"auto",display:'block'}}>
-                                    <InfiniteScroll
-                                        pageStart={0}
-                                        loadMore={this.props.fetchMore}
-                                        hasMore={this.props.hasMore}
-                                        loader={<div key={0}><LinearProgress
-                                        color="primary"
-                                        /></div>}
-                                        useWindow={false}
-                                        threshold={10}
-                                    >
-                                    {   
-                                        this.props.subjects.map(item=>{
-                                        return <MenuItem onSelect={this.props.handleSelect} bsClass='test' eventKey={item}>{item.title}</MenuItem>;
-                                    })}
-                                    </InfiniteScroll>
-                                </div>
-                            </DropdownButton>
-                        </div>
+                        <Col md={12} style={{padding:0}}>
+                          <FormGroup>
+                              <ControlLabel className="form-input">Subjects (Courses)</ControlLabel>
+                              <FormControl 
+                                componentClass="select" 
+                                value={this.props.formData.subject} 
+                                onChange={this.props.handleFormDataChange} 
+                                name="subject">
+                                <option value=''>...</option>
+                                {this.props.subjects.map(item=>{
+                                return <option value={item.id}>{item.title}</option>;})}   
+                              </FormControl>  
+                          </FormGroup>
+                        </Col>
                         <br/>
                         <ControlLabel>IMAGE</ControlLabel>
                         <FormControl

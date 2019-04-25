@@ -51,10 +51,12 @@ class LoginScreen extends React.Component {
       if (isLoggedIn){
         this.props.getUser((user) => {
           console.log("user", user);
-          if(user.type === 'student')
-            this.props.history.push("/");
+          if(user.type === 'student' && user.complete)
+            this.props.history.push("/home");
+          else if(user.type === "student" && !user.complete)
+            this.props.history.push("/completeDetails");
           else
-            this.props.history.push("/dashboard");
+            this.props.history.push("/bulkStudents");
         });
       }
       else {

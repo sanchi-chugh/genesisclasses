@@ -1,13 +1,11 @@
 import React, { Component } from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
 import NotificationSystem from "react-notification-system";
+import EditProfile from "../../views/EditProfile/EditProfile";
 
 import Header from "../../WebAppComponents/Header/Header";
-import Sidebar from "../../WebAppComponents/Sidebar/Sidebar";
 
 import { style } from "../../variables/Variables.jsx";
-
-import webapppRoutes from "../../routes/Webapp";
 
 import '../../assets/css/app.css';
 
@@ -18,7 +16,7 @@ class Webapp extends Component {
     this.handleNotificationClick = this.handleNotificationClick.bind(this);
     this.state = {
       _notificationSystem: null,
-      expanded:false
+      expanded:true
     };
   }
   handleNotificationClick(position,text,level="success") {
@@ -49,33 +47,22 @@ class Webapp extends Component {
       this.refs.mainPanel.scrollTop = 0;
     }
   }
-  toggleSidebar(){
-    this.setState({
-      expanded: !this.state.expanded
-    })
-  }
   render() {
     return (
       <div className="wrapper" id="wrapper">
         <NotificationSystem ref="notificationSystem" style={style} />
-        <Sidebar {...this.props} expanded={this.state.expanded}/>
         <div id="main-panel" className={"main-panel" + (this.state.expanded ? " main-panel-expanded" : "")} ref="mainPanel">
-          <Header {...this.props} toggle={this.toggleSidebar.bind(this)} flag={false} expanded={this.state.expanded}/>
+          <Header {...this.props} expanded={this.state.expanded} flag={true}/>
           <Switch>
-            {webapppRoutes.map((prop, key) => {
-              if (prop.redirect)
-                return <Redirect from={prop.path} to={prop.to} key={key} />;
-              return (
-                <Route path={prop.path} render={routeProps => (
-                  <prop.component
-                    {...routeProps}
-                    user={this.props.user}
-                    handleClick={this.handleNotificationClick}
-                    expanded={this.state.expanded}
-                  />
-                )} key={key} />
-              );
-            })}
+            <Route path={'/completeDetails'} render={
+                (props) => <EditProfile
+                             {...props} 
+                             flag={true}
+                             user={this.props.user} 
+                             logout={this.props.logout}
+                             compeleteProfile={this.props.compeleteProfile}
+                             handleClick={this.handleNotificationClick} />  } />
+            <Redirect from={'/'} to={'/completeDetails'} />;
           </Switch>
         </div>
       </div>

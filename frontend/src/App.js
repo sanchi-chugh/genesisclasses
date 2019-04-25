@@ -1,10 +1,11 @@
 import React from 'react';
-import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import axios from 'axios';
 import appRoutes, { studentRoutes } from './routes/app.jsx';
 
 import './App.css';
 import LoginScreen from './views/LoginScreen/LoginScreen';
+import EditProfile from "./layouts/EditProfile/EditProfile";
 
 class App extends React.Component {
   constructor(props) {
@@ -43,6 +44,15 @@ class App extends React.Component {
       });
   }
 
+  completeProfile(){
+    this.setState({
+      user:{
+        ...this.state.user,
+        complete:true
+      }
+    },()=>{console.log(this.state.user)})
+  }
+
   logout(callBack) {
     delete localStorage.token;
     this.setState({ user: null , isLoggedIn:false  }, callBack);
@@ -65,6 +75,21 @@ class App extends React.Component {
             </Switch>
         </BrowserRouter>
       )
+    }
+    if(isLoggedIn && user.complete === false){
+      return(
+          <BrowserRouter>
+            <Switch>
+              <Route path={'/'} render={
+                (props) => <EditProfile
+                             {...props} 
+                             user={user} 
+                             completeProfile={this.completeProfile.bind(this)}
+                             logout={this.logout.bind(this)} /> }/> } />
+              <Redirect from={'/'} to={'/'} />;
+            </Switch>
+          </BrowserRouter>
+        )
     }
     if(isLoggedIn){
       return (

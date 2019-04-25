@@ -82,7 +82,19 @@ class Subjects extends Component {
   }
 
   handleHideEditModal() {
-    this.setState({ show: false, updatingSubject:false, subjectUpdated:false, value:''});
+    this.setState({ 
+      show: false, 
+      updatingSubject:false, 
+      subjectUpdated:false, 
+      value:'',
+      formData:{
+        title:'',
+        description:'',
+        file:null,
+        image:'',
+        course:[]
+      }
+    });
   }
 
   handleHideAddModal() {
@@ -96,7 +108,8 @@ class Subjects extends Component {
         file:null,
         image:'',
         course:[]
-    }});
+      }
+    });
   }
 
   handleHideDeleteModal() {

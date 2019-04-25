@@ -164,10 +164,11 @@ class Categories extends Component {
   handleEdit(e) {
     e.preventDefault();
     this.setState({ updatingCategories: true, err:null }, () => {
+      console.log(this.state)
       var formData = new FormData();
       formData.append('title',this.state.formData.title !== null ? this.state.formData.title : '')
       formData.append('description',this.state.formData.description !== null ? this.state.formData.description :'' )
-      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : formData.append('image',this.state.formData.image)
+      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : null
       axios.put(`/api/testCategories/edit/${this.state.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`
@@ -233,7 +234,7 @@ class Categories extends Component {
     }
     else if(e.target.name==='clear'){
       this.setState({ 
-        clear: !e.target.checked
+        clear: e.target.checked
       });
     }else{
       this.setState({ formData: {

@@ -6,7 +6,8 @@ import { Button,
          ControlLabel,
          DropdownButton,
          MenuItem,
-         Col
+         Col,
+         HelpBlock
          } from "react-bootstrap";
 
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -16,6 +17,7 @@ import  './styles.css';
 class AddUnits extends Component {
  
   render() {
+    const { errors } = this.props;
     return ( 
             <Modal
                 show={this.props.show}
@@ -29,11 +31,6 @@ class AddUnits extends Component {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    { 
-                        this.props.unitAdded 
-                        ?
-                        <center><b><p>Added Successfully</p></b></center>
-                        :
                     <form>
                         <FormGroup
                         controlId="formBasicText"
@@ -46,6 +43,13 @@ class AddUnits extends Component {
                             name='title'
                             onChange={this.props.handleFormDataChange}
                         />
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "title") && 
+                                    errors.title.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <br/>
                         <ControlLabel>DESCRIPTION</ControlLabel>
                         <FormControl
@@ -56,6 +60,13 @@ class AddUnits extends Component {
                             name='description'
                             onChange={this.props.handleFormDataChange}
                         />
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "description") && 
+                                    errors.description.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <br/>
                         <Col md={12} style={{padding:0}}>
                           <FormGroup>
@@ -71,6 +82,13 @@ class AddUnits extends Component {
                               </FormControl>  
                           </FormGroup>
                         </Col>
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "subject") && 
+                                    errors.subject.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <br/>
                         <ControlLabel>IMAGE</ControlLabel>
                         <FormControl
@@ -79,6 +97,13 @@ class AddUnits extends Component {
                             name='image'
                             onChange={this.props.handleFormDataChange}
                         />
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "image") && 
+                                    errors.image.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         </FormGroup>
                         <LinearProgress
                         style={
@@ -89,7 +114,6 @@ class AddUnits extends Component {
                         color="primary"
                         />
                     </form>
-                    }
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>

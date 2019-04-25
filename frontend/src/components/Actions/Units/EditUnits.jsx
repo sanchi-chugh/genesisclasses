@@ -6,7 +6,8 @@ import { Button,
          ControlLabel,
          Row,Col,
          DropdownButton,
-         MenuItem} from "react-bootstrap";
+         MenuItem,
+         HelpBlock} from "react-bootstrap";
 import { Checkbox} from 'antd';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import InfiniteScroll from 'react-infinite-scroller';
@@ -17,6 +18,7 @@ import '../../../../node_modules/antd/dist/antd.css';
 class EditUnit extends Component {
 
   render() {
+    const { errors } = this.props;
     return ( 
             <Modal
                 show={this.props.show}
@@ -30,11 +32,6 @@ class EditUnit extends Component {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    { 
-                        this.props.unitUpdated 
-                        ?
-                        <center><b><p>Updated Successully</p></b></center>
-                        :
                     <form>
                         <FormGroup
                         controlId="formBasicText"
@@ -47,6 +44,13 @@ class EditUnit extends Component {
                             name='title'
                             onChange={this.props.handleFormDataChange}
                         />
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "title") && 
+                                    errors.title.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <br/>
                         <ControlLabel>DESCRIPTION</ControlLabel>
                         <FormControl
@@ -56,6 +60,13 @@ class EditUnit extends Component {
                             name='description'
                             onChange={this.props.handleFormDataChange}
                         />
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "description") && 
+                                    errors.description.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <br/>
                         <Col md={12} style={{padding:0}}>
                           <FormGroup>
@@ -71,6 +82,13 @@ class EditUnit extends Component {
                               </FormControl>  
                           </FormGroup>
                         </Col>
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "subject") && 
+                                    errors.subject.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <br/>
                         <ControlLabel>IMAGE</ControlLabel><br/>
                         {   this.props.formData.image === null ? 
@@ -79,7 +97,7 @@ class EditUnit extends Component {
                             </Col>:
                             <Row md={12}>
                             <Col xs={4}>
-                                <a href={this.props.formData.image} target="_blank">{this.props.formData.image.split('/')[4]}</a> 
+                                <a href={this.props.formData.image} target="_blank">{this.props.formData.image.split('/')[5]}</a> 
                             </Col>
                             <Col xs={4}>
                                 <Checkbox onChange={this.props.handleFormDataChange} name="clear" >CLEAR</Checkbox><br/>
@@ -94,6 +112,13 @@ class EditUnit extends Component {
                             onChange={this.props.handleFormDataChange}
                         />
                         </FormGroup>
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "image") && 
+                                    errors.image.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <LinearProgress
                         style={
                             this.props.updatingUnit ? 
@@ -103,7 +128,6 @@ class EditUnit extends Component {
                         color="primary"
                         />
                     </form>
-                    }
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>

@@ -53,7 +53,8 @@ class Units extends Component {
           subjects:[],
           subject: 'Select Subject',
           next:'',
-          dropdown:false
+          dropdown:false,
+          errors: {}
         };
       }
   
@@ -108,7 +109,20 @@ class Units extends Component {
   }
 
   handleHideEditModal() {
-    this.setState({ show: false, updatingUnit:false, unitUpdated:false, value:'',clear:false});
+    this.setState({ 
+      show: false, 
+      updatingUnit:false,
+      unitUpdated:false, 
+      value:'',
+      clear:false, 
+      formData:{
+        title:'',
+        description:'',
+        file:null,
+        image:'',
+        subject:''
+      },
+      errors: {}});
   }
 
   handleHideAddModal() {
@@ -123,7 +137,9 @@ class Units extends Component {
         file:null,
         image:'',
         subject:''
-    }});
+      },
+      errors: {}
+    });
   }
 
   handleHideDeleteModal() {
@@ -146,8 +162,13 @@ class Units extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState({ addingUnit: false, unitAdded:true }, this.fetchUnits(`?page=1`), this.fetchSubjectsChoice()))
-      .catch((err) => this.setState({ addingUnit: false }, () => console.log(err)))
+      .then((res) => this.setState({ addingUnit: false, unitAdded:true }, ()=>{
+        this.fetchSubjectsChoice();
+        this.fetchUnits(`?page=1`);
+        this.props.handleClick('tr','Added Successfully');
+        this.handleHideAddModal();
+      }))
+      .catch((err) => this.setState({ addingUnit: false, errors: err.response.data }, () => console.log(err)))
     });
   }
 
@@ -161,7 +182,11 @@ class Units extends Component {
             },
           })
           .then((res) => {
-            this.setState({ deletingUnits: false, unitDeleted:true, transferData:false},this.this.fetchUnits(`?page=${this.state.page}`,(this.state.page-1)*10))
+            this.setState({ deletingUnits: false, unitDeleted:true, transferData:false},()=>{
+              this.fetchUnits(`?page=${this.state.page}`,(this.state.page-1)*10)
+              this.props.handleClick('tr','Deleted Successfully', 'warning');
+              this.handleHideDeleteModal();
+            })
           })
           .catch((err) => this.setState({ deletingUnits: false }, () => console.log(err)))
       }else{
@@ -171,7 +196,11 @@ class Units extends Component {
             },
           })
           .then((res) => {
-            this.setState({ deletingUnit: false,unitDeleted:true, transferData:false},this.fetchUnits(`?page=${this.state.page}`,(this.state.page-1)*10))
+            this.setState({ deletingUnit: false,unitDeleted:true, transferData:false},()=>{
+              this.fetchUnits(`?page=${this.state.page}`,(this.state.page-1)*10)
+              this.props.handleClick('tr','Deleted Successfully', 'warning');
+              this.handleHideDeleteModal();
+            })
           })
           .catch((err) => this.setState({ deletingUnit: false }, () => console.log(err)))
        }
@@ -180,18 +209,25 @@ class Units extends Component {
 
   handleEdit() {
     this.setState({ updatingUnit: true }, () => {
+      console.log(this.state.formData)
       var formData = new FormData();
       formData.append('title',this.state.formData.title)
       formData.append('subject',this.state.formData.subject)
       formData.append('description',this.state.formData.description)
       this.state.clear ? formData.append('image','') : (this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : console.log("debug") )
-      axios.patch(`/api/units/edit/${this.state.id}/`, formData, {
+      axios.put(`/api/units/edit/${this.state.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => {this.setState({ updatingUnit: false, unitUpdated:true },this.fetchUnits(`?page=1`), this.fetchSubjectsChoice());})
-      .catch((err) => this.setState({ updatingUnit: false }, () => console.log(err)))
+      .then((res) => {this.setState({ updatingUnit: false, unitUpdated:true },()=>{
+              this.fetchUnits(`?page=1`);
+              this.fetchSubjectsChoice();
+              this.props.handleClick('tr','Updated Successfully', 'info');
+              this.handleHideEditModal();
+            })
+          })
+      .catch((err) => this.setState({ updatingUnit: false, errors: err.response.data }, () => console.log(err)))
     });
   }
 
@@ -203,7 +239,7 @@ class Units extends Component {
       title:obj.title,
       image:obj.image,
       subject:this.state.subjects.filter(item=> obj.subject.id===item.id )[0].id,
-      description:obj.description,
+      description:obj.description === null ? '' : obj.description,
       file:null
     }},()=>{
       this.setState({show:true})
@@ -234,7 +270,7 @@ class Units extends Component {
   }
 
   handleFormDataChange(e) {
-    console.log(this.state.formData.file,this.state)
+    console.log(this.state.formData,this.state)
     if(e.target.name === 'course' ){
         if(e.target.checked){
           this.state.formData.course.push(e.target.value)
@@ -392,6 +428,7 @@ class Units extends Component {
                       hasMore={this.state.next === null ? false :true}
                       dropdown={this.state.dropdown}
                       toggle={this.toggleDropdown.bind(this)}
+                      errors={this.state.errors}
                     />
                     <DeleteUnit
                       show={this.state.show2}
@@ -405,6 +442,7 @@ class Units extends Component {
                       id={this.state.id}
                       unit={this.state.transferTo}
                       handleSelect={this.handleSelect.bind(this)}
+                      errors={this.state.errors}
                     />
                     <AddUnits
                       show={this.state.show3}
@@ -420,7 +458,8 @@ class Units extends Component {
                       fetchMore={this.fetchMore.bind(this)}
                       hasMore={this.state.next === null ? false :true}
                       dropdown={this.state.dropdown}
-                      toggle={this.toggleDropdown.bind(this)}/>
+                      toggle={this.toggleDropdown.bind(this)}
+                      errors={this.state.errors}/>
                   </div>
                 }
               />

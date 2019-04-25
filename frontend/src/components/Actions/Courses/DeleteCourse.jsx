@@ -22,6 +22,13 @@ class DeleteCourse extends Component {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    { 
+                        this.props.categoryDeleted 
+                        ?
+                        <center><b><p>Deleted Successully</p></b></center>
+                        :
+                        <center><b><p>Are You Sure You Want To Proceed ?</p></b></center>
+                    }
                     <LinearProgress
                         style={
                             this.props.deletingCourse ? 

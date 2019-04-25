@@ -4,7 +4,8 @@ import { Button,
          FormGroup, 
          FormControl,
          ControlLabel,
-         Row,Col} from "react-bootstrap";
+         Row,Col,
+         HelpBlock} from "react-bootstrap";
 
 import { Checkbox} from 'antd';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -14,6 +15,7 @@ import '../../../../node_modules/antd/dist/antd.css';
 class EditSubject extends Component {
 
   render() {
+    const { errors } = this.props;
     return ( 
             <Modal
                 show={this.props.show}
@@ -27,11 +29,6 @@ class EditSubject extends Component {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    { 
-                        this.props.subjectUpdated 
-                        ?
-                        <center><b><p>Updated Successully</p></b></center>
-                        :
                     <form>
                         <FormGroup
                         controlId="formBasicText"
@@ -42,8 +39,16 @@ class EditSubject extends Component {
                             value={this.props.formData.title}
                             placeholder="Subject Name"
                             name='title'
+                            required
                             onChange={this.props.handleFormDataChange}
                         />
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "title") && 
+                                    errors.title.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <br/>
                         <ControlLabel>DESCRIPTION</ControlLabel>
                         <FormControl
@@ -53,6 +58,13 @@ class EditSubject extends Component {
                             name='description'
                             onChange={this.props.handleFormDataChange}
                         />
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "description") && 
+                                    errors.description.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <br/>
                         <ControlLabel>Courses</ControlLabel>
                         <FormGroup>
@@ -68,6 +80,13 @@ class EditSubject extends Component {
                                             onChange={this.props.handleFormDataChange}
                                         >{props.title}</Checkbox>);
                             })} 
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "course") && 
+                                    errors.course.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         </FormGroup>
                         <br/>
                         <ControlLabel>IMAGE</ControlLabel><br/>
@@ -91,6 +110,13 @@ class EditSubject extends Component {
                             name='image'
                             onChange={this.props.handleFormDataChange}
                         />
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "image") && 
+                                    errors.image.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         </FormGroup>
                         <LinearProgress
                         style={
@@ -101,7 +127,6 @@ class EditSubject extends Component {
                         color="primary"
                         />
                     </form>
-                    }
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>

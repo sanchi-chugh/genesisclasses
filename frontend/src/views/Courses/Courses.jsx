@@ -96,8 +96,8 @@ class Courses extends Component {
           .then((res) => {
             this.setState({ deletingCourse: false,courseDeleted:true}, () => {
               this.fetchCourses();
-              this.props.handleClick('tr','Added Successfully', 'warning');
-              this.handleHideAddModal();
+              this.props.handleClick('tr','Deleted Successfully', 'warning');
+              this.handleHideDeleteModal();
             })
           })
           .catch((err) => this.setState({ deletingCourse: false, errors: err.response.data}, () => console.log(err)))
@@ -114,8 +114,8 @@ class Courses extends Component {
       })
       .then((res) => {this.setState({ updatingCourse: false, courseUpdated:true }, () => {
           this.fetchCourses();
-          this.props.handleClick('tr','Added Successfully', 'info');
-          this.handleHideAddModal();
+          this.props.handleClick('tr','Updated Successfully', 'info');
+          this.handleHideEditModal();
         })
       })
       .catch((err) => this.setState({ updatingCourse: false, errors: err.response.data }, () => console.log(err)))

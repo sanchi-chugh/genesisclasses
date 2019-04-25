@@ -45,6 +45,7 @@ class App extends React.Component {
   }
 
   completeProfile(){
+    console.log('completeProfile')
     this.setState({
       user:{
         ...this.state.user,

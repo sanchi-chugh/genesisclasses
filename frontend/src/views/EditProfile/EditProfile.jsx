@@ -83,7 +83,7 @@ class EditProfile extends Component {
       .then((res) => this.setState({ updatingStudent: false, studentUpdated:true },async ()=>{
         if(this.props.flag){
           await this.props.completeProfile();
-          this.props.history.push("/");
+          this.props.history.push("/home");
         }else{
           this.props.history.push('/home/editProfile')
         }

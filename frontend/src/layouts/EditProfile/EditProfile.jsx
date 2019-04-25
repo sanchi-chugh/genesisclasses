@@ -1,3 +1,13 @@
+
+
+
+
+
+
+
+
+
+
 import React, { Component } from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
 import NotificationSystem from "react-notification-system";
@@ -60,7 +70,7 @@ class Webapp extends Component {
                              flag={true}
                              user={this.props.user} 
                              logout={this.props.logout}
-                             compeleteProfile={this.props.compeleteProfile}
+                             completeProfile={this.props.completeProfile}
                              handleClick={this.handleNotificationClick} />  } />
             <Redirect from={'/'} to={'/completeDetails'} />;
           </Switch>

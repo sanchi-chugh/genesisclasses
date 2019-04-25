@@ -5,7 +5,8 @@ import {
   Col,
   FormGroup,
   ControlLabel,
-  FormControl
+  FormControl,
+  HelpBlock
 } from "react-bootstrap";
 
 import axios from 'axios';
@@ -49,7 +50,8 @@ class AddStudents extends Component {
         centre:''
       },
       updatingStudent:false,
-      studentUpdated:false
+      studentUpdated:false,
+      errors: {}
     };
   }
 
@@ -143,7 +145,7 @@ class AddStudents extends Component {
         this.props.history.goBack();
         this.props.handleClick('tr','Updated Successfully');
       }))
-      .catch((err) => this.setState({ updatingStudent: false }, () => console.log(err)))
+      .catch((err) => this.setState({ updatingStudent: false, errors: err.response.data }, () => console.log(err)))
     });
   }
 
@@ -197,12 +199,13 @@ class AddStudents extends Component {
     }else{
       this.setState({ formData: {
         ...this.state.formData,
-        [e.target.name] : e.target.value
+        [e.target.name] : e.target.value.trimLeft()
     }});
     }
   }
 
   render() {
+    const { errors } = this.state;
     return (
       <div className="content">
         <Grid fluid>
@@ -230,6 +233,7 @@ class AddStudents extends Component {
                           placeholder: "First Name",
                           name:'first_name',
                           value:this.state.formData.first_name,
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this)
                         },
                         {
@@ -239,6 +243,7 @@ class AddStudents extends Component {
                           placeholder: "Last Name",
                           name:'last_name',
                           value:this.state.formData.last_name,
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this)
                         }
                       ]}
@@ -253,6 +258,7 @@ class AddStudents extends Component {
                           placeholder: "Email",
                           name:'email',
                           value:this.state.formData.email,
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this)
                         },
                         {
@@ -262,6 +268,7 @@ class AddStudents extends Component {
                           placeholder: "Contact Number",
                           name:'contact_number',
                           value:this.state.formData.contact_number,
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this)
                         },
                         {
@@ -270,6 +277,7 @@ class AddStudents extends Component {
                           bsClass: "form-control",
                           name:'endAccessDate',
                           value:this.state.formData.endAccessDate,
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this)
                         },
                       ]}
@@ -283,6 +291,7 @@ class AddStudents extends Component {
                             bsClass: "form-control",
                             name:'joiningDate',
                             value:this.state.formData.joiningDate,
+                            errors: errors,
                             onChange:this.handleFormDataChange.bind(this)
                           },
                         ]}
@@ -301,7 +310,14 @@ class AddStudents extends Component {
                                       <option value={item.id}>{item.location}</option>
                                     )
                                   })}
-                              </FormControl>  
+                              </FormControl>
+                              {
+                                Object.keys(errors)
+                                        .some(item=> item === "centre") && 
+                                            errors.centre.map(err=>
+                                                <HelpBlock>{err}</HelpBlock>
+                                            )
+                              }
                             </FormGroup>
                           </Col>
                         }
@@ -322,7 +338,14 @@ class AddStudents extends Component {
                                             }
                                             onChange={this.handleFormDataChange.bind(this)}
                                         >{props.title}</Checkbox>);
-                            })} 
+                            })}
+                            {
+                                Object.keys(errors)
+                                        .some(item=> item === "course") && 
+                                            errors.course.map(err=>
+                                                <HelpBlock>{err}</HelpBlock>
+                                            )
+                              }
                         </FormGroup>
                       </Col>
                     </Row>
@@ -336,6 +359,7 @@ class AddStudents extends Component {
                           placeholder: "Father Name",
                           name:'father_name',
                           value:this.state.formData.father_name,
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this)
                         },
                         {
@@ -345,6 +369,7 @@ class AddStudents extends Component {
                           placeholder: "Date Of Birth",
                           name:'dateOfBirth',
                           value:this.state.formData.dateOfBirth,
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this)
                         }
                       ]}
@@ -360,7 +385,14 @@ class AddStudents extends Component {
                                     <option value=''>Choose Gender...</option>
                                     <option value='male'>Male</option>
                                     <option value='female'>Female</option>   
-                                </FormControl>  
+                                </FormControl>
+                                {
+                                  Object.keys(errors)
+                                          .some(item=> item === "gender") && 
+                                              errors.gender.map(err=>
+                                                  <HelpBlock>{err}</HelpBlock>
+                                              )
+                                }
                             </FormGroup>
                           </Col>
                       }
@@ -375,6 +407,7 @@ class AddStudents extends Component {
                           placeholder: "Home Adress",
                           name:'address',
                           value:this.state.formData.address,
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this)
                         }
                       ]}
@@ -389,6 +422,7 @@ class AddStudents extends Component {
                           placeholder: "City",
                           name:'city',
                           value:this.state.formData.city,
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this)
                         },
                         {
@@ -398,6 +432,7 @@ class AddStudents extends Component {
                           placeholder: "State",
                           name:'state',
                           value:this.state.formData.state,
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this)
                         },
                         {
@@ -407,6 +442,7 @@ class AddStudents extends Component {
                           placeholder: "ZIP Code",
                           name:'pinCode',
                           value:this.state.formData.pinCode,
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this)
                         }
                       ]}
@@ -418,7 +454,7 @@ class AddStudents extends Component {
                               </Col>:
                             <Row md={12}>
                               <Col xs={4}>
-                                  <a href={this.state.formData.image} target="_blank">{this.state.formData.image.split('/')[4]}</a> 
+                                  <a href={this.state.formData.image} target="_blank">{this.state.formData.image.split('/')[3]}</a> 
                               </Col>
                               <Col xs={4}>
                                   <Checkbox onChange={this.handleFormDataChange.bind(this)} name="clear" >CLEAR</Checkbox><br/>
@@ -430,7 +466,15 @@ class AddStudents extends Component {
                           placeholder="Image"
                           name='image'
                           onChange={this.handleFormDataChange.bind(this)}
-                      /> <br/>
+                      />
+                      {
+                        Object.keys(errors)
+                                .some(item=> item === "image") && 
+                                    errors.image.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                      }
+                      <br/>
                       <LinearProgress
                         style={
                             this.state.updatingStudent ? 

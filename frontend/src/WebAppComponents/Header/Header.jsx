@@ -29,8 +29,11 @@ class Header extends Component {
   }
   render() {
     return (
-      <nav fluid className={"nav-bar" + (this.props.expanded ? " nav-bar-expanded" : "")}>
-          <HeaderLinks { ...this.props} />
+      <nav 
+        fluid 
+        className={"nav-bar" + (this.props.expanded ? " nav-bar-expanded" : "")} 
+        style={{backgroundColor: this.props.flag ? "#D2EDFF" : " "}}>
+        <HeaderLinks { ...this.props} />
       </nav>
     );
   }

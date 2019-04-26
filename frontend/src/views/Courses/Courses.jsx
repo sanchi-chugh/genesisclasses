@@ -35,6 +35,7 @@ class Courses extends Component {
           deletingCourse:false,
           courseAdded:false,
           addingCourse:false,
+          errors:{}
         };
       }
   
@@ -57,15 +58,15 @@ class Courses extends Component {
   }
 
   handleHideEditModal() {
-    this.setState({ show: false, updatingCourse:false, courseUpdated:false, value:''});
+    this.setState({ show: false, updatingCourse:false, courseUpdated:false, value:'', errors: {}});
   }
 
   handleHideAddModal() {
-    this.setState({ show3: false, addingCourse:false, courseAdded:false,value:''});
+    this.setState({ show3: false, addingCourse:false, courseAdded:false,value:'', errors: {}});
   }
 
   handleHideDeleteModal() {
-    this.setState({ show2: false, deletingCourse:false, courseDeleted:false, transferData:false,transferTo:'Select Course', course:null});
+    this.setState({ show2: false, deletingCourse:false, courseDeleted:false, transferData:false,transferTo:'Select Course', course:null, errors:{}});
   }
 
   handleAdd(){
@@ -76,8 +77,12 @@ class Courses extends Component {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => this.setState({ addingCourse: false, courseAdded:true }, this.fetchCourses()))
-      .catch((err) => this.setState({ addingCourse: false }, () => console.log(err)))
+      .then((res) => this.setState({ addingCourse: false, courseAdded:true }, () => {
+        this.fetchCourses();
+        this.props.handleClick('tr','Added Successfully');
+        this.handleHideAddModal();
+      }))
+      .catch((err) => this.setState({ addingCourse: false, errors: err.response.data }, () => console.log(err)))
     });
   }
 
@@ -89,9 +94,13 @@ class Courses extends Component {
             },
           })
           .then((res) => {
-            this.setState({ deletingCourse: false,courseDeleted:true},this.fetchCourses())
+            this.setState({ deletingCourse: false,courseDeleted:true}, () => {
+              this.fetchCourses();
+              this.props.handleClick('tr','Deleted Successfully', 'warning');
+              this.handleHideDeleteModal();
+            })
           })
-          .catch((err) => this.setState({ deletingCourse: false }, () => console.log(err)))
+          .catch((err) => this.setState({ deletingCourse: false, errors: err.response.data}, () => console.log(err)))
     });
   } 
 
@@ -103,8 +112,13 @@ class Courses extends Component {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => {this.setState({ updatingCourse: false, courseUpdated:true }); this.fetchCourses()})
-      .catch((err) => this.setState({ updatingCourse: false }, () => console.log(err)))
+      .then((res) => {this.setState({ updatingCourse: false, courseUpdated:true }, () => {
+          this.fetchCourses();
+          this.props.handleClick('tr','Updated Successfully', 'info');
+          this.handleHideEditModal();
+        })
+      })
+      .catch((err) => this.setState({ updatingCourse: false, errors: err.response.data }, () => console.log(err)))
     });
   }
 
@@ -125,7 +139,7 @@ class Courses extends Component {
   }
 
   handleTextChange(e) {
-    this.setState({ value: e.target.value });
+    this.setState({ value: e.target.value.trimLeft() });
   }
 
   toggleTransferData(e){
@@ -187,6 +201,7 @@ class Courses extends Component {
                       handleTextChange={this.handleTextChange.bind(this)} 
                       updatingCourse={this.state.updatingCourse}
                       handleEdit={this.handleEdit.bind(this)}
+                      errors={this.state.errors}
                     />
                     <DeleteCourse
                       show={this.state.show2}
@@ -194,6 +209,7 @@ class Courses extends Component {
                       courseDeleted={this.state.courseDeleted}
                       deletingCourse={this.state.deletingCourse}
                       handleDelete={this.handleDelete.bind(this)}
+                      errors={this.state.errors}
                     />
                     <AddCourse
                       show={this.state.show3}
@@ -203,6 +219,7 @@ class Courses extends Component {
                       handleAdd={this.handleAdd.bind(this)}
                       value={this.state.value}
                       handleTextChange={this.handleTextChange.bind(this)}
+                      errors={this.state.errors}
                     />
                   </div>
                 }

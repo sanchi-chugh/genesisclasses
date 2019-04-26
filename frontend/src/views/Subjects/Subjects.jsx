@@ -47,7 +47,8 @@ class Subjects extends Component {
           subject:null,
           subjectAdded:false,
           addingSubject:false,
-          clear:false
+          clear:false,
+          errors:{}
         };
       }
   
@@ -82,7 +83,20 @@ class Subjects extends Component {
   }
 
   handleHideEditModal() {
-    this.setState({ show: false, updatingSubject:false, subjectUpdated:false, value:''});
+    this.setState({ 
+      show: false, 
+      updatingSubject:false, 
+      subjectUpdated:false, 
+      value:'',
+      formData:{
+        title:'',
+        description:'',
+        file:null,
+        image:'',
+        course:[]
+      },
+      errors:{}
+    });
   }
 
   handleHideAddModal() {
@@ -96,7 +110,9 @@ class Subjects extends Component {
         file:null,
         image:'',
         course:[]
-    }});
+      },
+      errors:{}
+    });
   }
 
   handleHideDeleteModal() {
@@ -119,8 +135,12 @@ class Subjects extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState({ addingSubject: false, subjectAdded:true }, this.fetchSubjects()))
-      .catch((err) => this.setState({ addingSubject: false }, () => console.log(err)))
+      .then((res) => this.setState({ addingSubject: false, subjectAdded:true }, () => {
+          this.fetchSubjects();
+          this.props.handleClick('tr','Added Successfully');
+          this.handleHideAddModal();
+        }))
+      .catch((err) => this.setState({ addingSubject: false, errors: err.response.data }, () => console.log(err)))
     });
   }
 
@@ -134,7 +154,11 @@ class Subjects extends Component {
             },
           })
           .then((res) => {
-            this.setState({ deletingSubject: false, subjectDeleted:true, transferData:false},this.fetchSubjects())
+            this.setState({ deletingSubject: false, subjectDeleted:true, transferData:false}, () => {
+              this.fetchSubjects();
+              this.props.handleClick('tr','Deleted Successfully', 'warning');
+              this.handleHideDeleteModal();
+            })
           })
           .catch((err) => this.setState({ deletingSubject: false }, () => console.log(err)))
       }else{
@@ -144,7 +168,11 @@ class Subjects extends Component {
             },
           })
           .then((res) => {
-            this.setState({ deletingSubject: false,subjectDeleted:true, transferData:false},this.fetchSubjects())
+            this.setState({ deletingSubject: false,subjectDeleted:true, transferData:false}, () => {
+              this.fetchSubjects();
+              this.props.handleClick('tr','Deleted Successfully', 'warning');
+              this.handleHideDeleteModal();
+            })
           })
           .catch((err) => this.setState({ deletingSubject: false }, () => console.log(err)))
        }
@@ -157,14 +185,19 @@ class Subjects extends Component {
       formData.append('title',this.state.formData.title)
       formData.append('course',this.state.formData.course.join(','))
       formData.append('description',this.state.formData.description)
-      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : formData.append('image','')
+      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : ''
       axios.put(`/api/subjects/edit/${this.state.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => {this.setState({ updatingSubject: false, subjectUpdated:true }); this.fetchSubjects()})
-      .catch((err) => this.setState({ updatingSubject: false }, () => console.log(err)))
+      .then((res) => {this.setState({ updatingSubject: false, subjectUpdated:true }, () => {
+          this.fetchSubjects();
+          this.props.handleClick('tr','Updated Successfully', 'info');
+          this.handleHideEditModal();
+        })
+      })
+      .catch((err) => this.setState({ updatingSubject: false, errors: err.response.data }, () => console.log(err)))
     });
   }
 
@@ -230,7 +263,7 @@ class Subjects extends Component {
     }else{
       this.setState({ formData: {
         ...this.state.formData,
-        [e.target.name] : e.target.value
+        [e.target.name] : e.target.value.trimLeft()
     }});
     }
   }
@@ -303,6 +336,7 @@ class Subjects extends Component {
                     </BootstrapTable>
                     <EditSubject 
                       show={this.state.show} 
+                      errors={this.state.errors}
                       onHide={this.handleHideEditModal.bind(this)} 
                       subjectUpdated={this.state.subjectUpdated} 
                       formData={this.state.formData} 
@@ -313,6 +347,7 @@ class Subjects extends Component {
                     />
                     <DeleteSubject
                       show={this.state.show2}
+                      errors={this.state.errors}
                       onHide={this.handleHideDeleteModal.bind(this)}
                       subjectDeleted={this.state.subjectDeleted}
                       deletingSubject={this.state.deletingSubject}
@@ -326,6 +361,7 @@ class Subjects extends Component {
                     />
                     <AddSubject
                       show={this.state.show3}
+                      errors={this.state.errors}
                       onHide={this.handleHideAddModal.bind(this)}
                       subjectAdded={this.state.subjectAdded}
                       addingSubject={this.state.addingSubject}

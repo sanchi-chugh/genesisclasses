@@ -1,11 +1,20 @@
 import React, { Component } from "react";
-import { FormGroup, ControlLabel, FormControl, Row } from "react-bootstrap";
+import { FormGroup, ControlLabel, FormControl, Row, HelpBlock } from "react-bootstrap";
 
 function FieldGroup({ label, ...props }) {
+  console.log(props)
   return (
     <FormGroup>
       <ControlLabel className='form-input'>{label}</ControlLabel>
       <FormControl {...props} />
+      {
+        props.errors !== null && props.errors !== undefined ? 
+          Object.keys(props.errors)
+              .some(item=> item === props.name) && 
+                  props.errors[props.name].map(err=>
+                      <HelpBlock>{err}</HelpBlock>
+                  ) : ''
+      }
     </FormGroup>
   );
 }

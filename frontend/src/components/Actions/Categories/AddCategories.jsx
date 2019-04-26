@@ -12,6 +12,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 class AddCategories extends Component {
 
   render() {
+    const { errors } = this.props;
     return ( 
             <Modal
                 show={this.props.show}
@@ -38,7 +39,13 @@ class AddCategories extends Component {
                             required
                             onChange={this.props.handleFormDataChange}
                         />
-                        {this.props.err !== null ? <HelpBlock>{this.props.err.message}</HelpBlock> : null}
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "title") && 
+                                    errors.title.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <br/>
                         <ControlLabel>DESCRIPTION </ControlLabel>
                         <FormControl
@@ -51,6 +58,13 @@ class AddCategories extends Component {
                             name='description'
                             onChange={this.props.handleFormDataChange}
                         />
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "description") && 
+                                    errors.description.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <br/>
                         <ControlLabel>IMAGE</ControlLabel>
                         <FormControl
@@ -59,6 +73,13 @@ class AddCategories extends Component {
                             name='image'
                             onChange={this.props.handleFormDataChange}
                         />
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "image") && 
+                                    errors.image.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         </FormGroup>
                         <LinearProgress
                         style={

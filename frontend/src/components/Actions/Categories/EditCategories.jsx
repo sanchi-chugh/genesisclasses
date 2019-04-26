@@ -15,6 +15,7 @@ import '../../../../node_modules/antd/dist/antd.css';
 class EditCategories extends Component {
 
   render() {
+    const { errors } = this.props;
     return ( 
             <Modal
                 show={this.props.show}
@@ -41,7 +42,13 @@ class EditCategories extends Component {
                             required
                             onChange={this.props.handleFormDataChange}
                         />
-                        {this.props.err !== null ? <HelpBlock>{this.props.err}</HelpBlock> : null}
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "title") && 
+                                    errors.title.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <br/>
                         <ControlLabel>DESCRIPTION </ControlLabel>
                         <FormControl
@@ -54,6 +61,13 @@ class EditCategories extends Component {
                             name='description'
                             onChange={this.props.handleFormDataChange}
                         />
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "description") && 
+                                    errors.description.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <br/>
                         <br/>
                         <ControlLabel>IMAGE</ControlLabel><br/>
@@ -77,6 +91,13 @@ class EditCategories extends Component {
                             name='image'
                             onChange={this.props.handleFormDataChange}
                         />
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "image") && 
+                                    errors.image.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         </FormGroup>
                         <LinearProgress
                         style={

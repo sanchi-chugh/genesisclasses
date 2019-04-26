@@ -63,7 +63,7 @@ const dashboardRoutes = [
     icon: "pe-7s-culture",
     component: Tests
   },
-  { redirect: true, path: "/", to: "/centre", name: "Dashboard" }
+  { redirect: true, path: "/", to: "/bulkStudents", name: "Dashboard" }
 ];
 
 export default dashboardRoutes;

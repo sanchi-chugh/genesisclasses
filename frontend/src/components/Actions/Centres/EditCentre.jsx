@@ -3,13 +3,15 @@ import { Button,
          Modal, 
          FormGroup, 
          FormControl,
-         ControlLabel} from "react-bootstrap";
+         ControlLabel,
+         HelpBlock} from "react-bootstrap";
 
 import LinearProgress from '@material-ui/core/LinearProgress';
 
 class EditCentre extends Component {
 
   render() {
+    const { errors } = this.props;
     return ( 
             <Modal
                 show={this.props.show}
@@ -35,6 +37,13 @@ class EditCentre extends Component {
                                 required
                                 onChange={this.props.handleTextChange}
                             />
+                            {
+                                Object.keys(errors)
+                                    .some(item=> item === "location") && 
+                                        errors.location.map(err=>
+                                            <HelpBlock>{err}</HelpBlock>
+                                        )
+                            }
                             </FormGroup>
                             <LinearProgress
                             style={

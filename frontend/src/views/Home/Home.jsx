@@ -3,7 +3,7 @@ import { Grid, Row, Col } from "react-bootstrap";
 
 import { Card } from "../../WebAppComponents/Card/Card.jsx";
 import Axios from "axios";
-
+import unitIcon from "../../assets/img/assets.jpg"
 
 class Home extends Component {
 
@@ -90,7 +90,7 @@ class Home extends Component {
         <div style={{display:'block',width:'100%'}}>
           <div className="home-cards">
             <Card
-              image={'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
+              image={unitIcon}
               title={'Unit Wise Tests'}
               handleClick={this.handleUnitWise.bind(this)}
             />

@@ -37,7 +37,7 @@ class Centres extends Component {
           centre:'',
           centreAdded:false,
           addingCentre:false,
-
+          errors:{}
         };
       }
   
@@ -60,15 +60,15 @@ class Centres extends Component {
   }
 
   handleHideEditModal() {
-    this.setState({ show: false, updatingCentre:false, centreUpdated:false, value:''});
+    this.setState({ show: false, updatingCentre:false, centreUpdated:false, value:'', errors:{}});
   }
 
   handleHideAddModal() {
-    this.setState({ show3: false, addingCentre:false, centreAdded:false,value:''});
+    this.setState({ show3: false, addingCentre:false, centreAdded:false,value:'', errors:{}});
   }
 
   handleHideDeleteModal() {
-    this.setState({ show2: false, deletingCentre:false, centreDeleted:false, transferData:false, centre:''});
+    this.setState({ show2: false, deletingCentre:false, centreDeleted:false, transferData:false, centre:'', errors:{}});
   }
 
   handleAdd(e){
@@ -85,7 +85,7 @@ class Centres extends Component {
         this.props.handleClick('tr','Added Successfully');
         this.handleHideAddModal();
       })
-      .catch((err) => this.setState({ addingCentre: false }, () => console.log(err)))
+      .catch((err) => this.setState({ addingCentre: false, errors: err.response.data }, () => console.log(err)))
     });
   }
 
@@ -112,9 +112,14 @@ class Centres extends Component {
             },
           })
           .then((res) => {
-            this.setState({ deletingCentre: false,centreDeleted:true, transferData:false},this.fetchCentres())
+            
+            this.setState({ deletingCentre: false,centreDeleted:true, transferData:false},()=>{
+              this.fetchCentres();
+              this.props.handleClick('tr','Deleted Successfully', 'warning');
+              this.handleHideDeleteModal();
+            })
           })
-          .catch((err) => this.setState({ deletingCentre: false }, () => console.log(err)))
+          .catch((err) => this.setState({ deletingCentre: false, errors:err.response.data }, () => console.log(err)))
       }
     });
   } 
@@ -133,7 +138,7 @@ class Centres extends Component {
         this.props.handleClick('tr','Updated Successfully', 'info');
         this.handleHideEditModal();
       })
-      .catch((err) => this.setState({ updatingCentre: false }, () => console.log(err)))
+      .catch((err) => this.setState({ updatingCentre: false, errors: err.response.data }, () => console.log(err)))
     });
   }
 
@@ -154,7 +159,7 @@ class Centres extends Component {
   }
 
   handleTextChange(e) {
-    this.setState({ value: e.target.value });
+    this.setState({ value: e.target.value.trimLeft() });
   }
 
   toggleTransferData(e){
@@ -216,6 +221,7 @@ class Centres extends Component {
                       handleTextChange={this.handleTextChange.bind(this)} 
                       updatingCentre={this.state.updatingCentre}
                       handleEdit={this.handleEdit.bind(this)}
+                      errors={this.state.errors}
                     />
                     <DeleteCentre
                       show={this.state.show2}
@@ -229,6 +235,7 @@ class Centres extends Component {
                       id={this.state.id}
                       centre={this.state.transferTo}
                       handleSelect={this.handleSelect.bind(this)}
+                      errors={this.state.errors}
                     />
                     <AddCentre
                       show={this.state.show3}
@@ -238,6 +245,7 @@ class Centres extends Component {
                       handleAdd={this.handleAdd.bind(this)}
                       value={this.state.value}
                       handleTextChange={this.handleTextChange.bind(this)}
+                      errors={this.state.errors}
                     />
                   </div>
                 }

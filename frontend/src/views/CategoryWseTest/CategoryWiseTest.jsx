@@ -58,6 +58,10 @@ class CategoryWiseTests extends Component {
     return (
       <div className="content home-content">
         <center><h4 className="title-heading">Tests</h4></center>
+        {
+          !this.state.busy && this.state.data.results.length === 0 &&
+          <div className="no-tests-placeholder">No Tests Available</div>
+        }
         {!this.state.busy &&
         <TestList
           {...this.props}

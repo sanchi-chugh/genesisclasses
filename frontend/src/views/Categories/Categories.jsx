@@ -25,7 +25,6 @@ class Categories extends Component {
         this.handleFormDataChange = this.handleFormDataChange.bind(this);
         this.state = {
           data: [],
-          err:null,
           show: false,//edit modal
           show2:false,//delete modal
           show3:false,//add modal
@@ -44,7 +43,8 @@ class Categories extends Component {
           deletingCategories:false,
           categoryAdded:false,
           addingCategories:false,
-          clear:false
+          clear:false,
+          errors:{}
         };
       }
   
@@ -70,7 +70,7 @@ class Categories extends Component {
     this.setState({ 
       show: false, 
       updatingCategories:false, 
-      err:null,
+      errors:{},
       categoryUpdated:false, 
       formData:{
         title:'',
@@ -85,7 +85,7 @@ class Categories extends Component {
     this.setState({ 
       show3: false, 
       addingCategories:false, 
-      err:null,
+      errors:{},
       categoryAdded:false,
       formData:{
         title:'',
@@ -120,16 +120,8 @@ class Categories extends Component {
         this.props.handleClick('tr','Added Successfully');
         this.handleHideAddModal();
       })
-      .catch((err) => this.setState({ addingCategories: false }, () => {
-        console.log(err.response); 
-        // this.setState({err:err.response.data.message});
-        for(let key in err.response.data) {
-          this.setState({
-            err:{
-              [key]: err.response.data[key]
-            }
-          })
-        }
+      .catch((err) => this.setState({ addingCategories: false, errors: err.response.data }, () => {
+        console.log(err)
       }))
     });
   }
@@ -147,16 +139,8 @@ class Categories extends Component {
             this.props.handleClick('tr','Deleted Successfully', 'warning');
             this.handleHideDeleteModal();
           })
-          .catch((err) => this.setState({ deletingCategories: false }, () => {
+          .catch((err) => this.setState({ deletingCategories: false, errors: err.response.data }, () => {
             console.log(err); 
-            for(let key in err.response.data) {
-              this.setState({
-                err:{
-                  [key]: err.response.data[key]
-                }
-              })
-            }
-            // this.setState({err:err.response.data.message})
           }))
       });
   } 
@@ -164,10 +148,11 @@ class Categories extends Component {
   handleEdit(e) {
     e.preventDefault();
     this.setState({ updatingCategories: true, err:null }, () => {
+      console.log(this.state)
       var formData = new FormData();
       formData.append('title',this.state.formData.title !== null ? this.state.formData.title : '')
       formData.append('description',this.state.formData.description !== null ? this.state.formData.description :'' )
-      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : formData.append('image',this.state.formData.image)
+      this.state.clear ? formData.append('image','') : this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : null
       axios.put(`/api/testCategories/edit/${this.state.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`
@@ -178,16 +163,8 @@ class Categories extends Component {
         this.props.handleClick('tr','Updated Successfully', 'info');
         this.handleHideEditModal();
       })
-      .catch((err) => this.setState({ updatingCategories: false }, () => {
+      .catch((err) => this.setState({ updatingCategories: false, errors: err.response.data }, () => {
         console.log(err); 
-        // this.setState({err:err.response.data.message});
-        for(let key in err.response.data) {
-          this.setState({
-            err:{
-              [key]: err.response.data[key]
-            }
-          })
-        }
       }))
     });
   }
@@ -233,12 +210,12 @@ class Categories extends Component {
     }
     else if(e.target.name==='clear'){
       this.setState({ 
-        clear: !e.target.checked
+        clear: e.target.checked
       });
     }else{
       this.setState({ formData: {
         ...this.state.formData,
-        [e.target.name] : e.target.value
+        [e.target.name] : e.target.value.trimLeft()
     }});
     }
   }
@@ -298,7 +275,7 @@ class Categories extends Component {
                     <EditCategories 
                       show={this.state.show} 
                       onHide={this.handleHideEditModal.bind(this)} 
-                      err={this.state.err}
+                      errors={this.state.errors}
                       categoryUpdated={this.state.categoryUpdated} 
                       formData={this.state.formData} 
                       courses={this.state.courses}
@@ -317,7 +294,7 @@ class Categories extends Component {
                     <AddCategories
                       show={this.state.show3}
                       onHide={this.handleHideAddModal.bind(this)}
-                      err={this.state.err}
+                      errors={this.state.errors}
                       categoryAdded={this.state.categoryAdded}
                       addingCategories={this.state.addingCategories}
                       handleAdd={this.handleAdd.bind(this)}

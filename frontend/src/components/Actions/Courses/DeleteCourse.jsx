@@ -23,7 +23,7 @@ class DeleteCourse extends Component {
                 </Modal.Header>
                 <Modal.Body>
                     { 
-                        this.props.courseDeleted 
+                        this.props.categoryDeleted 
                         ?
                         <center><b><p>Deleted Successully</p></b></center>
                         :

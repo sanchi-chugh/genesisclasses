@@ -160,7 +160,11 @@ class Tests extends Component {
         },
       })
       .then((res) => {
-        this.setState({ deletingTest: false,testDeleted:true},this.fetchTests(`?page=${this.state.page}`,(this.state.page-1)*10))
+        this.setState({ deletingTest: false,testDeleted:true},()=>{
+          this.fetchTests(`?page=${this.state.page}`,(this.state.page-1)*10);
+          this.props.handleClick('tr','Deleted Successfully', 'warning');
+          this.handleHideDeleteModal();
+        })
       })
       .catch((err) => this.setState({ deletingTest: false }, () => console.log(err)))
     });

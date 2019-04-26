@@ -35,7 +35,7 @@ class Sections extends Component {
           deletingSection:false,
           sectionAdded:false,
           addingSection:false,
-
+          errors: {}
         };
       }
   
@@ -59,11 +59,11 @@ class Sections extends Component {
   }
 
   handleHideEditModal() {
-    this.setState({ show: false, updatingSection:false, sectionUpdated:false, value:''});
+    this.setState({ show: false, updatingSection:false, sectionUpdated:false, value:'', errors:{}});
   }
 
   handleHideAddModal() {
-    this.setState({ show3: false, addingSection:false, sectionAdded:false,value:''});
+    this.setState({ show3: false, addingSection:false, sectionAdded:false,value:'', errors:{}});
   }
 
   handleHideDeleteModal() {
@@ -78,8 +78,12 @@ class Sections extends Component {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => this.setState({ addingSection: false, sectionAdded:true }, this.fetchSections()))
-      .catch((err) => this.setState({ addingSection: false }, () => console.log(err)))
+      .then((res) => this.setState({ addingSection: false, sectionAdded:true },()=>{
+        this.fetchSections();
+        this.props.handleClick('tr','Added Successfully');
+        this.handleHideAddModal();
+      }))
+      .catch((err) => this.setState({ addingSection: false, errors: err.response.data }, () => console.log(err)))
     });
   }
 
@@ -91,7 +95,11 @@ class Sections extends Component {
         },
       })
       .then((res) => {
-        this.setState({ deletingSection: false,sectionDeleted:true},this.fetchSections())
+        this.setState({ deletingSection: false,sectionDeleted:true},()=>{
+          this.fetchSections();
+          this.props.handleClick('tr','Deleted Successfully', 'warning');
+          this.handleHideDeleteModal();
+        })
       })
       .catch((err) => this.setState({ deletingSection: false }, () => console.log(err)))
     });
@@ -105,8 +113,14 @@ class Sections extends Component {
           Authorization: `Token ${localStorage.token}`
         },
       })
-      .then((res) => {this.setState({ updatingSection: false, sectionUpdated:true }); this.fetchSections()})
-      .catch((err) => this.setState({ updatingSection: false }, () => console.log(err)))
+      .then((res) => {
+        this.setState({ updatingSection: false, sectionUpdated:true }, ()=>{
+          this.fetchSections();
+          this.props.handleClick('tr','Updated Successfully', 'info');
+          this.handleHideEditModal();
+        })
+      })
+      .catch((err) => this.setState({ updatingSection: false, errors: err.response.data}, () => console.log(err)))
     });
   }
 
@@ -131,7 +145,7 @@ class Sections extends Component {
   }
 
   handleTextChange(e) {
-    this.setState({ value: e.target.value });
+    this.setState({ value: e.target.value.trimLeft() });
   }
   
   renderColumn(cell, row, enumObject, rowIndex) {
@@ -191,6 +205,7 @@ class Sections extends Component {
                       value={this.state.value} 
                       handleTextChange={this.handleTextChange.bind(this)} 
                       updatingSection={this.state.updatingSection}
+                      errors={this.state.errors}
                       handleEdit={this.handleEdit.bind(this)}
                     />
                     <DeleteSection
@@ -208,6 +223,7 @@ class Sections extends Component {
                       addingSection={this.state.addingSection}
                       handleAdd={this.handleAdd.bind(this)}
                       value={this.state.value}
+                      errors={this.state.errors}
                       handleTextChange={this.handleTextChange.bind(this)}
                     />
                   </div>

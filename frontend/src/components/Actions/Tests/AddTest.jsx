@@ -71,25 +71,49 @@ class AddTests extends Component {
           }
       }).then(res => {
           const data = res.data;
-          this.setState({subjects:data});
+          this.setState({
+            subjects:data, 
+            formData:{
+              ...this.state.formData,
+              subject:''
+            }
+          });
       });
     }else{
-      this.setState({subjects:[]})
+      this.setState({
+        subjects:[],
+        formData:{
+          ...this.state.formData,
+          subject:''
+        }
+      })
     }
   }
 
   fetchUnits(){
-      if(this.state.formData.subject !== '' || this.state.formData.subject !== null){
+      if(this.state.formData.subject !== '' && this.state.formData.subject !== null){
         axios.get(`/api/units/${this.state.formData.subject}/`, {
             headers: {
             Authorization: `Token ${localStorage.token}`
             }
         }).then(res => {
             const data = res.data;
-            this.setState({units:data});
+            this.setState({
+              units:data,
+              formData:{
+                ...this.state.formData,
+                unit:''
+              }
+            });
         });
       }else{
-        this.setState({units:[]})
+        this.setState({
+          units:[],
+          formData:{
+            ...this.state.formData,
+            unit:''
+          }
+        })
     }
   }
   
@@ -165,11 +189,10 @@ class AddTests extends Component {
     });
   };
 
-  handleFormDataChange(e) {
-    console.log(e)
+  async handleFormDataChange(e) {
     if(e.target.name === 'course' ){
         if(e.target.checked){
-          this.state.formData.course.push(e.target.value)
+          await this.state.formData.course.push(e.target.value)
           this.fetchSubjects();
         }else{
           this.setState({
@@ -389,6 +412,13 @@ class AddTests extends Component {
                                   onChange={this.handleFormDataChange.bind(this)}
                                   value={this.state.formData.sdate}
                                 />
+                            {
+                                Object.keys(errors)
+                                    .some(item=> item === "startTime") && 
+                                        errors.startTime.map(err=>
+                                            <HelpBlock>{err}</HelpBlock>
+                                        )
+                            }
                         </Col>
                         <Col md={6}>
                             <FormControl 
@@ -397,13 +427,6 @@ class AddTests extends Component {
                               onChange={this.handleFormDataChange.bind(this)}
                               value={this.state.formData.stime}
                             />
-                            {
-                                Object.keys(errors)
-                                    .some(item=> item === "startTime") && 
-                                        errors.startTime.map(err=>
-                                            <HelpBlock>{err}</HelpBlock>
-                                        )
-                            }
                         </Col>
                       </Row>
                     </FormGroup>
@@ -417,6 +440,13 @@ class AddTests extends Component {
                                   onChange={this.handleFormDataChange.bind(this)}
                                   value={this.state.formData.edate}
                                 />
+                                {
+                                    Object.keys(errors)
+                                        .some(item=> item === "endtime") && 
+                                            errors.endtime.map(err=>
+                                                <HelpBlock>{err}</HelpBlock>
+                                            )
+                                }
                         </Col>
                         <Col md={6}>
                             <FormControl 
@@ -425,13 +455,6 @@ class AddTests extends Component {
                               onChange={this.handleFormDataChange.bind(this)}
                               value={this.state.formData.etime}
                             />
-                            {
-                                Object.keys(errors)
-                                    .some(item=> item === "endtime") && 
-                                        errors.endtime.map(err=>
-                                            <HelpBlock>{err}</HelpBlock>
-                                        )
-                            }
                         </Col>
                       </Row>
                     </FormGroup>

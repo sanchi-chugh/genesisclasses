@@ -6,6 +6,7 @@ import {
   FormGroup,
   ControlLabel,
   FormControl,
+  HelpBlock
 } from "react-bootstrap";
 
 import axios from 'axios';
@@ -52,7 +53,8 @@ class EditTest extends Component {
         active: null
       },
       updatingTest:false,
-      testUpdated:false
+      testUpdated:false,
+      errors: {}
     };
   }
 
@@ -116,7 +118,7 @@ class EditTest extends Component {
           this.setState({subjects:data});
       });
     }else{
-      this.setState({subjects:[]})
+      this.setState({subjects:[], subject: ''})
     }
   }
 
@@ -132,7 +134,7 @@ class EditTest extends Component {
             this.setState({units:data});
         });
       }else{
-        this.setState({units:[]})
+        this.setState({units:[], unit:''})
     }
   }
   
@@ -183,7 +185,7 @@ class EditTest extends Component {
         this.props.history.goBack();
         this.props.handleClick('tr','Updated Successfully');
       }))
-      .catch((err) => this.setState({ updatingTest: false }, () => console.log(err)))
+      .catch((err) => this.setState({ updatingTest: false, errors: err.response.data }, () => console.log(err)))
     });
   }
 
@@ -264,10 +266,9 @@ class EditTest extends Component {
               unit:''
           }},this.fetchUnits.bind(this));
         }else{
-          console.log(e.target.name,e.target.value,this.state.formData)
           this.setState({ formData: {
               ...this.state.formData,
-              [e.target.name] : e.target.value
+              [e.target.name] : e.target.value.trimLeft()
           }}
         );
       }
@@ -275,7 +276,7 @@ class EditTest extends Component {
   }
 
   render() {
-
+    const { errors } = this.state;
     return (
       <div className="content">
         <Grid fluid>
@@ -307,6 +308,7 @@ class EditTest extends Component {
                           bsClass: "form-control",
                           placeholder: "Test Name",
                           name:'title',
+                          errors:errors,
                           value:this.state.formData.title,
                           onChange:this.handleFormDataChange.bind(this)
                         },
@@ -321,6 +323,7 @@ class EditTest extends Component {
                             bsClass: "form-control",
                             placeholder: "Duration of test",
                             name:'duration',
+                            errors:errors,
                             value:this.state.formData.duration,
                             onChange:this.handleFormDataChange.bind(this)
                           },
@@ -336,7 +339,14 @@ class EditTest extends Component {
                             <option value=''>Choose Type Of Test...</option>
                             <option value='practice'>Practice</option>
                             <option value='upcoming'>Upcoming</option>   
-                        </FormControl>  
+                        </FormControl>
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "typeOfTest") && 
+                                    errors.typeOfTest.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }  
                     </FormGroup>
                     <FormGroup>
                       <ControlLabel  className='form-input'>Instructions *</ControlLabel>
@@ -346,6 +356,13 @@ class EditTest extends Component {
                         editorClassName={'textarea'}
                         onEditorStateChange={this.onEditorStateChange.bind(this)}
                       /><hr/>
+                      {
+                          Object.keys(errors)
+                              .some(item=> item === "instructions") && 
+                                  errors.instructions.map(err=>
+                                      <HelpBlock>{err}</HelpBlock>
+                                  )
+                      }
                     </FormGroup>
                     <FormInputs
                       ncols={["col-md-12"]}
@@ -356,6 +373,7 @@ class EditTest extends Component {
                           bsClass: "form-control",
                           placeholder: "Enter Description",
                           name:'description',
+                          errors:errors,
                           value:this.state.formData.description,
                           onChange:this.handleFormDataChange.bind(this)
                         },
@@ -379,6 +397,13 @@ class EditTest extends Component {
                                             onChange={this.handleFormDataChange.bind(this)}
                                         >{props.title}</Checkbox>);
                             })} 
+                            {
+                                Object.keys(errors)
+                                    .some(item=> item === "course") && 
+                                        errors.course.map(err=>
+                                            <HelpBlock>{err}</HelpBlock>
+                                        )
+                            }
                         </FormGroup>
                       </Col>
                     </Row>
@@ -399,6 +424,13 @@ class EditTest extends Component {
                                             onChange={this.handleFormDataChange.bind(this)}
                                         >{props.title}</Checkbox>);
                             })} 
+                            {
+                                Object.keys(errors)
+                                    .some(item=> item === "category") && 
+                                        errors.category.map(err=>
+                                            <HelpBlock>{err}</HelpBlock>
+                                        )
+                            }
                         </FormGroup>
                       </Col>
                     </Row>
@@ -413,6 +445,13 @@ class EditTest extends Component {
                                   onChange={this.handleFormDataChange.bind(this)}
                                   value={this.state.formData.sdate}
                                 />
+                                {
+                                    Object.keys(errors)
+                                        .some(item=> item === "startTime") && 
+                                            errors.startTime.map(err=>
+                                                <HelpBlock>{err}</HelpBlock>
+                                            )
+                                }
                         </Col>
                         <Col md={6}>
                             <FormControl 
@@ -434,6 +473,13 @@ class EditTest extends Component {
                                   onChange={this.handleFormDataChange.bind(this)}
                                   value={this.state.formData.edate}
                                 />
+                                {
+                                    Object.keys(errors)
+                                        .some(item=> item === "endtime") && 
+                                            errors.endtime.map(err=>
+                                                <HelpBlock>{err}</HelpBlock>
+                                            )
+                                }
                         </Col>
                         <Col md={6}>
                             <FormControl 
@@ -459,6 +505,13 @@ class EditTest extends Component {
                               )
                             })}
                         </FormControl>
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "subject") && 
+                                    errors.subject.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                     </FormGroup>
                     <FormGroup>
                         <ControlLabel  className='form-input'>Unit (Select Subject First)</ControlLabel>
@@ -474,6 +527,13 @@ class EditTest extends Component {
                               )
                             })}
                         </FormControl>  
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "unit") && 
+                                    errors.unit.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                     </FormGroup>
                     <FormInputs
                       ncols={["col-md-12"]}
@@ -484,6 +544,7 @@ class EditTest extends Component {
                           bsClass: "form-control",
                           name:'doc',
                           disabled:true,
+                          errors:errors,
                           onChange:this.handleFormDataChange.bind(this),
                           accept:".docx,.doc",
                         }

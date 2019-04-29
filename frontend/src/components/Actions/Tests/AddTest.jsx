@@ -6,6 +6,7 @@ import {
   FormGroup,
   ControlLabel,
   FormControl,
+  HelpBlock
 } from "react-bootstrap";
 
 import axios from 'axios';
@@ -18,6 +19,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import { Editor } from 'react-draft-wysiwyg';
 import { EditorState, convertToRaw } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
+import renderHTML from 'react-render-html';
 
 import '../../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import '../../../../node_modules/antd/dist/antd.css'; 
@@ -26,6 +28,7 @@ class AddTests extends Component {
   constructor() {
     super();
     this.state = {
+      doc_errors:false,
       courses:[],
       subjects:[],
       units:[],
@@ -50,7 +53,8 @@ class AddTests extends Component {
         description:'',
       },
       addingTest:false,
-      testAdded:false
+      testAdded:false,
+      errors: {}
     };
   }
 
@@ -67,25 +71,49 @@ class AddTests extends Component {
           }
       }).then(res => {
           const data = res.data;
-          this.setState({subjects:data});
+          this.setState({
+            subjects:data, 
+            formData:{
+              ...this.state.formData,
+              subject:''
+            }
+          });
       });
     }else{
-      this.setState({subjects:[]})
+      this.setState({
+        subjects:[],
+        formData:{
+          ...this.state.formData,
+          subject:''
+        }
+      })
     }
   }
 
   fetchUnits(){
-      if(this.state.formData.subject !== '' || this.state.formData.subject !== null){
+      if(this.state.formData.subject !== '' && this.state.formData.subject !== null){
         axios.get(`/api/units/${this.state.formData.subject}/`, {
             headers: {
             Authorization: `Token ${localStorage.token}`
             }
         }).then(res => {
             const data = res.data;
-            this.setState({units:data});
+            this.setState({
+              units:data,
+              formData:{
+                ...this.state.formData,
+                unit:''
+              }
+            });
         });
       }else{
-        this.setState({units:[]})
+        this.setState({
+          units:[],
+          formData:{
+            ...this.state.formData,
+            unit:''
+          }
+        })
     }
   }
   
@@ -141,7 +169,14 @@ class AddTests extends Component {
         this.props.history.goBack();
         this.props.handleClick('tr','Added Successfully');
       }))
-      .catch((err) => this.setState({ addingTest: false }, () => console.log(err)))
+      .catch((err) => this.setState({ addingTest: false, errors: err.response.data }, () => {
+        console.log(err);
+        if(this.state.errors.doc_errors !== undefined){
+          this.setState({
+            doc_errors: true
+          })
+        }
+      }))
     });
   }
 
@@ -154,11 +189,10 @@ class AddTests extends Component {
     });
   };
 
-  handleFormDataChange(e) {
-    console.log(e)
+  async handleFormDataChange(e) {
     if(e.target.name === 'course' ){
         if(e.target.checked){
-          this.state.formData.course.push(e.target.value)
+          await this.state.formData.course.push(e.target.value)
           this.fetchSubjects();
         }else{
           this.setState({
@@ -207,7 +241,7 @@ class AddTests extends Component {
           console.log(e.target.name,e.target.value,this.state.formData)
           this.setState({ formData: {
               ...this.state.formData,
-              [e.target.name] : e.target.value
+              [e.target.name] : e.target.value.trimLeft()
           }}
         );
       }
@@ -215,17 +249,21 @@ class AddTests extends Component {
   }
 
   render() {
-
+    const  { errors } = this.state;
     return (
       <div className="content">
         <Grid fluid>
           <Row>
             <Col md={12}>
               <Card
-                title="Add Test"
+                title={this.state.doc_errors ? null : "Add Test"}
                 // activeButton={true}
                 // handleRadioButton={this.handleFormDataChange.bind(this)}
                 content={
+                  this.state.doc_errors 
+                  ? 
+                    renderHTML("<p>"+this.state.errors.doc_errors+"</p>")
+                  :
                   <form onSubmit={(event)=>this.handleAdd(event)}>
                     <LinearProgress
                         style={
@@ -245,6 +283,7 @@ class AddTests extends Component {
                           placeholder: "Test Name",
                           name:'title',
                           value:this.state.formData.title,
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this)
                         },
                       ]}
@@ -259,6 +298,7 @@ class AddTests extends Component {
                             placeholder: "Duration of test",
                             name:'duration',
                             value:this.state.formData.duration,
+                            errors: errors,
                             onChange:this.handleFormDataChange.bind(this)
                           },
                         ]}
@@ -274,6 +314,13 @@ class AddTests extends Component {
                             <option value='practice'>Practice</option>
                             <option value='upcoming'>Upcoming</option>   
                         </FormControl>  
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "typeOfTest") && 
+                                    errors.typeOfTest.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                     </FormGroup>
                     <FormGroup>
                       <ControlLabel  className='form-input'>Instructions *</ControlLabel>
@@ -283,6 +330,13 @@ class AddTests extends Component {
                         editorClassName={'textarea'}
                         onEditorStateChange={this.onEditorStateChange.bind(this)}
                       /><hr/>
+                      {
+                            Object.keys(errors)
+                                .some(item=> item === "instructions") && 
+                                    errors.instructions.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                     </FormGroup>
                     <FormInputs
                       ncols={["col-md-12"]}
@@ -294,6 +348,7 @@ class AddTests extends Component {
                           placeholder: "Enter Description",
                           name:'description',
                           value:this.state.formData.description,
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this)
                         },
                       ]}
@@ -312,6 +367,13 @@ class AddTests extends Component {
                                             onChange={this.handleFormDataChange.bind(this)}
                                         >{props.title}</Checkbox>);
                             })} 
+                            {
+                                Object.keys(errors)
+                                    .some(item=> item === "course") && 
+                                        errors.course.map(err=>
+                                            <HelpBlock>{err}</HelpBlock>
+                                        )
+                            }
                         </FormGroup>
                       </Col>
                     </Row>
@@ -330,6 +392,13 @@ class AddTests extends Component {
                                         >{props.title}</Checkbox>);
                             })} 
                         </FormGroup>
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "category") && 
+                                    errors.category.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                       </Col>
                     </Row>
                     <hr/>
@@ -343,6 +412,13 @@ class AddTests extends Component {
                                   onChange={this.handleFormDataChange.bind(this)}
                                   value={this.state.formData.sdate}
                                 />
+                            {
+                                Object.keys(errors)
+                                    .some(item=> item === "startTime") && 
+                                        errors.startTime.map(err=>
+                                            <HelpBlock>{err}</HelpBlock>
+                                        )
+                            }
                         </Col>
                         <Col md={6}>
                             <FormControl 
@@ -364,6 +440,13 @@ class AddTests extends Component {
                                   onChange={this.handleFormDataChange.bind(this)}
                                   value={this.state.formData.edate}
                                 />
+                                {
+                                    Object.keys(errors)
+                                        .some(item=> item === "endtime") && 
+                                            errors.endtime.map(err=>
+                                                <HelpBlock>{err}</HelpBlock>
+                                            )
+                                }
                         </Col>
                         <Col md={6}>
                             <FormControl 
@@ -389,6 +472,13 @@ class AddTests extends Component {
                               )
                             })}
                         </FormControl>
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "subject") && 
+                                    errors.subject.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                     </FormGroup>
                     <FormGroup>
                         <ControlLabel  className='form-input'>Unit (Select Subject First)</ControlLabel>
@@ -404,6 +494,13 @@ class AddTests extends Component {
                               )
                             })}
                         </FormControl>  
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "unit") && 
+                                    errors.unit.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                     </FormGroup>
                     <FormInputs
                       ncols={["col-md-12"]}
@@ -413,11 +510,13 @@ class AddTests extends Component {
                           type: "file",
                           bsClass: "form-control",
                           name:'doc',
+                          errors: errors,
                           onChange:this.handleFormDataChange.bind(this),
                           accept:".docx,.doc",
                         }
                       ]}
                     />
+                    {this.state.addingTest && <div className="no-tests-placeholder">Parsing the doc...</div>}<br/>
                     <LinearProgress
                         style={
                             this.state.addingTest ? 

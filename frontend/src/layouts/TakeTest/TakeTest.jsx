@@ -270,6 +270,7 @@ class TakeTestLayout extends Component {
           next: false
         }
       }
+      this.toggle(this.state.data.sections[this.state.sectionIndex-1].id);
       this.setState({
         questionIndex: this.state.data.sections[this.state.sectionIndex-1].questions.length-1,
         sectionIndex: this.state.sectionIndex - 1,
@@ -308,6 +309,7 @@ class TakeTestLayout extends Component {
       prev: false
     }
     if(this.state.questionIndex >= this.state.data.sections[this.state.sectionIndex].questions.length - 1 ){
+      this.toggle(this.state.data.sections[this.state.sectionIndex+1].id);
       this.setState({
         questionIndex: 0,
         sectionIndex: this.state.sectionIndex + 1,

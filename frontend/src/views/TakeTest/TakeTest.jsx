@@ -40,13 +40,17 @@ class TakeTest extends Component {
                     )}
                 </Timer>
               </div>
-              <div className="timer-units">
-                <ul>
-                  <li>HOURS</li>
-                  <li>MINS</li>
-                  <li>SECS</li>
-                </ul>
-              </div>
+              {
+                /*
+                <div className="timer-units">
+                              <ul>
+                                <li>HOURS</li>
+                                <li>MINS</li>
+                                <li>SECS</li>
+                              </ul>
+                            </div>
+                */
+              }
               <div className="labels">
                   <div style={{marginBottom:'8px'}}>
                     <div className="disc" id="unattempted"></div>

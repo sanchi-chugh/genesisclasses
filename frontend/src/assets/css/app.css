@@ -466,6 +466,10 @@
     display: inline-block;
     padding-left: 10px;
     margin: 4px;
+    word-wrap: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 117px;
 }
 
 .side .profile .name p{

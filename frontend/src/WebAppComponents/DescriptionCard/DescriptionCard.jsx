@@ -8,12 +8,12 @@ export class DescriptionCard extends Component {
         <div className="content">
             <Grid fluid>
                 <Row>
-                    <Col md={2}>
+                    <Col md={3}>
                         <div className="image"> 
                             <center><img src={this.props.image} alt=""/></center>
                         </div>
                     </Col>
-                    <Col md={10}>
+                    <Col md={9}>
                         <div className="description">
                             <h4>{this.props.title}</h4>
                             <p>{this.props.description}</p>

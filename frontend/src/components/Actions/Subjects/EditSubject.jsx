@@ -96,7 +96,7 @@ class EditSubject extends Component {
                             </Col>:
                             <Row md={12}>
                             <Col xs={4}>
-                                <a href={this.props.formData.image} target="_blank">{this.props.formData.image.split('/')[4]}</a> 
+                                <a href={this.props.formData.image} target="_blank">{this.props.formData.image.split('/')[5]}</a> 
                             </Col>
                             <Col xs={4}>
                                 <Checkbox onChange={this.props.handleFormDataChange} name="clear" >CLEAR</Checkbox><br/>

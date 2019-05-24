@@ -3,14 +3,15 @@ import { Button,
          Modal, 
          FormGroup, 
          FormControl,
-         ControlLabel, HelpBlock} from "react-bootstrap";
+         ControlLabel,
+         HelpBlock} from "react-bootstrap";
 
 import { Editor } from 'react-draft-wysiwyg';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
 import '../../../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 
-class AddOption extends Component {
+class EditOption extends Component {
 
   render() {
     const { errors } = this.props;
@@ -23,10 +24,10 @@ class AddOption extends Component {
             >
                 <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title">
-                        ADD OPTION
+                        EDIT OPTION
                     </Modal.Title>
                 </Modal.Header>
-                <form onSubmit={this.props.handleAdd}>
+                <form onSubmit={this.props.handleEditOption}>
                     <Modal.Body>
                     <div>
                         <FormGroup>
@@ -37,7 +38,7 @@ class AddOption extends Component {
                                 editorClassName={'textarea'}
                                 onEditorStateChange={this.props.onEditorStateChange}
                             /><hr/>
-                             {
+                            {
                             Object.keys(errors)
                                 .some(item=> item === "optionText") && 
                                     errors.optionText.map(err=>
@@ -55,7 +56,7 @@ class AddOption extends Component {
                                     <option value='true'>CORRECT</option>
                                     <option value='false'>INCORRECT</option>
                             </FormControl>
-                             {
+                            {
                             Object.keys(errors)
                                 .some(item=> item === "correct") && 
                                     errors.correct.map(err=>
@@ -72,7 +73,7 @@ class AddOption extends Component {
                         </FormGroup>
                         <LinearProgress
                         style={
-                            this.props.addingOption ? 
+                            this.props.updating ? 
                             {visibility: 'visible'} :
                             {visibility: 'hidden'}
                             }
@@ -82,7 +83,7 @@ class AddOption extends Component {
                     </Modal.Body>
                     <Modal.Footer>
                         <Button onClick={this.props.onHide}>CLOSE</Button>
-                        {this.props.optionAdded ? null : <Button bsStyle="success" type="submit">ADD OPTION</Button>}
+                        {this.props.optionUpdated ? null : <Button bsStyle="success" type="submit">EDIT OPTION</Button>}
                     </Modal.Footer>
                 </form>
         </Modal>
@@ -90,4 +91,4 @@ class AddOption extends Component {
   }
 }
 
-export default AddOption;
+export default EditOption;

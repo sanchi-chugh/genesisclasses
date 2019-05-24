@@ -14,7 +14,7 @@ import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 import renderHTML from 'react-render-html';
 
 import "../../../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css";
-// import DeleteQuestion from "../../components/Actions/Questions/DeleteQuestions";
+import DeleteQuestion from "../../components/Actions/Questions/DeleteQuestions";
 // import DeleteQuestion from "../../components/Actions/Questions/DeleteQuestions";
 // import AddQuestions from "../../components/Actions/Questions/AddQuestions";
 // import EditQuestion from "../../components/Actions/Questions/EditQuestions";
@@ -116,6 +116,7 @@ class Questions extends Component {
       addingQuestion:false, 
       questionAdded:false,
       subject:'Select Subject',
+      id:null,
       formData:{
         title:'',
         description:'',
@@ -126,58 +127,25 @@ class Questions extends Component {
   }
 
   handleHideDeleteModal() {
-    this.setState({ show2: false, deletingQuestion:false, questionDeleted:false});
-  }
-
-  handleAdd(){
-    this.setState({ addingQuestion: true }, () => {
-      var formData = new FormData();
-      formData.append('title',this.state.formData.title)
-      formData.append('subject',this.state.formData.subject)
-      formData.append('description',this.state.formData.description)
-      if(this.state.formData.file !== null){
-        formData.append('image',this.state.formData.file,this.state.formData.file.name)
-      }else{
-        formData.append('image','')
-      }
-      axios.post('/api/questions/add/', formData, {
-        headers: {
-          Authorization: `Token ${localStorage.token}`,
-        },
-      })
-      .then((res) => this.setState({ addingQuestion: false, questionAdded:true }, this.fetchQuestions(`?page=1`), this.fetchSubjectsChoice()))
-      .catch((err) => this.setState({ addingQuestion: false }, () => console.log(err)))
-    });
+    this.setState({ show2: false, deletingQuestion:false, questionDeleted:false, id:null});
   }
 
   handleDelete = () => {
     this.setState({ deletingQuestion: true }, () => {
-      axios.delete(`/api/questions/delete/${this.state.id}/`,{
+      axios.delete(`/api/tests/sections/questions/delete/${this.state.id}/`,{
         headers: {
           Authorization: `Token ${localStorage.token}`
         },
       })
       .then((res) => {
-        this.setState({ deletingQuestion: false,questionDeleted:true},this.fetchQuestions(`?page=${this.state.page}`,(this.state.page-1)*10))
+        this.setState({ deletingQuestion: false,questionDeleted:true},()=>{
+          this.props.handleClick('tr','Deleted Successfully', 'warning');
+          this.fetchQuestions(`?page=${this.state.page}`,(this.state.page-1)*10); 
+          this.handleHideDeleteModal();
+          }
+        )
       })
       .catch((err) => this.setState({ deletingQuestion: false }, () => console.log(err)))
-    });
-  }
-
-  handleEdit() {
-    this.setState({ updatingQuestion: true }, () => {
-      var formData = new FormData();
-      formData.append('title',this.state.formData.title)
-      formData.append('subject',this.state.formData.subject)
-      formData.append('description',this.state.formData.description)
-      this.state.clear ? formData.append('image','') : (this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : console.log("debug") )
-      axios.patch(`/api/questions/edit/${this.state.id}/`, formData, {
-        headers: {
-          Authorization: `Token ${localStorage.token}`
-        },
-      })
-      .then((res) => {this.setState({ updatingQuestion: false, questionUpdated:true },this.fetchQuestions(`?page=1`), this.fetchSubjectsChoice());})
-      .catch((err) => this.setState({ updatingQuestion: false }, () => console.log(err)))
     });
   }
 
@@ -363,58 +331,13 @@ class Questions extends Component {
                         <TableHeaderColumn width={120} dataField='valid'>Valid</TableHeaderColumn>
                         <TableHeaderColumn width={180} dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
                     </BootstrapTable>
-                    {/* <DeleteQuestion
-                      show={this.state.show2}
-                      onHide={this.handleHideDeleteModal.bind(this)}
-                      questionDeleted={this.state.questionDeleted}
-                      deletingQuestion={this.state.deletingQuestion}
-                      handleDelete={this.handleDelete.bind(this)}
-                      id={this.state.id}
-                    /> */}
-                    {/* <EditQuestion 
-                      show={this.state.show} 
-                      onHide={this.handleHideEditModal.bind(this)} 
-                      questionUpdated={this.state.questionUpdated} 
-                      formData={this.state.formData} 
-                      handleFormDataChange={this.handleFormDataChange.bind(this)} 
-                      subjects={this.state.subjects}
-                      subject={this.state.subject}
-                      handleSelect={this.handleSelectSubject.bind(this)}
-                      updatingQuestion={this.state.updatingQuestion}
-                      handleEdit={this.handleEdit.bind(this)}
-                      fetchMore={this.fetchMore.bind(this)}
-                      hasMore={this.state.next === null ? false :true}
-                      dropdown={this.state.dropdown}
-                      toggle={this.toggleDropdown.bind(this)}
-                    />
                     <DeleteQuestion
                       show={this.state.show2}
                       onHide={this.handleHideDeleteModal.bind(this)}
                       questionDeleted={this.state.questionDeleted}
                       deletingQuestion={this.state.deletingQuestion}
                       handleDelete={this.handleDelete.bind(this)}
-                      transferData={this.state.transferData}
-                      toggle={this.toggleTransferData.bind(this)}
-                      questions={this.state.questions}
-                      id={this.state.id}
-                      question={this.state.transferTo}
-                      handleSelect={this.handleSelect.bind(this)}
-                    />
-                    <AddQuestions
-                      show={this.state.show3}
-                      onHide={this.handleHideAddModal.bind(this)}
-                      questionAdded={this.state.questionAdded}
-                      addingQuestion={this.state.addingQuestion}
-                      handleAdd={this.handleAdd.bind(this)}
-                      formData={this.state.formData}
-                      subjects={this.state.subjects}
-                      subject={this.state.subject}
-                      handleSelect={this.handleSelectSubject.bind(this)}
-                      handleFormDataChange={this.handleFormDataChange.bind(this)}
-                      fetchMore={this.fetchMore.bind(this)}
-                      hasMore={this.state.next === null ? false :true}
-                      dropdown={this.state.dropdown}
-                      toggle={this.toggleDropdown.bind(this)}/> */}
+                    /> 
                   </div>
                 }
               />

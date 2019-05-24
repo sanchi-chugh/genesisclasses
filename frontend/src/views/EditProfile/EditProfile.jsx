@@ -6,7 +6,8 @@ import {
   FormGroup,
   ControlLabel,
   FormControl,
-  Badge
+  Badge,
+  HelpBlock
 } from "react-bootstrap";
 
 import moment from 'moment';
@@ -27,7 +28,8 @@ class EditProfile extends Component {
       busy: true,
       user: null,
       updatingStudent: false,
-      studentUpdated: false
+      studentUpdated: false,
+      errors:{}
     };
   }
 
@@ -89,7 +91,7 @@ class EditProfile extends Component {
         }
         this.props.handleClick('tr','Updated Successfully');
       }))
-      .catch((err) => this.setState({ updatingStudent: false }, () => console.log(err)))
+      .catch((err) => this.setState({ updatingStudent: false, errors: err.response.data }, () => console.log(err)))
     });
   }
 
@@ -120,6 +122,7 @@ class EditProfile extends Component {
   }
 
   render() {
+    const { errors } = this.state;
     if(this.state.busy){
       return null
     }
@@ -138,6 +141,7 @@ class EditProfile extends Component {
                   bsClass: "form-control",
                   placeholder: "First Name",
                   name:'first_name',
+                  errors:errors,
                   value:this.state.user.first_name,
                   onChange:this.handleFormDataChange.bind(this)
                 },
@@ -147,6 +151,7 @@ class EditProfile extends Component {
                   bsClass: "form-control",
                   placeholder: "Last Name",
                   name:'last_name',
+                  errors:errors,
                   value:this.state.user.last_name,
                   onChange:this.handleFormDataChange.bind(this)
                 }
@@ -161,6 +166,7 @@ class EditProfile extends Component {
                   bsClass: "form-control",
                   placeholder: "Father Name",
                   name:'father_name',
+                  errors:errors,
                   value:this.state.user.father_name,
                   onChange:this.handleFormDataChange.bind(this)
                 },
@@ -175,6 +181,7 @@ class EditProfile extends Component {
                   bsClass: "form-control",
                   placeholder: "Home Adress",
                   name:'address',
+                  errors:errors,
                   value:this.state.user.address,
                   onChange:this.handleFormDataChange.bind(this)
                 }
@@ -189,6 +196,7 @@ class EditProfile extends Component {
                   bsClass: "form-control",
                   placeholder: "City",
                   name:'city',
+                  errors:errors,
                   value:this.state.user.city,
                   onChange:this.handleFormDataChange.bind(this)
                 },
@@ -198,6 +206,7 @@ class EditProfile extends Component {
                   bsClass: "form-control",
                   placeholder: "State",
                   name:'state',
+                  errors:errors,
                   value:this.state.user.state,
                   onChange:this.handleFormDataChange.bind(this)
                 },
@@ -207,6 +216,7 @@ class EditProfile extends Component {
                   bsClass: "form-control",
                   placeholder: "ZIP Code",
                   name:'pinCode',
+                  errors:errors,
                   value:this.state.user.pinCode,
                   onChange:this.handleFormDataChange.bind(this)
                 }
@@ -223,7 +233,14 @@ class EditProfile extends Component {
                       <option value=''>Choose Gender...</option>
                       <option value='male'>Male</option>
                       <option value='female'>Female</option>   
-                  </FormControl>  
+                  </FormControl> 
+                  {
+                    Object.keys(errors)
+                            .some(item=> item === "gender") && 
+                                errors.gender.map(err=>
+                                    <HelpBlock>{err}</HelpBlock>
+                                )
+                  } 
               </FormGroup>
             </Col>
             <FormInputs
@@ -235,6 +252,7 @@ class EditProfile extends Component {
                   bsClass: "form-control",
                   placeholder: "Date Of Birth",
                   name:'dateOfBirth',
+                  errors: errors,
                   value:this.state.user.dateOfBirth,
                   onChange:this.handleFormDataChange.bind(this)
                 },
@@ -244,6 +262,7 @@ class EditProfile extends Component {
                   bsClass: "form-control",
                   placeholder: "Contact Number",
                   name:'contact_number',
+                  errors: errors,
                   value:this.state.user.contact_number,
                   onChange:this.handleFormDataChange.bind(this)
                 },
@@ -260,6 +279,7 @@ class EditProfile extends Component {
                   bsClass: "form-control",
                   placeholder: "Email",
                   name:'email',
+                  errors: errors,
                   value:this.state.user.email,
                   onChange:this.handleFormDataChange.bind(this)
                 },
@@ -275,6 +295,7 @@ class EditProfile extends Component {
                               bsClass: "form-control",
                               placeholder: "Username",
                               name:'username',
+                              errors: errors,
                               value:this.state.user.username,
                               onChange:this.handleFormDataChange.bind(this)
                             },
@@ -289,6 +310,7 @@ class EditProfile extends Component {
                               bsClass: "form-control",
                               placeholder: "Password",
                               name:'password1',
+                              errors: errors,
                               value:this.state.user.password1,
                               onChange:this.handleFormDataChange.bind(this)
                             },
@@ -303,6 +325,7 @@ class EditProfile extends Component {
                               bsClass: "form-control",
                               placeholder: "Password",
                               name:'password2',
+                              errors: errors,
                               value:this.state.user.password2,
                               onChange:this.handleFormDataChange.bind(this)
                             },
@@ -316,13 +339,20 @@ class EditProfile extends Component {
                     </Col>:
                   <Row md={12}>
                     <Col xs={4}>
-                        <a href={this.state.user.image} target="_blank">{this.state.user.image.split('/')[3]}</a> 
+                        <a href={this.state.user.image} target="_blank">{this.state.user.image.split('/')[5]}</a> 
                     </Col>
                     <Col xs={4}>
                         <Checkbox onChange={this.handleFormDataChange.bind(this)} name="clear" >CLEAR</Checkbox><br/>
                     </Col>
                   </Row>
               }
+              {
+                Object.keys(errors)
+                        .some(item=> item === "gender") && 
+                            errors.gender.map(err=>
+                                <HelpBlock>{err}</HelpBlock>
+                            )
+              } 
               <br/>
             <FormControl
                 type="file"
@@ -358,7 +388,7 @@ class EditProfile extends Component {
                 }
             color="primary"
             />
-            <Button bsStyle="success" pullRight fill type="submit">
+            <Button style={{backgroundColor: '#02458e', borderColor: '#02458e', padding: 0}} bsStyle="success" pullRight fill type="submit">
               EDIT PROFILE
             </Button>
             <div className="clearfix" />

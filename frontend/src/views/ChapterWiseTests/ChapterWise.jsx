@@ -11,7 +11,7 @@ class ChapterWise extends Component {
     super();
     this.state = {
       data: {results:[]},
-      untis:[],
+      units:[],
       busy:true,
       next:'',
       details:{},
@@ -106,7 +106,9 @@ class ChapterWise extends Component {
            description={this.state.details.description}
         //    handleClick={this.testFunction.bind(this)}
         />
-        {!this.state.busy &&
+        {this.state.units.length === 0 &&
+          <p className="no-tests-placeholder">No Units available</p>}
+        {!this.state.busy && 
         <Grid fluid>
             <Row>
                 <Col md={3}>

@@ -48,10 +48,11 @@ class UnitWiseTests extends Component {
         <DescriptionCard 
            image={'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
            description={description}
-           title={'sada'}
+           title={'Unit Wise Tests'}
         />
         <center><h4 className="title-heading">Choose Subject</h4></center>
         <div style={{display:'block', textAlign:'center'}}>
+          {this.state.data.length === 0 && <p className="no-tests-placeholder">No Subjects available</p>}
           {this.state.data.map(item=>{
             return(
               <div className="inline">

@@ -257,7 +257,7 @@ class ViewQuestion extends Component {
                 <Col md={12}>
                 <Card
                     title="Question Information"
-                    editButton={true}
+                    editButton={this.state.data.details.questionType === 'passage'}
                     handleShowEditModal={this.handleEditButton.bind(this)}
                     editButtonLabel={'EDIT PASSAGE'}
                     content={

@@ -31,6 +31,8 @@ class EditQuestions extends Component {
       subjects:[],
       units:[],
       categories:[],
+      passageId:null,
+      sectionId:null,
       formData:{
         section:'Section ...',
         questionText: EditorState.createEmpty(),
@@ -38,10 +40,10 @@ class EditQuestions extends Component {
         marksPositive:null,
         marksNegative:null,
         intAnswer:null,
-        paragraph: EditorState.createEmpty()
+        passage: EditorState.createEmpty()
       },
-      addingQuestion:false,
-      QuestionAdded:false
+      updatingQuestion:false,
+      questionUpdated:false
     };
   }
 
@@ -55,11 +57,13 @@ class EditQuestions extends Component {
         console.log(data)
         this.setState({
             type: data.details.questionType,
+            passageId: data.details.questionType === 'passage' ? data.details.passage.id : null,
+            sectionId: data.details.section.id,
             formData:{
                 ...this.state.formData,
                 section: data.details.section,
                 questionText: EditorState.createWithContent(ContentState.createFromBlockArray(convertFromHTML(data.details.questionText))),
-                paragraph: data.details.questionType === 'passage' ? EditorState.createWithContent(ContentState.createFromBlockArray(convertFromHTML(data.details.passage.paragraph))) : '',
+                passage: data.details.questionType === 'passage' ? EditorState.createWithContent(ContentState.createFromBlockArray(convertFromHTML(data.details.passage.paragraph))) : '',
                 explanation: data.details.explanation,
                 marksPositive: data.details.marksPositive,
                 marksNegative: data.details.marksNegative,
@@ -69,46 +73,31 @@ class EditQuestions extends Component {
     });
   }
 
-  handleAddPassage(callback){
-    var formData = new FormData();
-    formData.append('paragraph',draftToHtml(convertToRaw(this.state.formData.passage.getCurrentContent())))
-    formData.append('section',this.props.match.params.id)
-    axios.post('/api/tests/sections/questions/passages/add/', formData, {
-      headers: {
-        Authorization: `Token ${localStorage.token}`,
-      },
-    })
-    .then(callback)
-    .catch((err) => this.setState({ addingQuestion: false }, () => console.log(err)))
-  }
-
-  handleAddUtil(res=null){
+  handleEditUtil(){
     var formData = new FormData();
       formData.append('questionText',draftToHtml(convertToRaw(this.state.formData.questionText.getCurrentContent())))
       formData.append('explanation',this.state.formData.explanation)
       formData.append('intAnswer',this.state.formData.intAnswer)
       formData.append('questionType',this.state.type)
-      formData.append('passage', res.data.passage)
+      if(this.state.type === 'passage'){
+        formData.append('passage', this.state.passageId);
+      }
       formData.append('marksPositive',this.state.formData.marksPositive)
       formData.append('marksNegative',this.state.formData.marksNegative)
-      formData.append('section',this.props.match.params.id)
-      axios.post('/api/tests/sections/questions/detail/add/', formData, {
+      formData.append('section',this.state.sectionId)
+      axios.put(`/api/tests/sections/questions/detail/edit/${this.props.match.params.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState(this.props.history.goBack(),{ addingQuestion: false, QuestionAdded:true },this.props.handleClick('tr','Added Successfully')))
-      .catch((err) => this.setState({ addingQuestion: false }, () => console.log(err)))
+      .then((res) => this.setState(this.props.history.goBack(),{ updatingQuestion: false, questionUpdated:true },this.props.handleClick('tr','Added Successfully')))
+      .catch((err) => this.setState({ updatingQuestion: false }, () => console.log(err)))
   }
 
   handleAdd(e){
     e.preventDefault();
-    this.setState({ addingQuestion: true }, () => {
-      if(this.state.type === 'passage'){
-        this.handleAddPassage(this.handleAddUtil.bind(this));
-      }else{
-        this.handleAddUtil();
-      }
+    this.setState({ updatingQuestion: true }, () => {
+      this.handleEditUtil();
     });
   }
 
@@ -156,7 +145,7 @@ class EditQuestions extends Component {
                   <form onSubmit={(event)=>this.handleAdd(event)}>
                     <LinearProgress
                         style={
-                            this.state.addingQuestion ? 
+                            this.state.updatingQuestion ? 
                             {visibility: 'visible'} :
                             {visibility: 'hidden'}
                             }
@@ -207,14 +196,14 @@ class EditQuestions extends Component {
                       <div>
                         <LinearProgress
                               style={
-                                  this.state.addingQuestion ? 
+                                  this.state.updatingQuestion ? 
                                   {visibility: 'visible',marginBottom:10} :
                                   {visibility: 'hidden'}
                                   }
                               color="primary"
                               />
-                          <Button bsStyle="success" pullRight fill type="submit">
-                            ADD Question
+                          <Button bsStyle="info" pullRight fill type="submit">
+                            Edit Question
                           </Button>
                       </div> : null
                     }

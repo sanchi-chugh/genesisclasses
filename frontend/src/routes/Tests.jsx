@@ -38,7 +38,7 @@ var testsRoutes = [
         path: "/tests/sections/questions/add/:id", name: "add question", component: AddQuestion //id = sectionId
     },
     { 
-        path: "/tests/sections/questions/detail/edit/:id", name: "add question", component: EditQuestions //id = questionId
+        path: "/tests/sections/questions/detail/edit/:id", name: "edit question", component: EditQuestions //id = questionId
     },
 ];
 

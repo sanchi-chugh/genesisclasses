@@ -84,7 +84,7 @@ class EditQuestions extends Component {
       }
       formData.append('marksPositive',this.state.formData.marksPositive)
       formData.append('marksNegative',this.state.formData.marksNegative)
-      formData.append('section',this.state.sectionId)
+      // formData.append('section',this.state.sectionId)
       axios.put(`/api/tests/sections/questions/detail/edit/${this.props.match.params.id}/`, formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,

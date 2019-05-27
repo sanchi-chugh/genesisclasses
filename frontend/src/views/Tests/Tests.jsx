@@ -235,6 +235,10 @@ class Tests extends Component {
     this.props.history.push({pathname:`/tests/edit/${obj.id}`})
   }
 
+  handleViewResults(obj){
+    this.props.history.push({pathname:`/tests/results/${obj.id}`})
+  }
+
   handleFormDataChange(e) {
     console.log(this.state.formData.file,this.state)
     if(e.target.name === 'course' ){
@@ -334,6 +338,15 @@ class Tests extends Component {
                 </Button>
                 <Button bsSize="small" style={{width:'80px'}} bsStyle="danger" onClick={this.handleShowDeleteModal.bind(this,row)} >
                   <Glyphicon glyph="trash" /> DELETE
+                </Button>
+              </ButtonGroup>
+            </ButtonToolbar>
+          </Row>
+          <Row>
+            <ButtonToolbar>
+              <ButtonGroup>
+                <Button bsSize="small" style={{width:'160px'}} bsStyle="warning" onClick={this.handleViewResults.bind(this,row)}>
+                  <Glyphicon glyph="stats" /> View Test Results
                 </Button>
               </ButtonGroup>
             </ButtonToolbar>

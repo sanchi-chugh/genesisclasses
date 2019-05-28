@@ -276,16 +276,24 @@ class Subjects extends Component {
     this.setState({transferTo:item.title, subject:item.id})
   }
 
+  renderDescription(cell, row, enumObject, rowIndex){
+    return (
+      <div style={{overflow: 'hidden', whiteSpace:'nowrap', textOverflow:'ellipsis'}}>
+        {row.description !== null && row.description !== '' ? row.description : '...'}
+      </div>
+    )
+  }
+
   renderCourses(cell, row, enumObject, rowIndex) {
       return (
-        <Row md={12}>
+        <div className="courseCell">
           {
           row.course.map((item)=>{
             return(
-              <Col md={6}><Badge>{item.title}</Badge></Col>
+              <div className="courseBadge"><Badge>{item.title}</Badge></div>
             )
         })}   
-        </Row>
+        </div>
       )
     }
 
@@ -330,7 +338,7 @@ class Subjects extends Component {
                       search>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
                         <TableHeaderColumn dataField='title'>Subject</TableHeaderColumn>
-                        <TableHeaderColumn dataField='description'>Description</TableHeaderColumn>
+                        <TableHeaderColumn dataField='description' dataFormat={this.renderDescription.bind(this)}>Description</TableHeaderColumn>
                         <TableHeaderColumn dataField='courses' dataFormat={this.renderCourses.bind(this)}>Courses</TableHeaderColumn>
                         <TableHeaderColumn dataField='id' dataFormat={this.renderColumn.bind(this)}>Edit/Delete</TableHeaderColumn>
                     </BootstrapTable>

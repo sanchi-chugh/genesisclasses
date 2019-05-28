@@ -222,7 +222,7 @@ class Categories extends Component {
 
   renderDescription(cell, row, enumObject, rowIndex){
     return (
-      <div>
+      <div style={{overflow: 'hidden', whiteSpace:'nowrap', textOverflow:'ellipsis'}}>
         {row.description !== null && row.description !== '' ? row.description : '...'}
       </div>
     )

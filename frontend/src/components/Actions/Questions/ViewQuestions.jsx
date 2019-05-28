@@ -15,6 +15,8 @@ import axios from "axios";
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 import renderHTML from 'react-render-html';
 import AddOption from "./Options/AddOptions.jsx";
+import EditOption from "./Options/EditOptions.jsx";
+import DeleteOption from "./Options/DeleteOptions.jsx";
 import EditPassage from "./EditPassage.jsx";
 
 class ViewQuestion extends Component {
@@ -23,17 +25,24 @@ class ViewQuestion extends Component {
         super();
         this.state = {
           data: null,
-          show3:false,//add modal,
-          show2:false,//edit passage modal
+          id:null,
+          show1:false,//delete option modal
+          show3:false,//add option modal,
+          show2:false,//edit passage modal,
+          show: false,//edit option modal
           updatingPassage:false,
           passageUpdated:false,
-          addingOption:false,
+          updatingOption:false,
+          deletingOption:false,
+          optionDeleted:false,
           optionAdded:false,
+          optionUpdated:false,
+          updatingOption:false,
+          errors:[],
           formData:{
               optionText: EditorState.createEmpty(),
               correct : false,
-              passage : EditorState.createEmpty()
-              
+              passage : EditorState.createEmpty()   
           }
         };
     }
@@ -65,6 +74,20 @@ class ViewQuestion extends Component {
         this.setState({show3:true})
     }
 
+    handleDeleteButton(row){
+        this.setState({show1:true, id: row.id})
+    }
+
+    handleEditOptionButton(row){
+        this.setState({show:true, formData:{
+            ...this.formData,
+            correct: row.correct,
+            optionText: EditorState.createWithContent(ContentState.createFromBlockArray(convertFromHTML(row.optionText)))
+            },
+            id:row.id
+        })
+    }
+
     handleEditButton(){
         this.setState({show2:true})
         this.setState({show2:true, formData:{
@@ -83,9 +106,38 @@ class ViewQuestion extends Component {
                 Authorization: `Token ${localStorage.token}`
                 },
             })
-            .then((res) => {this.setState({ updatingPassage: false, passageUpdated:true },this.props.handleClick('tr','Updated Successfully')); this.handleHideEditPassageModal(); this.fetchQuestionDetails();})
-            .catch((err) => this.setState({ updatingPassage: false }, () => console.log(err)))
+            .then((res) => {this.setState({ updatingPassage: false, passageUpdated:true },this.props.handleClick('tr','Updated Successfully', 'info')); this.handleHideEditPassageModal(); this.fetchQuestionDetails();})
+            .catch((err) => this.setState({ updatingPassage: false, errors: err.response.data }, () => console.log(err)))
         });
+    }
+
+    handleEditOption(e){
+        e.preventDefault();
+        this.setState({ updatingOption: true }, () => {
+        var formData = new FormData();
+            formData.append('optionText', draftToHtml(convertToRaw(this.state.formData.optionText.getCurrentContent())))
+            formData.append('correct',this.state.formData.correct)
+            axios.put(`/api/tests/sections/questions/options/edit/${this.state.id}/`, formData, {
+                headers: {
+                Authorization: `Token ${localStorage.token}`,
+                },
+            })
+            .then((res) => {this.setState({ updatingOption: false, optionUpdated:true },this.props.handleClick('tr','Updated Successfully', 'info'));this.handleHideEditModal(); this.fetchQuestionDetails();})
+            .catch((err) => this.setState({ updatingOption: false, errors: err.response.data }, () => console.log(err)))
+      });
+    }
+
+    handleDelete(e){
+        e.preventDefault();
+        this.setState({ deletingOption: true }, () => {
+        axios.delete(`/api/tests/sections/questions/options/delete/${this.state.id}/`, {
+            headers: {
+            Authorization: `Token ${localStorage.token}`,
+            },
+        })
+        .then((res) => {this.setState({ deletingOption: false, optionDeleted:true },this.props.handleClick('tr','Deleted Successfully', 'warning'));this.handleHideDeleteButton(); this.fetchQuestionDetails();})
+        .catch((err) => this.setState({ deletingOption: false, errors: err.response.data }, () => console.log(err)))
+      });
     }
 
     handleAdd(e){
@@ -101,16 +153,30 @@ class ViewQuestion extends Component {
                     },
                 })
                 .then((res) => {this.setState({ addingOption: false, optionAdded:true },this.props.handleClick('tr','Added Successfully'));this.handleHideAddModal(); this.fetchQuestionDetails();})
-                .catch((err) => this.setState({ addingOption: false }, () => console.log(err)))
+                .catch((err) => this.setState({ addingOption: false, errors: err.response.data }, () => console.log(err)))
           });
     }
 
-    handleViewButton(){
-
+    handleHideDeleteButton(){
+        this.setState({ show1: false, deletingOption:false, optionDeleted:false, id:null});   
     }
     
     handleHideAddModal() {
-        this.setState({ show3: false, addingSection:false, sectionAdded:false});
+        this.setState({ show3: false, addingOption:false, optionAdded:false});
+    }
+
+    handleHideEditModal() {
+        this.setState({
+            show: false, 
+            formData:{
+              optionText: EditorState.createEmpty(),
+              correct : false,
+              passage : EditorState.createEmpty()   
+          },
+          optionUpdated:false,
+          updatingOption:false,
+          id:null
+      })
     }
 
     handleHideEditPassageModal(){
@@ -164,10 +230,10 @@ class ViewQuestion extends Component {
                     <Row>
                     <ButtonToolbar>
                         <ButtonGroup>
-                        <Button bsSize="small" style={{width:'80px'}} bsStyle="info" onClick={this.handleViewButton.bind(this,row)}>
+                        <Button bsSize="small" style={{width:'80px'}} bsStyle="info" onClick={this.handleEditOptionButton.bind(this,row)}>
                             <Glyphicon glyph="edit" /> EDIT
                         </Button>
-                        <Button bsSize="small" style={{width:'80px'}} bsStyle="danger" onClick={this.handleViewButton.bind(this,row)} >
+                        <Button bsSize="small" style={{width:'80px'}} bsStyle="danger" onClick={this.handleDeleteButton.bind(this,row)} >
                             <Glyphicon glyph="trash" /> DELETE
                         </Button>
                         </ButtonGroup>
@@ -179,6 +245,7 @@ class ViewQuestion extends Component {
     }
 
     render() {
+       const { errors } = this.state;
        if (this.state.data === null) 
        return (
            null
@@ -190,7 +257,7 @@ class ViewQuestion extends Component {
                 <Col md={12}>
                 <Card
                     title="Question Information"
-                    editButton={true}
+                    editButton={this.state.data.details.questionType === 'passage'}
                     handleShowEditModal={this.handleEditButton.bind(this)}
                     editButtonLabel={'EDIT PASSAGE'}
                     content={
@@ -227,11 +294,30 @@ class ViewQuestion extends Component {
                                                 show = {this.state.show3}
                                                 onHide = {this.handleHideAddModal.bind(this)}
                                                 optionAdded = {this.state.optionAdded}
-                                                addingOption = {this.state.addingOption}
+                                                addingOption = {this.state.updatingOption}
                                                 handleAdd = {this.handleAdd.bind(this)}
                                                 handleFormDataChange = {this.handleFormDataChange.bind(this)}
                                                 onEditorStateChange = {this.onEditorStateChange}
                                                 formData = {this.state.formData}
+                                                errors={errors}
+                                            />
+                                            <EditOption 
+                                                show = {this.state.show}
+                                                onHide = {this.handleHideEditModal.bind(this)}
+                                                optionUpdated = {this.state.optionUpdated}
+                                                updatingOption = {this.state.updatingOption}
+                                                handleEditOption = {this.handleEditOption.bind(this)}
+                                                handleFormDataChange = {this.handleFormDataChange.bind(this)}
+                                                onEditorStateChange = {this.onEditorStateChange}
+                                                formData = {this.state.formData}
+                                                errors={errors}
+                                            />
+                                            <DeleteOption 
+                                                show = {this.state.show1}
+                                                onHide = {this.handleHideDeleteButton.bind(this)}
+                                                optionDeleted = {this.state.optionDeleted}
+                                                deletingOption = {this.state.deletingOption}
+                                                handleDelete = {this.handleDelete.bind(this)}
                                             />
                                             <EditPassage 
                                                 show = {this.state.show2}
@@ -242,6 +328,7 @@ class ViewQuestion extends Component {
                                                 handleFormDataChange = {this.handleFormDataChange.bind(this)}
                                                 onEditorStateChange = {this.onEditorStateChangePassage}
                                                 formData = {this.state.formData}
+                                                errors={errors}
                                             />
                                         </div>
                                     }/> : null

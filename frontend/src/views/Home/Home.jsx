@@ -71,6 +71,7 @@ class Home extends Component {
       <div className="content home-content" tabIndex="0" onKeyPress={this.handleKeyPress.bind(this)}>
         <h4 className="title-heading">Upcoming Tests</h4>
         <div style={{display:'block',width:'100%', marginBottom:'20px'}}>
+          {this.state.upcomingTests.length === 0 && <p className="no-tests-placeholder">No tests available</p>}
           {this.state.upcomingTests.map(item=>{
             return(
               <div className="home-cards">

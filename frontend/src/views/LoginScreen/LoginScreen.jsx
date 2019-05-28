@@ -6,7 +6,8 @@ import {
   FormGroup,
   ControlLabel,
   FormControl,
-  Form
+  Form,
+  HelpBlock
 } from "react-bootstrap";
 import { FormInputs } from "../../components/FormInputs/FormInputs.jsx";
 import { Card } from "../../components/Card/Card.jsx";
@@ -26,6 +27,7 @@ class LoginScreen extends React.Component {
         password : '',
         error: false,
         busy: false,
+        errors:{}
     }
   }
 
@@ -47,7 +49,6 @@ class LoginScreen extends React.Component {
     event.preventDefault();
     this.setState({ busy: true });
     login(this.state.username, this.state.password, (isLoggedIn, res) => {
-      console.log(isLoggedIn)
       if (isLoggedIn){
         this.props.getUser((user) => {
           console.log("user", user);
@@ -60,13 +61,14 @@ class LoginScreen extends React.Component {
         });
       }
       else {
-        console.log('Authentication Failed');
-        this.setState({ error: true, busy : false });
+        console.log('Authentication Failed', res);
+        this.setState({ errors: res.data , busy : false });
       }
     });
   }
 
   render() {
+    const { errors } = this.state;
     return(
       <div className="wrapper login-wrapper">
         <div className="header">
@@ -85,6 +87,11 @@ class LoginScreen extends React.Component {
                 </div>
                 <h5>Login to access your account</h5>
                 <form onSubmit={(event) => this.userLogin(event)} className="login-form">
+                  {
+                    Object.keys(errors)
+                            .some(item=> item === "error") && 
+                        <b><HelpBlock>{errors.error}</HelpBlock></b>
+                  } 
                   <FormInputs
                     ncols={["col-md-12"]}
                     proprieties={[
@@ -94,6 +101,7 @@ class LoginScreen extends React.Component {
                         bsClass: "form-control",
                         placeholder: "Username",
                         name:'username',
+                        errors:errors,
                         value: this.state.username,
                         onChange: this.setUsername.bind(this)
                       }
@@ -108,6 +116,7 @@ class LoginScreen extends React.Component {
                         bsClass: "form-control",
                         placeholder: "Password",
                         name:'password',
+                        errors:errors,
                         value: this.state.password,
                         onChange: this.setPassword.bind(this)
                       }

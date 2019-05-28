@@ -53,10 +53,12 @@ class AddUnits extends Component {
                         <br/>
                         <ControlLabel>DESCRIPTION</ControlLabel>
                         <FormControl
-                            componentClass='textarea'
-                            bsClass='form-control'
+                            type="text"
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
                             value={this.props.formData.description}
-                            placeholder="Description"
+                            placeholder="Description..."
                             name='description'
                             onChange={this.props.handleFormDataChange}
                         />

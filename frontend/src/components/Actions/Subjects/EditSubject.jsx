@@ -53,8 +53,11 @@ class EditSubject extends Component {
                         <ControlLabel>DESCRIPTION</ControlLabel>
                         <FormControl
                             type="text"
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
                             value={this.props.formData.description}
-                            placeholder="Description"
+                            placeholder="Description..."
                             name='description'
                             onChange={this.props.handleFormDataChange}
                         />
@@ -96,7 +99,7 @@ class EditSubject extends Component {
                             </Col>:
                             <Row md={12}>
                             <Col xs={4}>
-                                <a href={this.props.formData.image} target="_blank">{this.props.formData.image.split('/')[4]}</a> 
+                                <a href={this.props.formData.image} target="_blank">{this.props.formData.image.split('/')[5]}</a> 
                             </Col>
                             <Col xs={4}>
                                 <Checkbox onChange={this.props.handleFormDataChange} name="clear" >CLEAR</Checkbox><br/>

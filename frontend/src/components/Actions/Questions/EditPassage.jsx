@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Button, 
          Modal, 
          FormGroup, 
-         ControlLabel} from "react-bootstrap";
+         ControlLabel, HelpBlock} from "react-bootstrap";
 
 import { Editor } from 'react-draft-wysiwyg';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -12,6 +12,7 @@ import '../../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.cs
 class EditPassage extends Component {
 
   render() {
+    const { errors } = this.props;
     return ( 
             <Modal
                 show={this.props.show}
@@ -35,6 +36,13 @@ class EditPassage extends Component {
                                 editorClassName={'textarea'}
                                 onEditorStateChange={this.props.onEditorStateChange}
                             /><hr/>
+                             {
+                            Object.keys(errors)
+                                .some(item=> item === "passageText") && 
+                                    errors.passageText.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         </FormGroup>
                         <LinearProgress
                         style={

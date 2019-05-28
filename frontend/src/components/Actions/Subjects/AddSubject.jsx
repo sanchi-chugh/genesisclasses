@@ -53,8 +53,11 @@ class AddSubject extends Component {
                         <ControlLabel>DESCRIPTION</ControlLabel>
                         <FormControl
                             type="text"
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
                             value={this.props.formData.description}
-                            placeholder="Description"
+                            placeholder="Description..."
                             name='description'
                             onChange={this.props.handleFormDataChange}
                         />

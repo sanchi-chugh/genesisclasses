@@ -15,15 +15,21 @@ import draftToHtml from 'draftjs-to-html';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 import renderHTML from 'react-render-html';
 import EditPassage from "./EditPassage.jsx";
+import DeleteQuestion from "./DeleteQuestions";
 
 class ViewPassage extends Component {
 
     constructor() {
         super();
         this.state = {
-          show2:false,
+          show2:false, //edit passage,
+          show:false,// delete question
           updatingPassage:false,
           passageUpdated:false,
+          errors:[],
+          id:null,
+          questionDeleted:false,
+          deletingQuestion:false,
           data: {
               details:{
                   paragraph:''
@@ -48,6 +54,29 @@ class ViewPassage extends Component {
             const data = res.data;
             this.setState({data:data});
         });
+    }
+
+    handleHideDeleteModal() {
+      this.setState({ show: false, deletingQuestion:false, questionDeleted:false, id:null});
+    }
+
+    handleDelete = () => {
+      this.setState({ deletingQuestion: true }, () => {
+        axios.delete(`/api/tests/sections/questions/delete/${this.state.id}/`,{
+          headers: {
+            Authorization: `Token ${localStorage.token}`
+          },
+        })
+        .then((res) => {
+          this.setState({ deletingQuestion: false,questionDeleted:true},()=>{
+            this.props.handleClick('tr','Deleted Successfully', 'warning');
+            this.fetchParagraph();
+            this.handleHideDeleteModal();
+            }
+          )
+        })
+        .catch((err) => this.setState({ deletingQuestion: false }, () => console.log(err)))
+      });
     }
 
     handleEditButton(){
@@ -80,8 +109,14 @@ class ViewPassage extends Component {
                 },
             })
             .then((res) => {this.setState({ updatingPassage: false, passageUpdated:true },this.props.handleClick('tr','Updated Successfully')); this.handleHideEditPassageModal(); this.fetchParagraph();})
-            .catch((err) => this.setState({ updatingPassage: false }, () => console.log(err)))
+            .catch((err) => this.setState({ updatingPassage: false, errors: err.response.data }, () => console.log(err)))
         });
+    }
+
+    handleShowDeleteModal(obj){
+      this.setState({ id: obj.id},()=>{
+        this.setState({show:true})
+      })
     }
 
     onEditorStateChangePassage = (editorState) => {
@@ -101,6 +136,10 @@ class ViewPassage extends Component {
       });
     }
 
+    handleEditButton(obj){
+      this.props.history.push({pathname:`/tests/sections/questions/detail/edit/${obj.id}`})
+    }
+    
     handleViewButton(obj){
         this.props.history.push({pathname:`/tests/sections/questions/detail/${obj.id}`})
     }
@@ -140,10 +179,10 @@ class ViewPassage extends Component {
               <Row>
                 <ButtonToolbar>
                   <ButtonGroup>
-                    <Button bsSize="small" style={{width:'80px'}} bsStyle="info" onClick={this.handleViewButton.bind(this,row)}>
+                    <Button bsSize="small" style={{width:'80px'}} bsStyle="info" onClick={this.handleEditButton.bind(this,row)}>
                       <Glyphicon glyph="edit" /> EDIT
                     </Button>
-                    <Button bsSize="small" style={{width:'80px'}} bsStyle="danger" onClick={this.handleViewButton.bind(this,row)} >
+                    <Button bsSize="small" style={{width:'80px'}} bsStyle="danger" onClick={this.handleShowDeleteModal.bind(this,row)} >
                       <Glyphicon glyph="trash" /> DELETE
                     </Button>
                   </ButtonGroup>
@@ -167,6 +206,7 @@ class ViewPassage extends Component {
       }
 
   render() {
+    const { errors } = this.state;
     return (
       <div className="content">
         <Grid fluid>
@@ -211,7 +251,15 @@ class ViewPassage extends Component {
                             handleFormDataChange = {this.handleFormDataChange.bind(this)}
                             onEditorStateChange = {this.onEditorStateChangePassage}
                             formData = {this.state.formData}
+                            errors={errors}
                         />
+                        <DeleteQuestion
+                          show={this.state.show}
+                          onHide={this.handleHideDeleteModal.bind(this)}
+                          questionDeleted={this.state.questionDeleted}
+                          deletingQuestion={this.state.deletingQuestion}
+                          handleDelete={this.handleDelete.bind(this)}
+                        /> 
                     </Grid>
                 }
               />

@@ -109,6 +109,14 @@ class TestResults extends Component {
     }});
   }
 
+  renderTitle(cell, row, enumObject, rowIndex){
+    return (
+        <div style={{overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'}}>
+          {cell.name}
+        </div>
+      )
+  }
+
   render() {
     const getBarData = () => {
       return [1, 2, 3].map(() => {
@@ -120,7 +128,7 @@ class TestResults extends Component {
       });
     };
     if(this.state.busy){
-      return <div></div>;
+      return <div className="loader"></div>;
     }
     if(this.state.flag){
       return(
@@ -206,8 +214,8 @@ class TestResults extends Component {
                                       onPageChange: this.onPageChange.bind(this),
                                       sizePerPageList: [ 10 ],
                                       page: this.state.page} }>
-                            <TableHeaderColumn dataField='rank' isKey hiddenOnInsert>Rank</TableHeaderColumn>
-                            <TableHeaderColumn dataField='student.name'>Name</TableHeaderColumn>
+                            <TableHeaderColumn width={40} dataField='rank' isKey hiddenOnInsert>Rank</TableHeaderColumn>
+                            <TableHeaderColumn dataField='student' dataFormat={this.renderTitle.bind(this)}>Name</TableHeaderColumn>
                             <TableHeaderColumn dataField='testAttemptDate'>Date</TableHeaderColumn>
                             <TableHeaderColumn dataField='percentile'>Percentile</TableHeaderColumn>
                             <TableHeaderColumn dataField='percentage'>Percentage</TableHeaderColumn>

@@ -92,7 +92,10 @@ class EditQuestions extends Component {
           Authorization: `Token ${localStorage.token}`,
         },
       })
-      .then((res) => this.setState(this.props.history.goBack(),{ updatingQuestion: false, questionUpdated:true },this.props.handleClick('tr','Added Successfully')))
+      .then((res) => this.setState({ updatingQuestion: false, questionUpdated:true }, ()=>{
+        this.props.handleClick('tr','Updated Successfully', 'info'); 
+        this.props.history.goBack();
+      }))
       .catch((err) => this.setState({ updatingQuestion: false }, () => console.log(err)))
   }
 

@@ -163,19 +163,6 @@ class BulkStudents extends Component {
   downloadCSV(obj){
     window.open(obj.csv_file, '_blank');
   }
-
-  renderCourses(cell, row, enumObject, rowIndex) {
-      return (
-        <Row md={12}>
-          {
-          row.course.map((item)=>{
-            return(
-              <Col md={6}><Badge>{item}</Badge></Col>
-            )
-        })}   
-        </Row>
-      )
-    }
   
   renderColumn(cell, row, enumObject, rowIndex) {
     return (
@@ -194,6 +181,19 @@ class BulkStudents extends Component {
       </div>
     )
   }
+
+  renderCourses(cell, row, enumObject, rowIndex) {
+      return (
+        <div className="courseCell">
+          {
+          row.course.map((item)=>{
+            return(
+              <div className="courseBadge"><Badge>{item}</Badge></div>
+            )
+        })}   
+        </div>
+      )
+    }
 
   onPageChange(page, sizePerPage) {
     const currentIndex = (page - 1) * sizePerPage;

@@ -88,6 +88,10 @@ class Students extends Component {
     this.props.history.push({pathname:'/students/info',data:obj})
   }
 
+  handleShowResultsButton(obj){
+    this.props.history.push({pathname:`/students/results/${obj.id}`})
+  }
+
   renderCentres(cell, row, enumObject, rowIndex) {
     return (
       <Row md={12}>
@@ -125,9 +129,16 @@ class Students extends Component {
       <div>
         <Grid> 
           <Row>
-           <Button bsSize="small" style={{width:'180px'}} bsStyle="primary" onClick={this.handleViewButton.bind(this,row)}>
-            <Glyphicon glyph="list-alt" /> VIEW
-           </Button>
+            <ButtonToolbar>
+              <ButtonGroup>
+                <Button bsSize="small" style={{width:'90px'}} bsStyle="primary" onClick={this.handleViewButton.bind(this,row)}>
+                  <Glyphicon glyph="list-alt" /> Profile
+                 </Button>
+                <Button bsSize="small" style={{width:'90px'}} bsStyle="warning" onClick={this.handleShowResultsButton.bind(this,row)}>
+                  <Glyphicon glyph="stats" /> Results
+                </Button>
+              </ButtonGroup>
+            </ButtonToolbar>
           </Row>
           <Row>
             <ButtonToolbar>

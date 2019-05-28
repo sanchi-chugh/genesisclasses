@@ -5,6 +5,7 @@ import appRoutes, { studentRoutes } from './routes/app.jsx';
 
 import './App.css';
 import LoginScreen from './views/LoginScreen/LoginScreen';
+import ForgotScreen from './views/ForgotScreen/ForgotScreen';
 import EditProfile from "./layouts/EditProfile/EditProfile";
 
 class App extends React.Component {
@@ -72,6 +73,8 @@ class App extends React.Component {
       return(
         <BrowserRouter>
             <Switch>
+              <Route path={'/reset-password/:uid/:token'} render={(props) => <ForgotScreen flag={true} {...props} /> } />
+              <Route path={'/forgot-password'} render={(props) => <ForgotScreen flag={false} {...props} /> } />
               <Route path={'/'} render={(props) => <LoginScreen {...props} getUser={this.getUser} /> } />
             </Switch>
         </BrowserRouter>

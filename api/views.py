@@ -2429,7 +2429,7 @@ class TestResultGraphView(APIView):
         curr_yr = curr_date.date().year
 
         # Make latest 10 year objects
-        for index in range(0, 10):
+        for index in range(0, 5):
             yr = curr_yr - index
 
             # Get all test results submitted between 1-1-yr and 31-12-yr

@@ -1946,9 +1946,9 @@ class QuestionDetailsView(APIView):
         return Response({'details': quesData, 'status': 'successful'})
 
 # Check validity of int answer (valid if integer in range 0-9)
-def validate_intAnswer(data):
+def validate_intAnswer(data, questionType):
     error = False
-    if data['questionType'] == 'integer':
+    if questionType == 'integer':
         try:
             intAnswer = int(data['intAnswer'])
             if intAnswer not in range(0, 10):
@@ -2000,7 +2000,7 @@ class EditQuestionDetailsView(UpdateAPIView):
             return result
 
         # Return if integer answer is not valid
-        valid, result = validate_intAnswer(data)
+        valid, result = validate_intAnswer(data, questionType)
         if not valid:
             return result
 

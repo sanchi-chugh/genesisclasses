@@ -128,7 +128,7 @@ class TestResults extends Component {
       });
     };
     if(this.state.busy){
-      return <div className="loading"></div>;
+      return <div className="loader"></div>;
     }
     if(this.state.flag){
       return(

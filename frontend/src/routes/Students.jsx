@@ -1,5 +1,6 @@
 import Students from "../views/Students/Students";
 import EditProfile from "../components/Actions/Students/EditProfile";
+import StudentResults from "../components/Actions/Students/StudentResults";
 import ViewProfile from "../components/Actions/Students/ViewProfile";
 import AddStudents from "../components/Actions/Students/AddStudents";
 
@@ -9,6 +10,9 @@ var studentsRoutes = [
     },
     { 
         path: "/students/edit", name: "edit", component: EditProfile
+    },
+    { 
+        path: "/students/results/:id", name: "edit", component: StudentResults //student id
     },
     { 
         path: "/students/info", name: "info", component: ViewProfile

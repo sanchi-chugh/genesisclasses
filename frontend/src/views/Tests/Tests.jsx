@@ -279,14 +279,14 @@ class Tests extends Component {
 
   renderCourses(cell, row, enumObject, rowIndex) {
       return (
-        <Row md={12}>
+        <div className="courseCell">
           {
           row.course.map((item)=>{
             return(
-              <Col md={6}><Badge>{item.title}</Badge></Col>
+              <div className="courseBadge"><Badge>{item.title}</Badge></div>
             )
         })}   
-        </Row>
+        </div>
       )
     }
   

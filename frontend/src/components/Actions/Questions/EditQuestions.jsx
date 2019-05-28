@@ -78,9 +78,11 @@ class EditQuestions extends Component {
       formData.append('questionText',draftToHtml(convertToRaw(this.state.formData.questionText.getCurrentContent())))
       formData.append('explanation',this.state.formData.explanation)
       formData.append('intAnswer',this.state.formData.intAnswer)
-      formData.append('questionType',this.state.type)
       if(this.state.type === 'passage'){
         formData.append('passage', this.state.passageId);
+      }
+      if(this.state.type === 'mcq' || this.state.type === 'scq'){
+        formData.append('questionType', this.state.type);
       }
       formData.append('marksPositive',this.state.formData.marksPositive)
       formData.append('marksNegative',this.state.formData.marksNegative)

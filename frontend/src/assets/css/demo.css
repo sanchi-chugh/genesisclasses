@@ -543,3 +543,14 @@
 .table-upgrade td:nth-child(3){
     text-align: center;
 }
+
+.courseCell{
+  display: block;
+  width: 100%;
+  white-space: normal;
+}
+
+.courseBadge{
+  display: inline-block;
+  margin-inline-end: 4px;
+}

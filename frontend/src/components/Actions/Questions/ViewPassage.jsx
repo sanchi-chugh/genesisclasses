@@ -136,6 +136,10 @@ class ViewPassage extends Component {
       });
     }
 
+    handleEditButton(obj){
+      this.props.history.push({pathname:`/tests/sections/questions/detail/edit/${obj.id}`})
+    }
+    
     handleViewButton(obj){
         this.props.history.push({pathname:`/tests/sections/questions/detail/${obj.id}`})
     }
@@ -175,7 +179,7 @@ class ViewPassage extends Component {
               <Row>
                 <ButtonToolbar>
                   <ButtonGroup>
-                    <Button bsSize="small" style={{width:'80px'}} bsStyle="info" onClick={this.handleViewButton.bind(this,row)}>
+                    <Button bsSize="small" style={{width:'80px'}} bsStyle="info" onClick={this.handleEditButton.bind(this,row)}>
                       <Glyphicon glyph="edit" /> EDIT
                     </Button>
                     <Button bsSize="small" style={{width:'80px'}} bsStyle="danger" onClick={this.handleShowDeleteModal.bind(this,row)} >

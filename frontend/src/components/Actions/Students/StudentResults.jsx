@@ -25,6 +25,8 @@ class StudentResults extends Component {
       busy:true,
       page: 1,
       show:false,
+      search:false,
+      searchString:'',
       testDetails: {}
     };
   }
@@ -34,10 +36,18 @@ class StudentResults extends Component {
   }
 
   fetchResults(page, index=0){
-    if(page==='?page=1'){
-      page=''
+    var searchString='';
+    if(page===`?page=1`){
+        page="";
+        if(this.state.search){
+          searchString = '?search='+this.state.searchString;
+        }
+    }else{
+      if(this.state.search){
+        searchString = '&search='+this.state.searchString;
+      }
     }
-    axios.get(`/api/results/students/${this.props.match.params.id}/${page}`, {
+    axios.get(`/api/results/students/${this.props.match.params.id}/${page}${searchString}`, {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
@@ -62,6 +72,27 @@ class StudentResults extends Component {
     this.setState({
       page: page,
     });
+  }
+
+  handleSearchChange(string){
+    console.log(string)
+    if(string.trim() !== ''){
+      this.setState({
+        search:true,
+        searchString:string.trim(),
+        page:1
+      },()=>{
+        this.fetchResults(`?page=1`);
+      })
+    }else{
+      this.setState({
+        search:false,
+        searchString:'',
+        page:1
+      },()=>{
+        this.fetchResults(`?page=1`);
+      })
+    }
   }
 
   handleHide(){
@@ -120,6 +151,7 @@ class StudentResults extends Component {
                           search remote
                           fetchInfo={ { dataTotalSize: this.state.data.count } }
                           options={ { sizePerPage: 10,
+                                      onSearchChange: this.handleSearchChange.bind(this), searchDelayTime: 2000,
                                       onPageChange: this.onPageChange.bind(this),
                                       sizePerPageList: [ 10 ],
                                       page: this.state.page} }>

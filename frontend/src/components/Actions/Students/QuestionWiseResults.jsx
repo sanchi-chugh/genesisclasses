@@ -25,6 +25,8 @@ class QuestionWiseResults extends Component {
       data:{results:[]},
       busy:true,
       page: 1,
+      search:false,
+      searchString:''
     };
   }
 
@@ -33,10 +35,18 @@ class QuestionWiseResults extends Component {
   }
 
   fetchResults(page, index=0){
-    if(page==='?page=1'){
-      page=''
+    var searchString='';
+    if(page===`?page=1`){
+        page="";
+        if(this.state.search){
+          searchString = '?search='+this.state.searchString;
+        }
+    }else{
+      if(this.state.search){
+        searchString = '&search='+this.state.searchString;
+      }
     }
-    axios.get(`/api/results/students/${this.props.match.params.id}/tests/sections/${this.props.match.params.section}/${page}`, {
+    axios.get(`/api/results/students/${this.props.match.params.id}/tests/sections/${this.props.match.params.section}/${page}${searchString}`, {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
@@ -61,6 +71,27 @@ class QuestionWiseResults extends Component {
     this.setState({
       page: page,
     });
+  }
+
+  handleSearchChange(string){
+    console.log(string)
+    if(string.trim() !== ''){
+      this.setState({
+        search:true,
+        searchString:string.trim(),
+        page:1
+      },()=>{
+        this.fetchResults(`?page=1`);
+      })
+    }else{
+      this.setState({
+        search:false,
+        searchString:'',
+        page:1
+      },()=>{
+        this.fetchResults(`?page=1`);
+      })
+    }
   }
 
   handleHide(){
@@ -117,6 +148,7 @@ class QuestionWiseResults extends Component {
                           fetchInfo={ { dataTotalSize: this.state.data.count } }
                           options={ { sizePerPage: 10,
                                       onPageChange: this.onPageChange.bind(this),
+                                      onSearchChange: this.handleSearchChange.bind(this), searchDelayTime: 2000,
                                       sizePerPageList: [ 10 ],
                                       page: this.state.page} }>
                             <TableHeaderColumn width={40} dataField='sno' isKey hiddenOnInsert>SNo</TableHeaderColumn>

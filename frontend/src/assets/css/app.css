@@ -1043,6 +1043,42 @@
     overflow: hidden;
 }
 
+.tabs{
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.tab-badge{
+    display: inline-block;
+    margin-inline-end: 8px;
+    background: white;
+    padding: 4px 24px;
+    border-radius: 100px;
+    border: 1px solid #01458E;
+    color: #01458E;
+    font-size: 12px;
+    font-weight: 900;
+    z-index: 1;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.tabs .active{
+    background-color: #01458E;
+    color: white;
+}
+
+.line{
+    width: 96%;
+    height: 2px;
+    background: #E5E5E5;
+    position: absolute;
+    top: 88px;
+    z-index: 0;
+}
+
 @media (max-width: 991px){
     #main-panel{
         width: calc(100% - 260px);

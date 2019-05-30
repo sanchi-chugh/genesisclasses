@@ -4,6 +4,7 @@ import TestList from "../../WebAppComponents/TestListInfinite/TestList.jsx";
 
 import { Card } from "../../WebAppComponents/Card/Card.jsx";
 import Axios from "axios";
+import Kard from "../../components/Card/Card.jsx";
 
 
 class Results extends Component {
@@ -14,6 +15,7 @@ class Results extends Component {
       data: {results:[]},
       busy:true,
       next:null,
+      type: 'upcoming'
     };
   }
 
@@ -44,7 +46,7 @@ class Results extends Component {
         if(page===`?page=1`){
             page=""
         }
-        Axios.get( `/api/app/result/tests/list/?typeOfTest=upcoming`, {
+        Axios.get( `/api/app/result/tests/list/?typeOfTest=${this.state.type}`, {
             headers: {
             Authorization: `Token ${localStorage.token}`
             }
@@ -67,20 +69,72 @@ class Results extends Component {
   render() {
     return (
       <div className="content home-content">
-        <h4 className="title-heading">Upcoming Tests Results</h4>
-          {
-            !this.state.busy && this.state.data.results.length === 0 &&
-            <div className="no-tests-placeholder">No Tests Attempted</div>
-          }
-          {
-            !this.state.busy &&
-              <TestList
-                {...this.props}
-                fetchMore={this.fetchMore.bind(this)}
-                next={this.state.next}
-                data={this.state.data}
-              />
-          }
+        <div className="tabs">
+          <div className="line"></div>
+          <div 
+            className={"tab-badge " + (this.state.type === 'upcoming' ? 'active' : '')} 
+            onClick={()=>this.setState({type:'upcoming'},()=>{
+              this.fetchTests(`?page=1`);
+            })}>
+            Upcoming
+          </div>
+          <div 
+            className={"tab-badge " + (this.state.type === 'practice' ? 'active' : '')} 
+            onClick={()=>this.setState({type:'practice'},()=>{
+              this.fetchTests(`?page=1`);
+            })}>
+            Practice
+          </div>
+        </div>
+        <Grid fluid>
+          <Row>
+            <Col md={6}>
+              <Grid fluid>
+                 <Row>
+                    <Col md={12}>
+                      <Kard
+                        title="Subject Wise Progress"
+                        content={
+                          <Grid fluid>
+                           
+                          </Grid>
+                        }
+                      />
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md={12}>
+                      <Kard
+                        title="Leaderboard"
+                        content={
+                          <Grid fluid>
+                           
+                          </Grid>
+                        }
+                      />
+                    </Col>
+                  </Row>
+                </Grid>
+            </Col>
+            <Col md={6}>
+              <Grid fluid>
+                {
+                  !this.state.busy &&
+                    <TestList
+                      {...this.props}
+                      fetchMore={this.fetchMore.bind(this)}
+                      next={this.state.next}
+                      data={this.state.data}
+                    />
+                }
+                {
+                  !this.state.busy && this.state.data.results.length === 0 &&
+                  <div className="no-tests-placeholder">No Tests Attempted</div>
+                }
+              </Grid>
+            </Col>
+          </Row>
+        </Grid>
       </div>
     );
   }

@@ -14,58 +14,37 @@ import { Card } from "../../../components/Card/Card.jsx";
 import { UserCard } from "../../../components/UserCard/UserCard.jsx";
 import axios from 'axios';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
-import TestDetails from './TestDetails';
 
-class StudentResults extends Component {
+class SectionWiseResults extends Component {
 
   constructor() {
     super();
     this.state = {
-      data:{results:[]},
+      data:[],
       busy:true,
-      page: 1,
-      show:false,
-      testDetails: {}
     };
   }
 
   componentDidMount(){
-    this.fetchResults('?page=1');
+    this.fetchResults();
   }
 
-  fetchResults(page, index=0){
-    if(page==='?page=1'){
-      page=''
-    }
-    axios.get(`/api/results/students/${this.props.match.params.id}/${page}`, {
+  fetchResults(){
+    axios.get(`/api/results/students/${this.props.match.params.id}/tests/${this.props.match.params.test}/`, {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
     }).then(res => {
-        const results = res.data.results.map(item => {
-          item.sno = res.data.results.indexOf(item) + 1+index;
-          return item;
+        console.log(res.data)
+        const data = res.data.map(obj => {
+          obj.sno = res.data.indexOf(obj) + 1;
+          return obj;
         })
-        res.data.results = results
-        const data = res.data
         this.setState({
          data: data,
          busy: false 
       });
     });
-  }
-
-  onPageChange(page, sizePerPage=10) {
-    const currentIndex = (page - 1) * sizePerPage;
-    this.fetchResults(`?page=${page}`,currentIndex);
-    console.log(currentIndex,page,sizePerPage,this.state.data);
-    this.setState({
-      page: page,
-    });
-  }
-
-  handleHide(){
-    this.setState({show:false})
   }
 
   renderTitle(cell, row, enumObject, rowIndex){
@@ -83,17 +62,8 @@ class StudentResults extends Component {
           <Col md={12}>
             <ButtonToolbar>
               <ButtonGroup>
-                <Button style={{width:'130px'}} bsSize="small" bsStyle="info" onClick={()=>{this.setState({show:true, testDetails:cell})}}>
-                  <Glyphicon glyph="edit" /> View Test Info
-                </Button>
-              </ButtonGroup>
-            </ButtonToolbar>
-          </Col>
-          <Col md={12}>
-            <ButtonToolbar>
-              <ButtonGroup>
-                <Button bsSize="small" bsStyle="warning" onClick={()=>{this.props.history.push(`/students/results/1/test/${cell.id}`)}}>
-                  <Glyphicon glyph="stats" /> Sectional Results
+                <Button bsSize="small" bsStyle="warning" onClick={()=>{this.props.history.push(`/students/results/1/test/sections/${cell.id}`)}}>
+                  <Glyphicon glyph="stats" /> Question Results
                 </Button>
               </ButtonGroup>
             </ButtonToolbar>
@@ -110,22 +80,16 @@ class StudentResults extends Component {
           <Row>
             <Col md={12}>
               <Card
-                title="Student Results"
+                title="Section Wise Results"
                 content={
                   <Grid fluid>
                     <div>
                         <BootstrapTable
                           condensed pagination
-                          data={this.state.data.results}
-                          search remote
-                          fetchInfo={ { dataTotalSize: this.state.data.count } }
-                          options={ { sizePerPage: 10,
-                                      onPageChange: this.onPageChange.bind(this),
-                                      sizePerPageList: [ 10 ],
-                                      page: this.state.page} }>
+                          data={this.state.data}
+                          search>
                             <TableHeaderColumn width={40} dataField='sno' isKey hiddenOnInsert>SNo</TableHeaderColumn>
-                            <TableHeaderColumn dataField='test' dataFormat={this.renderTitle.bind(this)}>Name</TableHeaderColumn>
-                            <TableHeaderColumn dataField='testAttemptDate'>Date</TableHeaderColumn>
+                            <TableHeaderColumn dataField='section' dataFormat={this.renderTitle.bind(this)}>Name</TableHeaderColumn>
                             <TableHeaderColumn dataField='percentage'>Percentage</TableHeaderColumn>
                             <TableHeaderColumn dataField='marksObtained'>Total Marks</TableHeaderColumn>
                             <TableHeaderColumn dataField='marksObtained'>Marks Obtained</TableHeaderColumn>
@@ -133,14 +97,9 @@ class StudentResults extends Component {
                             <TableHeaderColumn dataField='correct'>Correct</TableHeaderColumn>
                             <TableHeaderColumn dataField='incorrect'>Incorrect</TableHeaderColumn>
                             <TableHeaderColumn dataField='unattempted'>Unattempted</TableHeaderColumn>
-                            <TableHeaderColumn width={190} dataField='test' dataFormat={this.renderColumn.bind(this)}>Action</TableHeaderColumn>
+                            <TableHeaderColumn width={190} dataField='section' dataFormat={this.renderColumn.bind(this)}>Action</TableHeaderColumn>
                         </BootstrapTable>
                       </div>
-                      <TestDetails
-                        show={this.state.show}
-                        onHide={this.handleHide.bind(this)}
-                        data={this.state.testDetails}
-                      />
                   </Grid>
                 }
               />
@@ -152,4 +111,4 @@ class StudentResults extends Component {
   }
 }
 
-export default StudentResults;
+export default SectionWiseResults;

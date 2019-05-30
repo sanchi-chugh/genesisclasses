@@ -1,12 +1,21 @@
 import React, { Component } from "react";
 import { Button, Glyphicon } from "react-bootstrap"
 import appLogo from "../../assets/img/app_logo.png";
+import Logout from '../../components/Logout/Logout';
 
 class HeaderLinks extends Component {
+
+  constructor(props){
+    super(props);
+    this.state = {
+      show:false
+    }
+  }
 
   logout(){
     this.props.logout(() =>{this.props.history.push('/')})
   }
+
   render() {
     return (
       <div className="nav-links">
@@ -35,9 +44,14 @@ class HeaderLinks extends Component {
           </li>
           */}
           <li>
-            <a ><Glyphicon glyph="log-out" style={{color:this.props.flag ? '#01458E' : 'white', fontSize: '18px'}} onClick={this.logout.bind(this)}/></a>
+            <a ><Glyphicon glyph="log-out" style={{color:this.props.flag ? '#01458E' : 'white', fontSize: '18px'}} onClick={()=>this.setState({show:true})}/></a>
           </li>
         </ul>
+        <Logout
+         onHide={()=>this.setState({show:false})}
+         show={this.state.show}
+         logout={this.logout.bind(this)}
+         />
       </div>
     );
   }

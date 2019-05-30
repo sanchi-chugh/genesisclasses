@@ -1,7 +1,15 @@
 import React, { Component } from "react";
 import { NavItem, Nav, NavDropdown, MenuItem } from "react-bootstrap";
+import Logout from '../Logout/Logout';
 
 class HeaderLinks extends Component {
+
+  constructor(props){
+    super(props);
+    this.state = {
+      show:false
+    }
+  }
 
   logout(){
     this.props.logout(() =>{this.props.history.push('/')})
@@ -31,10 +39,15 @@ class HeaderLinks extends Component {
           {/*<NavItem eventKey={1} href="#">
                       Profile
                     </NavItem>*/}
-          <NavItem eventKey={3} onClick={this.logout.bind(this)}>
+          <NavItem eventKey={3} onClick={()=>this.setState({show:true})}>
             Log out
           </NavItem>
         </Nav>
+        <Logout
+         onHide={()=>this.setState({show:false})}
+         show={this.state.show}
+         logout={this.logout.bind(this)}
+         />
       </div>
     );
   }

@@ -52,7 +52,9 @@ class Questions extends Component {
           subjects:[],
           subject: 'Select Subject',
           next:'',
-          dropdown:false
+          dropdown:false,
+          search:false,
+          searchString:''
         };
       }
   
@@ -88,10 +90,18 @@ class Questions extends Component {
   }
   
   fetchQuestions(page,index=0){
+    var searchString='';
     if(page===`?page=1`){
-        page=""
+        page="";
+        if(this.state.search){
+          searchString = '?search='+this.state.searchString;
+        }
+    }else{
+      if(this.state.search){
+        searchString = '&search='+this.state.searchString;
+      }
     }
-    axios.get( `/api/tests/sections/questions/${this.props.match.params.id}/${page}`, {
+    axios.get( `/api/tests/sections/questions/${this.props.match.params.id}/${page}${searchString}`, {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
@@ -301,6 +311,27 @@ class Questions extends Component {
     });
   }
 
+  handleSearchChange(string){
+    console.log(string)
+    if(string.trim() !== ''){
+      this.setState({
+        search:true,
+        searchString:string.trim(),
+        page:1
+      },()=>{
+        this.fetchQuestions(`?page=1`);
+      })
+    }else{
+      this.setState({
+        search:false,
+        searchString:'',
+        page:1
+      },()=>{
+        this.fetchQuestions(`?page=1`);
+      })
+    }
+  }
+
   render() {
     return (
       <div className="content modal-container">
@@ -322,6 +353,7 @@ class Questions extends Component {
                       fetchInfo={ { dataTotalSize: this.state.data.count } }
                       options={ { sizePerPage: 10,
                                   onPageChange: this.onPageChange.bind(this),
+                                  onSearchChange: this.handleSearchChange.bind(this), searchDelayTime: 2000,
                                   sizePerPageList: [ 10 ],
                                   page: this.state.page} }>
                         <TableHeaderColumn width={60} dataField='quesNumber' isKey hiddenOnInsert>QNO.</TableHeaderColumn>

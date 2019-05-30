@@ -10,13 +10,14 @@ import {
   Button
 } from "react-bootstrap";
 
+import renderHTML from 'react-render-html';
 import { Card } from "../../../components/Card/Card.jsx";
 import { UserCard } from "../../../components/UserCard/UserCard.jsx";
 import axios from 'axios';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 import TestDetails from './TestDetails';
 
-class StudentResults extends Component {
+class QuestionWiseResults extends Component {
 
   constructor() {
     super();
@@ -24,10 +25,8 @@ class StudentResults extends Component {
       data:{results:[]},
       busy:true,
       page: 1,
-      show:false,
       search:false,
-      searchString:'',
-      testDetails: {}
+      searchString:''
     };
   }
 
@@ -47,7 +46,7 @@ class StudentResults extends Component {
         searchString = '&search='+this.state.searchString;
       }
     }
-    axios.get(`/api/results/students/${this.props.match.params.id}/${page}${searchString}`, {
+    axios.get(`/api/results/students/${this.props.match.params.id}/tests/sections/${this.props.match.params.section}/${page}${searchString}`, {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
@@ -99,10 +98,10 @@ class StudentResults extends Component {
     this.setState({show:false})
   }
 
-  renderTitle(cell, row, enumObject, rowIndex){
+  renderType(cell, row, enumObject, rowIndex){
     return (
         <div style={{overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'}}>
-          {cell.title}
+          {cell.questionType}
         </div>
       )
   }
@@ -114,23 +113,20 @@ class StudentResults extends Component {
           <Col md={12}>
             <ButtonToolbar>
               <ButtonGroup>
-                <Button style={{width:'130px'}} bsSize="small" bsStyle="info" onClick={()=>{this.setState({show:true, testDetails:cell})}}>
-                  <Glyphicon glyph="edit" /> View Test Info
-                </Button>
-              </ButtonGroup>
-            </ButtonToolbar>
-          </Col>
-          <Col md={12}>
-            <ButtonToolbar>
-              <ButtonGroup>
-                <Button bsSize="small" bsStyle="warning" onClick={()=>{this.props.history.push(`/students/results/1/test/${cell.id}`)}}>
-                  <Glyphicon glyph="stats" /> Sectional Results
+                <Button bsSize="small" bsStyle="info" onClick={()=>{this.props.history.push(`/tests/sections/questions/detail/${cell.id}`)}}>
+                  <Glyphicon glyph="stats" /> View Question Details
                 </Button>
               </ButtonGroup>
             </ButtonToolbar>
           </Col>
         </Grid>
       </div>
+    )
+  }
+
+  renderQuestion(cell, row, enumObject, rowIndex) {
+    return (
+        <div style={{width:380,wordWrap:'break-word',wordBreak:'normal',whiteSpace:'normal'}}>{renderHTML(cell.questionText)}</div>
     )
   }
 
@@ -141,7 +137,7 @@ class StudentResults extends Component {
           <Row>
             <Col md={12}>
               <Card
-                title="Student Results"
+                title="Question Wise Results"
                 content={
                   <Grid fluid>
                     <div>
@@ -151,28 +147,19 @@ class StudentResults extends Component {
                           search remote
                           fetchInfo={ { dataTotalSize: this.state.data.count } }
                           options={ { sizePerPage: 10,
-                                      onSearchChange: this.handleSearchChange.bind(this), searchDelayTime: 2000,
                                       onPageChange: this.onPageChange.bind(this),
+                                      onSearchChange: this.handleSearchChange.bind(this), searchDelayTime: 2000,
                                       sizePerPageList: [ 10 ],
                                       page: this.state.page} }>
                             <TableHeaderColumn width={40} dataField='sno' isKey hiddenOnInsert>SNo</TableHeaderColumn>
-                            <TableHeaderColumn dataField='test' dataFormat={this.renderTitle.bind(this)}>Name</TableHeaderColumn>
-                            <TableHeaderColumn dataField='testAttemptDate'>Date</TableHeaderColumn>
-                            <TableHeaderColumn dataField='percentage'>Percentage</TableHeaderColumn>
-                            <TableHeaderColumn dataField='marksObtained'>Total Marks</TableHeaderColumn>
-                            <TableHeaderColumn dataField='marksObtained'>Marks Obtained</TableHeaderColumn>
-                            <TableHeaderColumn dataField='correct'>Total Questions</TableHeaderColumn>
-                            <TableHeaderColumn dataField='correct'>Correct</TableHeaderColumn>
-                            <TableHeaderColumn dataField='incorrect'>Incorrect</TableHeaderColumn>
-                            <TableHeaderColumn dataField='unattempted'>Unattempted</TableHeaderColumn>
-                            <TableHeaderColumn width={190} dataField='test' dataFormat={this.renderColumn.bind(this)}>Action</TableHeaderColumn>
+                            <TableHeaderColumn width={400} dataField='question' dataFormat={this.renderQuestion.bind(this)}>Question</TableHeaderColumn>
+                            <TableHeaderColumn dataField='question' dataFormat={this.renderType.bind(this)}>Type</TableHeaderColumn>
+                            <TableHeaderColumn dataField='marksAwarded'>Marks Awarded</TableHeaderColumn>
+                            <TableHeaderColumn dataField='isMarkedForReview'>Marked For Review</TableHeaderColumn>
+                            <TableHeaderColumn dataField='status'>Status</TableHeaderColumn>
+                            <TableHeaderColumn width={224} dataField='question' dataFormat={this.renderColumn.bind(this)}>Action</TableHeaderColumn>
                         </BootstrapTable>
                       </div>
-                      <TestDetails
-                        show={this.state.show}
-                        onHide={this.handleHide.bind(this)}
-                        data={this.state.testDetails}
-                      />
                   </Grid>
                 }
               />
@@ -184,4 +171,4 @@ class StudentResults extends Component {
   }
 }
 
-export default StudentResults;
+export default QuestionWiseResults;

@@ -125,6 +125,7 @@ class LoginScreen extends React.Component {
                   <button type="submit" disabled={this.state.busy} className="login-btn">
                     Login
                   </button>
+                  {this.state.busy && <div className="loader"> </div>}
                   <Link to={"/forgot-password/"}>
                     <div className="forgot"> Forgot Password? </div>
                   </Link>

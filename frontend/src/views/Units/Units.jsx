@@ -51,6 +51,8 @@ class Units extends Component {
           clear:false,
           page:1,
           subjects:[],
+          search:false,
+          searchString:'',
           subject: 'Select Subject',
           next:'',
           dropdown:false,
@@ -90,10 +92,18 @@ class Units extends Component {
   }
   
   fetchUnits(page,index=0){
+    var searchString='';
     if(page===`?page=1`){
-        page=""
+        page="";
+        if(this.state.search){
+          searchString = '?search='+this.state.searchString;
+        }
+    }else{
+      if(this.state.search){
+        searchString = '&search='+this.state.searchString;
+      }
     }
-    axios.get( `/api/units/${page}`, {
+    axios.get( `/api/units/${page}${searchString}`, {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
@@ -391,6 +401,27 @@ class Units extends Component {
     });
   }
 
+  handleSearchChange(string){
+    console.log(string)
+    if(string.trim() !== ''){
+      this.setState({
+        search:true,
+        searchString:string.trim(),
+        page:1
+      },()=>{
+        this.fetchUnits(`?page=1`);
+      })
+    }else{
+      this.setState({
+        search:false,
+        searchString:'',
+        page:1
+      },()=>{
+        this.fetchUnits(`?page=1`);
+      })
+    }
+  }
+
   render() {
     return (
       <div className="content modal-container">
@@ -412,6 +443,7 @@ class Units extends Component {
                       fetchInfo={ { dataTotalSize: this.state.data.count } }
                       options={ { sizePerPage: 10,
                                   onPageChange: this.onPageChange.bind(this),
+                                  onSearchChange: this.handleSearchChange.bind(this), searchDelayTime: 2000,
                                   sizePerPageList: [ 10 ],
                                   page: this.state.page} }>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>

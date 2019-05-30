@@ -57,13 +57,13 @@ class ForgotScreen extends React.Component {
     var formData = new FormData();
     formData.append('new_password1',this.state.password1);
     formData.append('new_password2',this.state.password2);
-    formData.append('token',this.props.params.match.token);
-    formData.append('uid',this.props.params.match.uid);
+    formData.append('token',this.props.match.params.token);
+    formData.append('uid',this.props.match.params.uid);
     this.setState({busy:true},()=>{
       axios.post(`/api-auth/password/reset/confirm/`, formData)
       .then((res) => this.setState({ busy: false}, ()=>{
         alert('Password Reset Successful! Login to continue.') 
-        this.props.history.goBack();
+        this.props.history.push('/');
       }))
       .catch((err) => this.setState({ busy: false, errors: err.response.data }, () => console.log(err)))
     })
@@ -100,7 +100,7 @@ class ForgotScreen extends React.Component {
                     proprieties={[
                       {
                         label: `Password *`,
-                        type: "text",
+                        type: "password",
                         bsClass: "form-control",
                         placeholder: "Password",
                         name:'password1',
@@ -115,7 +115,7 @@ class ForgotScreen extends React.Component {
                     proprieties={[
                       {
                         label: `Confirm Password *`,
-                        type: "text",
+                        type: "password",
                         bsClass: "form-control",
                         placeholder: "Retype password",
                         name:'password2',

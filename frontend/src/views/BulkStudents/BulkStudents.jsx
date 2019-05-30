@@ -50,7 +50,7 @@ class BulkStudents extends Component {
    this.fetchCentres();
   }
 
-  fetchBulkStudents(page,index=0){
+  fetchBulkStudents(page,index=0,url=null){
     if(page===`?page=1`){
         page=""
     }
@@ -165,6 +165,9 @@ class BulkStudents extends Component {
   }
   
   renderColumn(cell, row, enumObject, rowIndex) {
+    this.setState({data:{
+      results:[]
+    }})
     return (
       <div>
         <Grid> 
@@ -195,6 +198,10 @@ class BulkStudents extends Component {
       )
     }
 
+  handleSearchChange(string) {
+    
+  }
+
   onPageChange(page, sizePerPage) {
     const currentIndex = (page - 1) * sizePerPage;
     this.fetchBulkStudents(`?page=${page}`,currentIndex)
@@ -221,12 +228,14 @@ class BulkStudents extends Component {
                     <BootstrapTable
                       condensed pagination
                       data={this.state.data.results}
-                      search remote
+                      remote
                       fetchInfo={ { dataTotalSize: this.state.data.count } }
-                      options={ { sizePerPage: 10,
+                      options={{ sizePerPage: 10,
                                   onPageChange: this.onPageChange.bind(this),
+                                  onSearchChange: this.handleSearchChange, searchDelayTime: 2000,
                                   sizePerPageList: [ 5, 10 ],
-                                  page: this.state.page} }>
+                                  page: this.state.page
+                              }}>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
                         <TableHeaderColumn dataField='centre'>Centre</TableHeaderColumn>
                         <TableHeaderColumn dataField='number'>Number Of Students</TableHeaderColumn>

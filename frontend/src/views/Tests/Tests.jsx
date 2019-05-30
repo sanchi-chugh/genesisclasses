@@ -54,6 +54,8 @@ class Tests extends Component {
           subjects:[],
           subject: 'Select Subject',
           next:'',
+          search:false,
+          searchString:'',
           dropdown:false
         };
       }
@@ -90,10 +92,18 @@ class Tests extends Component {
   }
   
   fetchTests(page,index=0){
+    var searchString='';
     if(page===`?page=1`){
-        page=""
+        page="";
+        if(this.state.search){
+          searchString = '?search='+this.state.searchString;
+        }
+    }else{
+      if(this.state.search){
+        searchString = '&search='+this.state.searchString;
+      }
     }
-    axios.get( `/api/tests/${page}`, {
+    axios.get( `/api/tests/${page}${searchString}`, {
         headers: {
         Authorization: `Token ${localStorage.token}`
         }
@@ -365,6 +375,27 @@ class Tests extends Component {
     });
   }
 
+  handleSearchChange(string){
+    console.log(string)
+    if(string.trim() !== ''){
+      this.setState({
+        search:true,
+        searchString:string.trim(),
+        page:1
+      },()=>{
+        this.fetchTests(`?page=1`);
+      })
+    }else{
+      this.setState({
+        search:false,
+        searchString:'',
+        page:1
+      },()=>{
+        this.fetchTests(`?page=1`);
+      })
+    }
+  }
+
   render() {
     return (
       <div className="content modal-container">
@@ -386,6 +417,7 @@ class Tests extends Component {
                       fetchInfo={ { dataTotalSize: this.state.data.count } }
                       options={ { sizePerPage: 10,
                                   onPageChange: this.onPageChange.bind(this),
+                                  onSearchChange: this.handleSearchChange.bind(this), searchDelayTime: 2000,
                                   sizePerPageList: [ 10 ],
                                   page: this.state.page} }>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>
@@ -404,50 +436,6 @@ class Tests extends Component {
                       handleDelete={this.handleDelete.bind(this)}
                       id={this.state.id}
                     />
-                    {/* <EditTest 
-                      show={this.state.show} 
-                      onHide={this.handleHideEditModal.bind(this)} 
-                      testUpdated={this.state.testUpdated} 
-                      formData={this.state.formData} 
-                      handleFormDataChange={this.handleFormDataChange.bind(this)} 
-                      subjects={this.state.subjects}
-                      subject={this.state.subject}
-                      handleSelect={this.handleSelectSubject.bind(this)}
-                      updatingTest={this.state.updatingTest}
-                      handleEdit={this.handleEdit.bind(this)}
-                      fetchMore={this.fetchMore.bind(this)}
-                      hasMore={this.state.next === null ? false :true}
-                      dropdown={this.state.dropdown}
-                      toggle={this.toggleDropdown.bind(this)}
-                    />
-                    <DeleteTest
-                      show={this.state.show2}
-                      onHide={this.handleHideDeleteModal.bind(this)}
-                      testDeleted={this.state.testDeleted}
-                      deletingTest={this.state.deletingTest}
-                      handleDelete={this.handleDelete.bind(this)}
-                      transferData={this.state.transferData}
-                      toggle={this.toggleTransferData.bind(this)}
-                      tests={this.state.tests}
-                      id={this.state.id}
-                      test={this.state.transferTo}
-                      handleSelect={this.handleSelect.bind(this)}
-                    />
-                    <AddTests
-                      show={this.state.show3}
-                      onHide={this.handleHideAddModal.bind(this)}
-                      testAdded={this.state.testAdded}
-                      addingTest={this.state.addingTest}
-                      handleAdd={this.handleAdd.bind(this)}
-                      formData={this.state.formData}
-                      subjects={this.state.subjects}
-                      subject={this.state.subject}
-                      handleSelect={this.handleSelectSubject.bind(this)}
-                      handleFormDataChange={this.handleFormDataChange.bind(this)}
-                      fetchMore={this.fetchMore.bind(this)}
-                      hasMore={this.state.next === null ? false :true}
-                      dropdown={this.state.dropdown}
-                      toggle={this.toggleDropdown.bind(this)}/> */}
                   </div>
                 }
               />

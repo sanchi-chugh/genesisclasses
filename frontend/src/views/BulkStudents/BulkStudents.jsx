@@ -40,7 +40,9 @@ class BulkStudents extends Component {
           bulkAdded:false,
           addingBulk:false,
           page:1,
-          errors: {}
+          errors: {},
+          search:false,
+          searchString:''
         };
       }
   
@@ -51,10 +53,18 @@ class BulkStudents extends Component {
   }
 
   fetchBulkStudents(page,index=0,url=null){
+    var searchString='';
     if(page===`?page=1`){
-        page=""
+        page="";
+        if(this.state.search){
+          searchString = '?search='+this.state.searchString;
+        }
+    }else{
+      if(this.state.search){
+        searchString = '&search='+this.state.searchString;
+      }
     }
-    axios.get(`/api/users/students/bulk/${page}`, {
+    axios.get(`/api/users/students/bulk/${page}${searchString}`, {
         headers: {
         Authorization: `Token ${localStorage.token}`,
         }
@@ -165,9 +175,6 @@ class BulkStudents extends Component {
   }
   
   renderColumn(cell, row, enumObject, rowIndex) {
-    this.setState({data:{
-      results:[]
-    }})
     return (
       <div>
         <Grid> 
@@ -198,8 +205,25 @@ class BulkStudents extends Component {
       )
     }
 
-  handleSearchChange(string) {
-    
+  handleSearchChange(string){
+    console.log(string)
+    if(string.trim() !== ''){
+      this.setState({
+        search:true,
+        searchString:string.trim(),
+        page:1
+      },()=>{
+        this.fetchBulkStudents(`?page=1`);
+      })
+    }else{
+      this.setState({
+        search:false,
+        searchString:'',
+        page:1
+      },()=>{
+        this.fetchBulkStudents(`?page=1`);
+      })
+    }
   }
 
   onPageChange(page, sizePerPage) {
@@ -228,11 +252,11 @@ class BulkStudents extends Component {
                     <BootstrapTable
                       condensed pagination
                       data={this.state.data.results}
-                      remote
+                      remote search
                       fetchInfo={ { dataTotalSize: this.state.data.count } }
                       options={{ sizePerPage: 10,
                                   onPageChange: this.onPageChange.bind(this),
-                                  onSearchChange: this.handleSearchChange, searchDelayTime: 2000,
+                                  onSearchChange: this.handleSearchChange.bind(this), searchDelayTime: 2000,
                                   sizePerPageList: [ 5, 10 ],
                                   page: this.state.page
                               }}>

@@ -9,8 +9,6 @@ import { style } from "../../variables/Variables.jsx";
 
 import webapppRoutes from "../../routes/Webapp";
 
-import '../../assets/css/app.css';
-
 class Webapp extends Component {
   constructor(props) {
     super(props);
@@ -70,6 +68,7 @@ class Webapp extends Component {
                   <prop.component
                     {...routeProps}
                     user={this.props.user}
+                    getUser={this.props.getUser} 
                     handleClick={this.handleNotificationClick}
                     expanded={this.state.expanded}
                   />

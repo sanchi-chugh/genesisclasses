@@ -70,6 +70,7 @@ class Webapp extends Component {
                              flag={true}
                              user={this.props.user} 
                              logout={this.props.logout}
+                             getUser={this.props.getUser}
                              completeProfile={this.props.completeProfile}
                              handleClick={this.handleNotificationClick} />  } />
             <Redirect from={'/'} to={'/completeDetails'} />;

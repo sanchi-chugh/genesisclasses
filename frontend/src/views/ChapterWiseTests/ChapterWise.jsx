@@ -120,7 +120,7 @@ class ChapterWise extends Component {
                                         <div className={"chap-list-item" + (this.state.unitSelected === item.id ? ' active' : '')} key={item.id} onClick={this.handleUnitSelect.bind(this,item.id)}>
                                           <p>{item.title}</p>
                                         </div>
-                                        <div className={"chap-list-item item-hidden" + (this.state.unitSelected === item.id ? ' active' : '')} key={item.id}>
+                                        <div className={"chap-list-item-hidden item-hidden" + (this.state.unitSelected === item.id ? ' active-hidden' : '')} key={item.id}>
                                           <p>{this.state.count} Tests</p>
                                         </div> 
                                     </div>

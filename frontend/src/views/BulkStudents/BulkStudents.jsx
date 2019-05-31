@@ -33,7 +33,8 @@ class BulkStudents extends Component {
             number:'',
             course:[],
             endAccessDate:'',
-            joiningDate:''
+            joiningDate:'',
+            location:''
           },
           id:null,
           subject:null,
@@ -129,7 +130,7 @@ class BulkStudents extends Component {
       var formData = new FormData();
       formData.append('number',this.state.formData.number)
       formData.append('course',this.state.formData.course.join(','))
-      formData.append('centre',this.state.centreId)
+      formData.append('centre',this.state.formData.location)
       formData.append('endAccessDate', this.state.formData.endAccessDate )
       formData.append('joiningDate', this.state.formData.joiningDate )
       axios.post('/api/users/students/bulk/create/', formData, {
@@ -256,7 +257,7 @@ class BulkStudents extends Component {
                       fetchInfo={ { dataTotalSize: this.state.data.count } }
                       options={{ sizePerPage: 10,
                                   onPageChange: this.onPageChange.bind(this),
-                                  onSearchChange: this.handleSearchChange.bind(this), searchDelayTime: 2000,
+                                  onSearchChange: this.handleSearchChange.bind(this),
                                   sizePerPageList: [ 5, 10 ],
                                   page: this.state.page
                               }}>

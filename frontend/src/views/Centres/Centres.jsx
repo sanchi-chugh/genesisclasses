@@ -101,7 +101,7 @@ class Centres extends Component {
           })
           .then((res) => {
             this.setState({ deletingCentre: false, centreDeleted:true, transferData:false},this.fetchCentres());
-            this.props.handleClick('tr','Deleted Successfully', 'warning');
+            this.props.handleClick('tr','Deleted Successfully');
             this.handleHideDeleteModal();
           })
           .catch((err) => this.setState({ deletingCentre: false }, () => console.log(err)))
@@ -115,7 +115,7 @@ class Centres extends Component {
             
             this.setState({ deletingCentre: false,centreDeleted:true, transferData:false},()=>{
               this.fetchCentres();
-              this.props.handleClick('tr','Deleted Successfully', 'warning');
+              this.props.handleClick('tr','Deleted Successfully');
               this.handleHideDeleteModal();
             })
           })
@@ -135,7 +135,7 @@ class Centres extends Component {
       })
       .then((res) => {
         this.setState({ updatingCentre: false, centreUpdated:true }); this.fetchCentres();
-        this.props.handleClick('tr','Updated Successfully', 'info');
+        this.props.handleClick('tr','Updated Successfully');
         this.handleHideEditModal();
       })
       .catch((err) => this.setState({ updatingCentre: false, errors: err.response.data }, () => console.log(err)))

@@ -74,7 +74,10 @@ class Students extends Component {
             },
           })
           .then((res) => {
-            this.setState({ deletingStudent: false,studentDeleted:true},this.fetchStudents(`?page=${this.state.page}`,(this.state.page-1)*10))
+            this.setState({ deletingStudent: false,studentDeleted:true, show:false},()=>{
+              this.fetchStudents(`?page=${this.state.page}`,(this.state.page-1)*10);
+              this.props.handleClick('tr','Deleted Successfully');
+            })
           })
           .catch((err) => this.setState({ deletingStudent: false }, () => console.log(err)))
     });
@@ -227,7 +230,7 @@ class Students extends Component {
                       fetchInfo={ { dataTotalSize: this.state.data.count } }
                       options={ { sizePerPage: 10,
                                   onPageChange: this.onPageChange.bind(this),
-                                  onSearchChange: this.handleSearchChange.bind(this), searchDelayTime: 2000,
+                                  onSearchChange: this.handleSearchChange.bind(this),
                                   sizePerPageList: [ 10 ],
                                   page: this.state.page} }>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>

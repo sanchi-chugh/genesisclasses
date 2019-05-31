@@ -93,7 +93,7 @@ class EditQuestions extends Component {
         },
       })
       .then((res) => this.setState({ updatingQuestion: false, questionUpdated:true }, ()=>{
-        this.props.handleClick('tr','Updated Successfully', 'info'); 
+        this.props.handleClick('tr','Updated Successfully'); 
         this.props.history.goBack();
       }))
       .catch((err) => this.setState({ updatingQuestion: false }, () => console.log(err)))

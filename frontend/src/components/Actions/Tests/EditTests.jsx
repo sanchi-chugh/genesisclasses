@@ -183,7 +183,7 @@ class EditTest extends Component {
       })
       .then((res) => this.setState({ updatingTest: false, testUpdated:true },()=>{
         this.props.history.goBack();
-        this.props.handleClick('tr','Updated Successfully', 'info');
+        this.props.handleClick('tr','Updated Successfully');
       }))
       .catch((err) => this.setState({ updatingTest: false, errors: err.response.data }, () => console.log(err)))
     });

@@ -208,7 +208,7 @@ class TestResults extends Component {
                         <BootstrapTable
                           condensed pagination
                           data={this.state.results.results}
-                          search remote
+                          remote
                           fetchInfo={ { dataTotalSize: this.state.results.count } }
                           options={ { sizePerPage: 10,
                                       onPageChange: this.onPageChange.bind(this),

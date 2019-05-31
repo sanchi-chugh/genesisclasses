@@ -96,7 +96,7 @@ class Courses extends Component {
           .then((res) => {
             this.setState({ deletingCourse: false,courseDeleted:true}, () => {
               this.fetchCourses();
-              this.props.handleClick('tr','Deleted Successfully', 'warning');
+              this.props.handleClick('tr','Deleted Successfully');
               this.handleHideDeleteModal();
             })
           })
@@ -114,7 +114,7 @@ class Courses extends Component {
       })
       .then((res) => {this.setState({ updatingCourse: false, courseUpdated:true }, () => {
           this.fetchCourses();
-          this.props.handleClick('tr','Updated Successfully', 'info');
+          this.props.handleClick('tr','Updated Successfully');
           this.handleHideEditModal();
         })
       })

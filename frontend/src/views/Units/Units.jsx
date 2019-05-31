@@ -194,7 +194,7 @@ class Units extends Component {
           .then((res) => {
             this.setState({ deletingUnits: false, unitDeleted:true, transferData:false},()=>{
               this.fetchUnits(`?page=${this.state.page}`,(this.state.page-1)*10)
-              this.props.handleClick('tr','Deleted Successfully', 'warning');
+              this.props.handleClick('tr','Deleted Successfully');
               this.handleHideDeleteModal();
             })
           })
@@ -208,7 +208,7 @@ class Units extends Component {
           .then((res) => {
             this.setState({ deletingUnit: false,unitDeleted:true, transferData:false},()=>{
               this.fetchUnits(`?page=${this.state.page}`,(this.state.page-1)*10)
-              this.props.handleClick('tr','Deleted Successfully', 'warning');
+              this.props.handleClick('tr','Deleted Successfully');
               this.handleHideDeleteModal();
             })
           })
@@ -233,7 +233,7 @@ class Units extends Component {
       .then((res) => {this.setState({ updatingUnit: false, unitUpdated:true },()=>{
               this.fetchUnits(`?page=1`);
               this.fetchSubjectsChoice();
-              this.props.handleClick('tr','Updated Successfully', 'info');
+              this.props.handleClick('tr','Updated Successfully');
               this.handleHideEditModal();
             })
           })
@@ -443,7 +443,7 @@ class Units extends Component {
                       fetchInfo={ { dataTotalSize: this.state.data.count } }
                       options={ { sizePerPage: 10,
                                   onPageChange: this.onPageChange.bind(this),
-                                  onSearchChange: this.handleSearchChange.bind(this), searchDelayTime: 2000,
+                                  onSearchChange: this.handleSearchChange.bind(this),
                                   sizePerPageList: [ 10 ],
                                   page: this.state.page} }>
                         <TableHeaderColumn width={60} dataField='sno' isKey hiddenOnInsert>SNO.</TableHeaderColumn>

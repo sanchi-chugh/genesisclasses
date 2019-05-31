@@ -136,7 +136,7 @@ class Categories extends Component {
           })
           .then((res) => {
             this.setState({ deletingCategories: false,categoryDeleted:true,},this.fetchCategories());
-            this.props.handleClick('tr','Deleted Successfully', 'warning');
+            this.props.handleClick('tr','Deleted Successfully');
             this.handleHideDeleteModal();
           })
           .catch((err) => this.setState({ deletingCategories: false, errors: err.response.data }, () => {
@@ -160,7 +160,7 @@ class Categories extends Component {
       })
       .then((res) => {
         this.setState({ updatingCategories: false, categoryUpdated:true }); this.fetchCategories();
-        this.props.handleClick('tr','Updated Successfully', 'info');
+        this.props.handleClick('tr','Updated Successfully');
         this.handleHideEditModal();
       })
       .catch((err) => this.setState({ updatingCategories: false, errors: err.response.data }, () => {

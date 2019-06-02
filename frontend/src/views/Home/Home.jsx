@@ -12,6 +12,8 @@ class Home extends Component {
     this.state = {
       data: [],
       upcomingTests: [],
+      busyCategories:true,
+      busyTests:true
     };
   }
 
@@ -30,7 +32,7 @@ class Home extends Component {
         item.sno = res.data.indexOf(item) + 1;
         return item;
       })
-      this.setState({data:data});
+      this.setState({data:data, busyCategories:false});
     });
   }
 
@@ -45,7 +47,7 @@ class Home extends Component {
         item.sno = res.data.indexOf(item) + 1;
         return item;
       })
-      this.setState({upcomingTests:data});
+      this.setState({upcomingTests:data, busyTests:false});
     });
   }
   
@@ -71,7 +73,12 @@ class Home extends Component {
       <div className="content home-content" tabIndex="0" onKeyPress={this.handleKeyPress.bind(this)}>
         <h4 className="title-heading">Upcoming Tests</h4>
         <div style={{display:'block',width:'100%', marginBottom:'20px'}}>
-          {this.state.upcomingTests.length === 0 && <p className="no-tests-placeholder">No tests available</p>}
+          {this.state.busyTests &&
+            <div className="wait">
+              <div className="loader"></div>
+            </div>
+          }
+          {this.state.upcomingTests.length === 0 && !this.state.busyTests && <p className="no-tests-placeholder">No tests available</p>}
           {this.state.upcomingTests.map(item=>{
             return(
               <div className="home-cards">
@@ -89,13 +96,20 @@ class Home extends Component {
         <h4 className="title-heading">Practice Tests</h4>
         {/* fixed card for unit wise tests */}
         <div style={{display:'block',width:'100%'}}>
-          <div className="home-cards">
-            <Card
-              image={unitIcon}
-              title={'Unit Wise Tests'}
-              handleClick={this.handleUnitWise.bind(this)}
-            />
-          </div>
+        {this.state.busyTests &&
+            <div className="wait">
+              <div className="loader"></div>
+            </div>
+          }
+          {!this.state.busyCategories &&
+            <div className="home-cards">
+              <Card
+                image={unitIcon}
+                title={'Unit Wise Tests'}
+                handleClick={this.handleUnitWise.bind(this)}
+              />
+            </div>
+          }
        {/* display cards after fetching from server */}
        {this.state.data.map(item=>{
           return(

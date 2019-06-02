@@ -1,3 +1,12 @@
+.wait{
+    padding: 12px;
+}
+
+.wait .loader{
+    z-index: 5;
+    position: relative;
+}
+
 .login-loading{
     width: 22%;
     background: white;

@@ -201,6 +201,7 @@ class Categories extends Component {
   handleFormDataChange(e) {
     if(e.target.name === 'image'){
       if(e.target.files.length){
+        document.getElementById('text').innerHTML = `<a href="${URL.createObjectURL(e.target.files[0])}" target="_blank">${e.target.files[0].name}</a>`
         let file = e.target.files[0]
         this.setState({ formData: {
           ...this.state.formData,

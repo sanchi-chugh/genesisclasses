@@ -9,7 +9,7 @@ import { Button,
 
 import { Checkbox} from 'antd';
 import LinearProgress from '@material-ui/core/LinearProgress';
-
+ 
 import '../../../../node_modules/antd/dist/antd.css'; 
 
 class EditSubject extends Component {
@@ -106,13 +106,15 @@ class EditSubject extends Component {
                             </Col>
                             </Row>
                         }
-                        <FormControl
-                            type="file"
-                            value={this.props.formData.newImage}
-                            placeholder="Image"
-                            name='image'
-                            onChange={this.props.handleFormDataChange}
-                        />
+                        <label className="file">
+                            <FormControl
+                                type="file"
+                                placeholder="Image"
+                                name='image'
+                                onChange={this.props.handleFormDataChange}
+                            />
+                            <span className="file-custom"><span id="text">Choose Image...</span></span>
+                        </label>
                         {
                             Object.keys(errors)
                                 .some(item=> item === "image") && 

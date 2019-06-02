@@ -13,7 +13,7 @@ import { Button,
 import LinearProgress from '@material-ui/core/LinearProgress';
 import InfiniteScroll from 'react-infinite-scroller';
 import  './styles.css';
-
+ 
 class AddUnits extends Component {
  
   render() {
@@ -93,12 +93,15 @@ class AddUnits extends Component {
                         }
                         <br/>
                         <ControlLabel>IMAGE</ControlLabel>
-                        <FormControl
-                            type="file"
-                            placeholder="Image"
-                            name='image'
-                            onChange={this.props.handleFormDataChange}
-                        />
+                        <label className="file">
+                            <FormControl
+                                type="file"
+                                placeholder="Image"
+                                name='image'
+                                onChange={this.props.handleFormDataChange}
+                            />
+                            <span className="file-custom"><span id="text">Choose Image...</span></span>
+                        </label>
                         {
                             Object.keys(errors)
                                 .some(item=> item === "image") && 

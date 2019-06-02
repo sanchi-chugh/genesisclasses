@@ -17,7 +17,7 @@ import "../../../node_modules/react-bootstrap-table/dist/react-bootstrap-table-a
 import EditSubject from "../../components/Actions/Subjects/EditSubject";
 import DeleteSubject from "../../components/Actions/Subjects/DeleteSubject";
 import AddSubject from "../../components/Actions/Subjects/AddSubject";
-
+ 
 class Subjects extends Component {
 
     constructor() {
@@ -249,6 +249,7 @@ class Subjects extends Component {
         }
     }else if(e.target.name === 'image'){
       if(e.target.files.length){
+        document.getElementById('text').innerHTML = `<a href="${URL.createObjectURL(e.target.files[0])}" target="_blank">${e.target.files[0].name}</a>`
         let file = e.target.files[0]
         this.setState({ formData: {
           ...this.state.formData,

@@ -20,7 +20,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import { Editor } from 'react-draft-wysiwyg';
 import { EditorState, ContentState, convertToRaw, convertFromHTML } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
-
+ 
 import '../../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import '../../../../node_modules/antd/dist/antd.css'; 
 class EditTest extends Component {
@@ -255,6 +255,7 @@ class EditTest extends Component {
         }
     }else if(e.target.name === 'doc'){
         if(e.target.files.length){
+          document.getElementById('text').innerHTML = `<a href="${URL.createObjectURL(e.target.files[0])}" target="_blank">${e.target.files[0].name}</a>`
           let file = e.target.files[0]
           this.setState({ 
             formData: {
@@ -539,21 +540,25 @@ class EditTest extends Component {
                                     )
                         }
                     </FormGroup>
-                    <FormInputs
-                      ncols={["col-md-12"]}
-                      proprieties={[
+                    <ControlLabel>UPLOAD DOCUMENT</ControlLabel>
+                        <label className="file">
+                            <FormControl
+                                type="file"
+                                placeholder="Document"
+                                name='doc'
+                                disabled={true}
+                                accept=".docx,.doc"
+                                onChange={this.handleFormDataChange.bind(this)}
+                            />
+                            <span className="file-custom"><span id="text">Choose Document...</span></span>
+                        </label>
                         {
-                          label: "UPLOAD DOCUMENT",
-                          type: "file",
-                          bsClass: "form-control",
-                          name:'doc',
-                          disabled:true,
-                          errors:errors,
-                          onChange:this.handleFormDataChange.bind(this),
-                          accept:".docx,.doc",
+                            Object.keys(errors)
+                                .some(item=> item === "doc") && 
+                                    errors.doc.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
                         }
-                      ]}
-                    />
                     <LinearProgress
                         style={
                             this.state.updatingTest ? 

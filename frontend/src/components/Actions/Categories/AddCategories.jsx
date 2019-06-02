@@ -74,7 +74,7 @@ class AddCategories extends Component {
                                 name='image'
                                 onChange={this.props.handleFormDataChange}
                             />
-                            <span className="file-custom"></span>
+                            <span className="file-custom"><span id="text">Choose Image...</span></span>
                         </label>
                         {
                             Object.keys(errors)

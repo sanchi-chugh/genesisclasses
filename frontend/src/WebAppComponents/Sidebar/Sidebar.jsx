@@ -3,6 +3,7 @@ import { NavLink, Link } from "react-router-dom";
 import { Glyphicon } from "react-bootstrap";
 import webappRoutes from "../../routes/Webapp.jsx";
 import appLogo from "../../assets/img/app_logo.png";
+import avatar from "../../assets/img/avatar-placeholder.jpg";
 
 class Sidebar extends Component {
   activeRoute(routeName) {
@@ -18,7 +19,7 @@ class Sidebar extends Component {
           <div className="profile">
             <div style={{display:'block'}}>
               <span className='avatar'>
-                <img src={this.props.user.image !== null ? this.props.user.image : "http://en.imoconsultores.pt/Assets/Images/avatar-placeholder.jpg"} />
+                <img src={this.props.user.image !== null ? this.props.user.image : avatar} />
               </span>
               <span className='name'>
                 <p>{this.props.user.first_name !== null ? this.props.user.first_name :''}{this.props.user.last_name !== null ? ' '+this.props.user.last_name :''}</p>

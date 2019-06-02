@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import { Card } from "../../WebAppComponents/Card/Card.jsx";
 import Axios from "axios";
 import DescriptionCard from "../../WebAppComponents/DescriptionCard/DescriptionCard.jsx";
+import placeholder from "../../assets/img/placeholder.jpg";
 
 const description = "Unit Wise Test Series for NEET 2020. In this Test Series, there will be total 29 Tests. In these 29 tests there will be 14 unit tests based on 2 to 3 units of NEET (ug) ..."
 
@@ -43,7 +44,7 @@ class UnitWiseTests extends Component {
     return (
       <div className="content home-content">
         <DescriptionCard 
-           image={'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
+           image={ placeholder }
            description={description}
            title={'Unit Wise Tests'}
         />
@@ -59,7 +60,7 @@ class UnitWiseTests extends Component {
             return(
               <div className="inline">
                   <Card
-                    image={item.image !== null && item.image !== '' ? item.image :'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
+                    image={item.image !== null && item.image !== '' ? item.image : placeholder }
                     title={item.title}
                     handleClick={this.handleSubject.bind(this,item.id)}
                     color={'type' + ((item.sno) % 4)}

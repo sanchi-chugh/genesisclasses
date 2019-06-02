@@ -3,7 +3,7 @@ import { Row, Col, Grid } from "react-bootstrap";
 import Axios from "axios";
 import DescriptionCard from "../../WebAppComponents/DescriptionCard/DescriptionCard.jsx";
 import TestList from "../../WebAppComponents/TestListInfinite/TestList.jsx";
-
+import placeholder from "../../assets/img/placeholder.jpg";
 
 class ChapterWise extends Component {
 
@@ -101,7 +101,7 @@ class ChapterWise extends Component {
     return (
       <div className="content home-content">
         <DescriptionCard 
-           image={this.state.details.image !== null ? this.state.details.image : 'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
+           image={this.state.details.image !== null ? this.state.details.image : placeholder }
            title={this.state.details.title}
            description={this.state.details.description}
         //    handleClick={this.testFunction.bind(this)}

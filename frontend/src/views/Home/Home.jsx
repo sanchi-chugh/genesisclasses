@@ -4,6 +4,7 @@ import { Grid, Row, Col } from "react-bootstrap";
 import { Card } from "../../WebAppComponents/Card/Card.jsx";
 import Axios from "axios";
 import unitIcon from "../../assets/img/assets.jpg"
+import placeholder from "../../assets/img/placeholder.jpg";
 
 class Home extends Component {
 
@@ -115,7 +116,7 @@ class Home extends Component {
           return(
             <div className="home-cards">
               <Card
-                image={item.image !== null && item.image !== '' ? item.image :'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
+                image={item.image !== null && item.image !== '' ? item.image : placeholder}
                 title={item.title}
                 handleClick={this.handleCategory.bind(this,item.id)}
                 color={'type' + ((item.sno) % 4)}

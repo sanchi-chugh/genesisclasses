@@ -1,3 +1,24 @@
+.login-loading{
+    width: 22%;
+    background: white;
+    height: 15%;
+    position: absolute;
+    top: 39%;
+    left: 40%;
+    outline: 2px black;
+    border: 2px solid #d2ecfd;
+    /* padding: 4px; */
+    color: #02458e;
+    padding-top: 26px;
+    box-shadow: 0 0 1px 1px #d2ecfd;
+}
+
+.login-loading .loader{
+    position: relative;
+    left: 0;
+    top: -12px;
+}
+
 .no-tests-placeholder{
     margin-top: 24px;
     color: rgba(117, 117, 117, 1);

@@ -778,7 +778,7 @@ class DownloadStudentDataView(APIView):
 
         path = directory + 'student_data.csv'
         csvFile = open(path, 'w')
-        csvFile.write('Name,Contact Number,email,Centre,Courses Enrolled,Student Joining Date,App Access End Date,'
+        csvFile.write('Name,Contact Number,email,Profile Photo,Centre,Courses Enrolled,Student Joining Date,App Access End Date,'
             'Gender,Date of Birth,Father\'s Name,Address,City,State,Pin Code\n')
 
         centres = Centre.objects.filter(super_admin=super_admin)
@@ -790,9 +790,9 @@ class DownloadStudentDataView(APIView):
             if student.last_name:
                 name +=  ' ' + student.last_name
 
-            contact_number = ''
+            contact = ''
             if student.contact_number:
-                contact_number = str(student.contact_number)
+                contact = str(student.contact_number)
 
             email = student.user.email
             centre = student.centre.location
@@ -835,8 +835,12 @@ class DownloadStudentDataView(APIView):
             if student.pinCode:
                 pinCode = str(student.pinCode)
 
+            pic = ''
+            if student.image:
+                pic = DOMAIN + student.image.url[1:]
+
             csvFile.write(
-                name.replace(',', '|') + ',' + contact_number.replace(',', '|') + ',' + email.replace(',', '|') +
+                name.replace(',', '|') + ',' + contact.replace(',', '|') + ',' + email.replace(',', '|') + ',' + pic.replace(',', '|') +
                 ',' + centre.replace(',', '|')  + ',' + courses.replace(',', '|') + ',' + joiningDate.replace(',', '|') +
                 ',' + endAccessDate.replace(',', '|')  + ',' + gender.replace(',', '|') + ',' + dateOfBirth.replace(',', '|')  +
                 ',' + father_name.replace(',', '|')  + ',' + address.replace(',', '|') + ',' + city.replace(',', '|')  +

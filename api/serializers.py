@@ -273,7 +273,7 @@ class StudentUserSerializer(serializers.ModelSerializer):
     viewResults = serializers.SerializerMethodField()
     class Meta:
         model = Student
-        exclude = ['user', 'complete']
+        exclude = ['user']
 
     def get_email(self, obj):
         return obj.user.email

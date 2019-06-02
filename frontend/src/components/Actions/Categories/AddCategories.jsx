@@ -67,12 +67,15 @@ class AddCategories extends Component {
                         }
                         <br/>
                         <ControlLabel>IMAGE</ControlLabel>
-                        <FormControl
-                            type="file"
-                            placeholder="Image"
-                            name='image'
-                            onChange={this.props.handleFormDataChange}
-                        />
+                        <label className="file">
+                            <FormControl
+                                type="file"
+                                placeholder="Image"
+                                name='image'
+                                onChange={this.props.handleFormDataChange}
+                            />
+                            <span className="file-custom"></span>
+                        </label>
                         {
                             Object.keys(errors)
                                 .some(item=> item === "image") && 

@@ -15,7 +15,9 @@ class ChapterWise extends Component {
       busy:true,
       next:'',
       details:{},
-      count:null
+      count:null,
+      busySubjectDetails:true,
+      busyUnits:true
     };
   }
 
@@ -36,6 +38,7 @@ class ChapterWise extends Component {
       })
       this.setState({
           units:data,
+          busyUnits:false,
           unitSelected:data.length !== 0 ? data[0].id : null
         },()=>{
             if(this.state.unitSelected!==null){
@@ -55,6 +58,7 @@ class ChapterWise extends Component {
       console.log(data)
       this.setState({
           details:data,
+          busySubjectDetails:false
         });
     });
   }
@@ -74,9 +78,10 @@ class ChapterWise extends Component {
     });
   }
   
-  fetchTests(page,index=0){
+  async fetchTests(page,index=0){
         if(page===`?page=1`){
             page=""
+            await this.setState({busy:true});
         }
         Axios.get( this.state.units[index].tests, {
             headers: {
@@ -100,15 +105,27 @@ class ChapterWise extends Component {
   render() {
     return (
       <div className="content home-content">
-        <DescriptionCard 
-           image={this.state.details.image !== null ? this.state.details.image : placeholder }
-           title={this.state.details.title}
-           description={this.state.details.description}
-        //    handleClick={this.testFunction.bind(this)}
-        />
-        {this.state.units.length === 0 &&
+        {this.state.busySubjectDetails && 
+          <div className="wait">
+            <div className="loader"></div>
+          </div>
+        }
+        {!this.state.busySubjectDetails &&
+          <DescriptionCard 
+             image={this.state.details.image !== null ? this.state.details.image : placeholder }
+             title={this.state.details.title}
+             description={this.state.details.description}
+          //    handleClick={this.testFunction.bind(this)}
+          />
+        }
+        {this.state.busyUnits &&
+          <div className="wait">
+            <div className="loader"></div>
+          </div>
+        }
+        {!this.state.busyUnits && this.state.units.length === 0 &&
           <p className="no-tests-placeholder">No Units available</p>}
-        {!this.state.busy && 
+        {!this.state.busyUnits && 
         <Grid fluid>
             <Row>
                 <Col md={3}>
@@ -131,15 +148,23 @@ class ChapterWise extends Component {
                 </Col>
                 <Col md={9} style={{backgroundColor:'white',paddingTop:'25px',fontWeight:'500',color:'black',borderRadius:'4px', minHeight:'200px'}}>
                     <h4 className="title-heading">Tests For {this.state.units[this.state.units.findIndex(obj => obj.id === this.state.unitSelected)].title}</h4>
-                    {this.state.count === 0 && 
+                    {!this.state.busy && this.state.count === 0 && 
                       <p className="no-tests-placeholder">No tests available</p>
                     }
-                    <TestList
-                        {...this.props}
-                        fetchMore={this.fetchMore.bind(this)}
-                        next={this.state.next}
-                        data={this.state.data}
-                    />
+                    {this.state.busy &&
+                      <div className="wait">
+                        <div className="loader"></div>
+                      </div>
+                    }
+                    {
+                      !this.state.busy &&
+                      <TestList
+                          {...this.props}
+                          fetchMore={this.fetchMore.bind(this)}
+                          next={this.state.next}
+                          data={this.state.data}
+                      />
+                    }
                 </Col>
             </Row>
         </Grid>

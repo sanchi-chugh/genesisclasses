@@ -125,7 +125,7 @@ class ChapterWise extends Component {
         }
         {!this.state.busyUnits && this.state.units.length === 0 &&
           <p className="no-tests-placeholder">No Units available</p>}
-        {!this.state.busyUnits && 
+        {!this.state.busyUnits && this.state.units.length > 0 &&
         <Grid fluid>
             <Row>
                 <Col md={3}>

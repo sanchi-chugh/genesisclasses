@@ -38,10 +38,10 @@ class AddTests extends Component {
         duration:'',
         instructions: EditorState.createEmpty(),
         typeOfTest:'',
-        edate:null,
-        etime:null,
-        sdate:null,
-        stime:null,
+        edate:'',
+        etime:'',
+        sdate:'',
+        stime:'',
         startTime:'',
         endTime:'',
         doc:'',
@@ -151,8 +151,12 @@ class AddTests extends Component {
       formData.append('category',this.state.formData.category.join(','))
       formData.append('typeOfTest',this.state.formData.typeOfTest)
       formData.append('active',false)
-      formData.append('startTime', this.state.formData.sdate + ' ' + this.state.formData.stime + ':00')
-      formData.append('endtime', this.state.formData.edate + ' ' + this.state.formData.etime + ':00')
+      if(this.state.formData.sdate !== '' && this.state.formData.stime !== ''){
+        formData.append('startTime', this.state.formData.sdate + ' ' + this.state.formData.stime + ':00');
+      }
+      if(this.state.formData.edate !== '' && this.state.formData.etime !== ''){
+        formData.append('endtime', this.state.formData.edate + ' ' + this.state.formData.etime + ':00');
+      }
       formData.append('subject',this.state.formData.subject)
       formData.append('unit',this.state.formData.unit)
       if(this.state.formData.file !== null){

@@ -141,27 +141,6 @@ class Tests extends Component {
     this.setState({ show2: false, deletingTest:false, testDeleted:false});
   }
 
-  handleAdd(){
-    this.setState({ addingTest: true }, () => {
-      var formData = new FormData();
-      formData.append('title',this.state.formData.title)
-      formData.append('subject',this.state.formData.subject)
-      formData.append('description',this.state.formData.description)
-      if(this.state.formData.file !== null){
-        formData.append('image',this.state.formData.file,this.state.formData.file.name)
-      }else{
-        formData.append('image','')
-      }
-      axios.post('/api/tests/add/', formData, {
-        headers: {
-          Authorization: `Token ${localStorage.token}`,
-        },
-      })
-      .then((res) => this.setState({ addingTest: false, testAdded:true }, this.fetchTests(`?page=1`), this.fetchSubjectsChoice()))
-      .catch((err) => this.setState({ addingTest: false }, () => console.log(err)))
-    });
-  }
-
   handleDelete = () => {
     this.setState({ deletingTest: true }, () => {
       axios.delete(`/api/tests/delete/${this.state.id}/`,{
@@ -178,38 +157,6 @@ class Tests extends Component {
       })
       .catch((err) => this.setState({ deletingTest: false }, () => console.log(err)))
     });
-  }
-
-  handleEdit() {
-    this.setState({ updatingTest: true }, () => {
-      var formData = new FormData();
-      formData.append('title',this.state.formData.title)
-      formData.append('subject',this.state.formData.subject)
-      formData.append('description',this.state.formData.description)
-      this.state.clear ? formData.append('image','') : (this.state.formData.file !== null ? formData.append('image',this.state.formData.file,this.state.formData.file.name) : console.log("debug") )
-      axios.patch(`/api/tests/edit/${this.state.id}/`, formData, {
-        headers: {
-          Authorization: `Token ${localStorage.token}`
-        },
-      })
-      .then((res) => {this.setState({ updatingTest: false, testUpdated:true },this.fetchTests(`?page=1`), this.fetchSubjectsChoice());})
-      .catch((err) => this.setState({ updatingTest: false }, () => console.log(err)))
-    });
-  }
-
-  handleShowEditModal(obj){
-    console.log(obj.subject.id)
-    console.log(this.state.subjects.filter(item=> obj.subject.id===item.id)[0].title)
-    this.setState({ id: obj.id ,subject: this.state.subjects.filter(item=> obj.subject.id===item.id)[0].title,
-      formData: {
-      title:obj.title,
-      image:obj.image,
-      subject:this.state.subjects.filter(item=> obj.subject.id===item.id )[0].id,
-      description:obj.description,
-      file:null
-    }},()=>{
-      this.setState({show:true})
-    })
   }
   
   fetchSubjectsTests(testID){

@@ -148,7 +148,7 @@ class QuestionWiseResults extends Component {
                           fetchInfo={ { dataTotalSize: this.state.data.count } }
                           options={ { sizePerPage: 10,
                                       onPageChange: this.onPageChange.bind(this),
-                                      onSearchChange: this.handleSearchChange.bind(this), searchDelayTime: 2000,
+                                      onSearchChange: this.handleSearchChange.bind(this),
                                       sizePerPageList: [ 10 ],
                                       page: this.state.page} }>
                             <TableHeaderColumn width={40} dataField='sno' isKey hiddenOnInsert>SNo</TableHeaderColumn>

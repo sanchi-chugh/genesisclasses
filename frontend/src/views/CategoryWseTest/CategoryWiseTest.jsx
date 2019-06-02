@@ -19,7 +19,6 @@ class CategoryWiseTests extends Component {
    }
 
   fetchMore(){
-     console.log('yippieee',this.state)
      Axios.get(this.state.next, {
          headers: {
          Authorization: `Token ${localStorage.token}`
@@ -38,7 +37,6 @@ class CategoryWiseTests extends Component {
         if(page===`?page=1`){
             page=""
         }
-        console.log('catgory id', this.props)
         Axios.get( `/api/app/tests/practice/category/${this.props.match.params.id}/${page}`, {
             headers: {
             Authorization: `Token ${localStorage.token}`
@@ -50,14 +48,15 @@ class CategoryWiseTests extends Component {
         });
     }
 
-  testFunction(){
-        alert('Clicked')
-   } 
-
   render() {
     return (
       <div className="content home-content">
         <center><h4 className="title-heading">Tests</h4></center>
+        {this.state.busy &&
+          <div className="wait">
+            <div className="loader"></div>
+          </div>
+        }
         {
           !this.state.busy && this.state.data.results.length === 0 &&
           <div className="no-tests-placeholder">No Tests Available</div>

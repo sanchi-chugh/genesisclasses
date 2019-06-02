@@ -25,6 +25,7 @@ class HomeLayout extends Component {
                   <prop.component
                     {...routeProps}
                     user={this.props.user}
+                    getUser={this.props.getUser} 
                     handleClick={this.props.handleClick}
                   />
                 )} key={key} />

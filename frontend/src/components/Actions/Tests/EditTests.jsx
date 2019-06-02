@@ -37,10 +37,10 @@ class EditTest extends Component {
         duration:'',
         instructions: EditorState.createEmpty(),
         typeOfTest:'',
-        edate:null,
-        etime:null,
-        sdate:null,
-        stime:null,
+        edate:'',
+        etime:'',
+        sdate:'',
+        stime:'',
         startTime:'',
         endTime:'',
         doc:'',
@@ -91,10 +91,10 @@ class EditTest extends Component {
             description: data.detail.description,
             course : data.detail.course.map(item=>{return item.id}),
             category: data.detail.category.map(item=>{return item.id}),
-            stime: data.detail.startTime !== null ? data.detail.startTime.split('(')[1].split(')')[0] : null,
-            etime: data.detail.endtime !== null ? data.detail.endtime.split('(')[1].split(')')[0] : null,
-            sdate: data.detail.startTime !== null ? moment(new Date(data.detail.startTime)).format("YYYY-MM-DD") : null,
-            edate: data.detail.endtime !== null ? moment(new Date(data.detail.endtime)).format("YYYY-MM-DD") : null,
+            stime: data.detail.startTime !== null ? data.detail.startTime.split('(')[1].split(')')[0] : '',
+            etime: data.detail.endtime !== null ? data.detail.endtime.split('(')[1].split(')')[0] : '',
+            sdate: data.detail.startTime !== null ? moment(new Date(data.detail.startTime)).format("YYYY-MM-DD") : '',
+            edate: data.detail.endtime !== null ? moment(new Date(data.detail.endtime)).format("YYYY-MM-DD") : '',
             subject: data.detail.subject !== null ? data.detail.subject.id : '',
             unit: data.detail.unit !== null ? data.detail.unit.id : '',
             active: data.detail.active
@@ -172,8 +172,12 @@ class EditTest extends Component {
       formData.append('category',this.state.formData.category.join(','))
       formData.append('typeOfTest',this.state.formData.typeOfTest)
       formData.append('active',this.state.formData.active)
-      formData.append('startTime', this.state.formData.sdate + ' ' + this.state.formData.stime + ':00')
-      formData.append('endtime', this.state.formData.edate + ' ' + this.state.formData.etime + ':00')
+      if(this.state.formData.sdate !== '' && this.state.formData.stime !== ''){
+        formData.append('startTime', this.state.formData.sdate + ' ' + this.state.formData.stime + ':00');
+      }
+      if(this.state.formData.edate !== '' && this.state.formData.etime !== ''){
+        formData.append('endtime', this.state.formData.edate + ' ' + this.state.formData.etime + ':00');
+      }
       formData.append('subject',this.state.formData.subject)
       formData.append('unit',this.state.formData.unit)
       axios.put(`/api/tests/edit/${this.props.match.params.id}/`, formData, {
@@ -183,7 +187,7 @@ class EditTest extends Component {
       })
       .then((res) => this.setState({ updatingTest: false, testUpdated:true },()=>{
         this.props.history.goBack();
-        this.props.handleClick('tr','Updated Successfully', 'info');
+        this.props.handleClick('tr','Updated Successfully');
       }))
       .catch((err) => this.setState({ updatingTest: false, errors: err.response.data }, () => console.log(err)))
     });

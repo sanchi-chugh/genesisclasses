@@ -106,7 +106,7 @@ class ViewQuestion extends Component {
                 Authorization: `Token ${localStorage.token}`
                 },
             })
-            .then((res) => {this.setState({ updatingPassage: false, passageUpdated:true },this.props.handleClick('tr','Updated Successfully', 'info')); this.handleHideEditPassageModal(); this.fetchQuestionDetails();})
+            .then((res) => {this.setState({ updatingPassage: false, passageUpdated:true },this.props.handleClick('tr','Updated Successfully')); this.handleHideEditPassageModal(); this.fetchQuestionDetails();})
             .catch((err) => this.setState({ updatingPassage: false, errors: err.response.data }, () => console.log(err)))
         });
     }
@@ -122,7 +122,7 @@ class ViewQuestion extends Component {
                 Authorization: `Token ${localStorage.token}`,
                 },
             })
-            .then((res) => {this.setState({ updatingOption: false, optionUpdated:true },this.props.handleClick('tr','Updated Successfully', 'info'));this.handleHideEditModal(); this.fetchQuestionDetails();})
+            .then((res) => {this.setState({ updatingOption: false, optionUpdated:true },this.props.handleClick('tr','Updated Successfully'));this.handleHideEditModal(); this.fetchQuestionDetails();})
             .catch((err) => this.setState({ updatingOption: false, errors: err.response.data }, () => console.log(err)))
       });
     }
@@ -135,7 +135,7 @@ class ViewQuestion extends Component {
             Authorization: `Token ${localStorage.token}`,
             },
         })
-        .then((res) => {this.setState({ deletingOption: false, optionDeleted:true },this.props.handleClick('tr','Deleted Successfully', 'warning'));this.handleHideDeleteButton(); this.fetchQuestionDetails();})
+        .then((res) => {this.setState({ deletingOption: false, optionDeleted:true },this.props.handleClick('tr','Deleted Successfully'));this.handleHideDeleteButton(); this.fetchQuestionDetails();})
         .catch((err) => this.setState({ deletingOption: false, errors: err.response.data }, () => console.log(err)))
       });
     }

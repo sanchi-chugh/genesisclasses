@@ -85,9 +85,11 @@ class EditProfile extends Component {
       .then((res) => this.setState({ updatingStudent: false, studentUpdated:true },async ()=>{
         if(this.props.flag){
           await this.props.completeProfile();
+          this.props.getUser();
           this.props.history.push("/home");
         }else{
-          this.props.history.push('/home/editProfile')
+          this.props.getUser();
+          this.props.history.push('/home/editProfile');
         }
         this.props.handleClick('tr','Updated Successfully');
       }))

@@ -1,3 +1,33 @@
+.wait{
+    padding: 12px;
+}
+
+.wait .loader{
+    z-index: 5;
+    position: relative;
+}
+
+.login-loading{
+    width: 22%;
+    background: white;
+    height: 15%;
+    position: absolute;
+    top: 39%;
+    left: 40%;
+    outline: 2px black;
+    border: 2px solid #d2ecfd;
+    /* padding: 4px; */
+    color: #02458e;
+    padding-top: 26px;
+    box-shadow: 0 0 1px 1px #d2ecfd;
+}
+
+.login-loading .loader{
+    position: relative;
+    left: 0;
+    top: -12px;
+}
+
 .no-tests-placeholder{
     margin-top: 24px;
     color: rgba(117, 117, 117, 1);
@@ -768,6 +798,16 @@
 }
 
 .side-chap .chap-wrapper .chap-list-item{
+    font-size: 14px;
+    padding: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.4s ease-in-out;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    color: rgba(117, 117, 117, 1);
+}
+
+.side-chap .chap-wrapper .chap-list-item-hidden{
     height:50px;
     font-size: 14px;
     padding: 10px;
@@ -779,7 +819,7 @@
 }
 
 .chap-list-item p{
-    white-space: nowrap;
+    white-space: normal;
     text-overflow: ellipsis;
     overflow: hidden;
 }
@@ -791,6 +831,16 @@
 }
 
 .side-chap .chap-wrapper .active{
+    box-shadow: 5px 13px 14px rgba(0,0,0,0.17);
+    border-bottom: 1px solid rgb(87, 163, 243);
+    background-color: rgba(1, 69, 142, 1);
+    color:rgba(210, 237, 255, 1) !important;
+    transition: all 0.4s ease-in-out;
+    padding: 10px !important;
+    transition-delay: 0.4s;
+}
+
+.side-chap .chap-wrapper .active-hidden{
     box-shadow: 5px 13px 14px rgba(0,0,0,0.17);
     border-bottom: 1px solid rgb(87, 163, 243);
     background-color: rgba(1, 69, 142, 1);
@@ -1319,4 +1369,12 @@
 
 .mymodal h4{
     margin-top: 15px;
+}
+
+.loading-percentage{
+    position: absolute;
+    top: 55%;
+    color: rgba(1, 69, 142, 1);
+    left: 49%;
+    font-weight: 600;
 }

@@ -156,7 +156,7 @@ class Subjects extends Component {
           .then((res) => {
             this.setState({ deletingSubject: false, subjectDeleted:true, transferData:false}, () => {
               this.fetchSubjects();
-              this.props.handleClick('tr','Deleted Successfully', 'warning');
+              this.props.handleClick('tr','Deleted Successfully');
               this.handleHideDeleteModal();
             })
           })
@@ -170,7 +170,7 @@ class Subjects extends Component {
           .then((res) => {
             this.setState({ deletingSubject: false,subjectDeleted:true, transferData:false}, () => {
               this.fetchSubjects();
-              this.props.handleClick('tr','Deleted Successfully', 'warning');
+              this.props.handleClick('tr','Deleted Successfully');
               this.handleHideDeleteModal();
             })
           })
@@ -193,7 +193,7 @@ class Subjects extends Component {
       })
       .then((res) => {this.setState({ updatingSubject: false, subjectUpdated:true }, () => {
           this.fetchSubjects();
-          this.props.handleClick('tr','Updated Successfully', 'info');
+          this.props.handleClick('tr','Updated Successfully');
           this.handleHideEditModal();
         })
       })

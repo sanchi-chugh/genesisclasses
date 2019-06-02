@@ -89,6 +89,10 @@ class TestResults extends Component {
         this.setState({
          results: data,
          flag: data.results.length > 0,
+      },()=>{
+        if(!this.state.flag){
+          this.props.handleClick('tr', 'No results found', 'warning');
+        }
       });
     });
   }
@@ -208,7 +212,7 @@ class TestResults extends Component {
                         <BootstrapTable
                           condensed pagination
                           data={this.state.results.results}
-                          search remote
+                          remote
                           fetchInfo={ { dataTotalSize: this.state.results.count } }
                           options={ { sizePerPage: 10,
                                       onPageChange: this.onPageChange.bind(this),
@@ -240,7 +244,7 @@ class TestResults extends Component {
       <div className="content">
         <Grid fluid>
           <Row>
-            <Col md={4}>
+            <Col md={12}>
               <Card
                 title="View Results"
                 content={
@@ -313,49 +317,51 @@ class TestResults extends Component {
                 }
               />
             </Col>
-            <Col md={8}>
-              <Card
-                title="Test Results"
-                content={
-                  <Grid fluid>
-                    <div>
-                      <VictoryChart 
-                        domainPadding={{ x: 50 }} 
-                        width={400} 
-                        height={400}
-                        >
-                          <VictoryGroup offset={20} style={{ data: { width: 15 } }}>
-                            <VictoryStack  colorScale={["red", "#e5cd47", "green"]}>
-                              {getBarData().map((data, index) => {
-                                return <VictoryBar
-                                           key={index}
-                                           data={data}
-                                           />;
-                              })}
-                            </VictoryStack>
-                            <VictoryStack  colorScale={["red", "#e5cd47", "green"]}>
-                              {getBarData().map((data, index) => {
-                                return <VictoryBar
-                                           key={index}
-                                           data={data}
-                                           />;
-                              })}
-                            </VictoryStack>
-                            <VictoryStack  colorScale={["red", "#e5cd47", "green"]}>
-                              {getBarData().map((data, index) => {
-                                return <VictoryBar
-                                           key={index}
-                                           data={data}
-                                           />;
-                              })}
-                            </VictoryStack>
-                          </VictoryGroup>
-                        </VictoryChart>
-                    </div>
-                  </Grid>
-                }
-              />
-            </Col>
+            {/*
+              <Col md={8}>
+                          <Card
+                            title="Test Results"
+                            content={
+                              <Grid fluid>
+                                <div>
+                                  <VictoryChart 
+                                    domainPadding={{ x: 50 }} 
+                                    width={400} 
+                                    height={400}
+                                    >
+                                      <VictoryGroup offset={20} style={{ data: { width: 15 } }}>
+                                        <VictoryStack  colorScale={["red", "#e5cd47", "green"]}>
+                                          {getBarData().map((data, index) => {
+                                            return <VictoryBar
+                                                       key={index}
+                                                       data={data}
+                                                       />;
+                                          })}
+                                        </VictoryStack>
+                                        <VictoryStack  colorScale={["red", "#e5cd47", "green"]}>
+                                          {getBarData().map((data, index) => {
+                                            return <VictoryBar
+                                                       key={index}
+                                                       data={data}
+                                                       />;
+                                          })}
+                                        </VictoryStack>
+                                        <VictoryStack  colorScale={["red", "#e5cd47", "green"]}>
+                                          {getBarData().map((data, index) => {
+                                            return <VictoryBar
+                                                       key={index}
+                                                       data={data}
+                                                       />;
+                                          })}
+                                        </VictoryStack>
+                                      </VictoryGroup>
+                                    </VictoryChart>
+                                </div>
+                              </Grid>
+                            }
+                          />
+                        </Col>
+            */}
           </Row>
         </Grid>
       </div>

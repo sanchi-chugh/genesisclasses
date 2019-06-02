@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import { Card } from "../../WebAppComponents/Card/Card.jsx";
 import Axios from "axios";
 import DescriptionCard from "../../WebAppComponents/DescriptionCard/DescriptionCard.jsx";
+import placeholder from "../../assets/img/placeholder.jpg";
 
 const description = "Unit Wise Test Series for NEET 2020. In this Test Series, there will be total 29 Tests. In these 29 tests there will be 14 unit tests based on 2 to 3 units of NEET (ug) ..."
 
@@ -12,6 +13,7 @@ class UnitWiseTests extends Component {
     super();
     this.state = {
       data: [],
+      busy:true
     };
   }
 
@@ -29,12 +31,8 @@ class UnitWiseTests extends Component {
         item.sno = res.data.indexOf(item) + 1;
         return item;
       })
-      this.setState({data:data});
+      this.setState({data:data, busy:false});
     });
-  }
-
-  testFunction(){
-    alert('Clicked')
   }
 
   handleSubject(id){
@@ -46,18 +44,23 @@ class UnitWiseTests extends Component {
     return (
       <div className="content home-content">
         <DescriptionCard 
-           image={'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
+           image={ placeholder }
            description={description}
            title={'Unit Wise Tests'}
         />
         <center><h4 className="title-heading">Choose Subject</h4></center>
         <div style={{display:'block', textAlign:'center'}}>
-          {this.state.data.length === 0 && <p className="no-tests-placeholder">No Subjects available</p>}
+          {this.state.busy &&
+            <div className="wait">
+              <div className="loader"></div>
+            </div>
+          }
+          {!this.state.busy && this.state.data.length === 0 && <p className="no-tests-placeholder">No Subjects available</p>}
           {this.state.data.map(item=>{
             return(
               <div className="inline">
                   <Card
-                    image={item.image !== null && item.image !== '' ? item.image :'https://countrylakesdental.com/wp-content/uploads/2016/10/orionthemes-placeholder-image.jpg'}
+                    image={item.image !== null && item.image !== '' ? item.image : placeholder }
                     title={item.title}
                     handleClick={this.handleSubject.bind(this,item.id)}
                     color={'type' + ((item.sno) % 4)}

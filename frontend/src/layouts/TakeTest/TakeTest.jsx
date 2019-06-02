@@ -27,6 +27,7 @@ class TakeTestLayout extends Component {
       lengthOfSection:null,
       sectionIndex: 0,
       questionIndex: 0,
+      percentCompleted:0,
       quesNumber:1,
       paraQues:0,
       ans: [],
@@ -56,9 +57,8 @@ class TakeTestLayout extends Component {
         },
         onDownloadProgress: progressEvent => {
         let percentCompleted = Math.floor((progressEvent.loaded * 100) / progressEvent.total);
-        // do whatever you like with the percentage complete
-        // maybe dispatch an action that will update a progress bar or something
-        console.log(percentCompleted)
+        console.log(progressEvent)
+        this.setState({percentCompleted:percentCompleted})
       }
     }).then(res => {
         console.log(res.data)
@@ -482,7 +482,13 @@ class TakeTestLayout extends Component {
   render() {
     if(this.state.busy)
       return(
-          <div className="loader"></div>
+          <div>
+            <div className="loader"></div>
+            <div className="loading-percentage">
+              {this.state.percentCompleted +' '}%
+            </div>
+          </div>
+          
         )
     return (
       <div className="wrapper" id="wrapper">

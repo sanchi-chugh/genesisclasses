@@ -87,7 +87,8 @@ class App extends React.Component {
               <Route path={'/'} render={
                 (props) => <EditProfile
                              {...props} 
-                             user={user} 
+                             user={user}
+                             getUser={this.getUser}
                              completeProfile={this.completeProfile.bind(this)}
                              logout={this.logout.bind(this)} /> }/> } />
               <Redirect from={'/'} to={'/'} />;
@@ -108,6 +109,7 @@ class App extends React.Component {
                 studentRoutes.map((prop, key) => {
                   return <Route path={prop.path} render={(props) => <prop.component {...props} 
                     user={user} 
+                    getUser={this.getUser}
                     logout={this.logout.bind(this)} /> } key={key} />;
               })
             }

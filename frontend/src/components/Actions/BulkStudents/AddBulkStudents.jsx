@@ -16,18 +16,6 @@ class AddBulkStudents extends Component {
 
   render() {
     const { errors } = this.props;
-    const menu = (
-        <Menu>
-          {this.props.centres.map(item =>{
-              return(
-                <Menu.Item key={item.id}>
-                    <p onClick={()=> this.props.handleSelect(item)}>{item.location}</p>
-                </Menu.Item>
-              )
-          })}
-        </Menu>
-      );
-
     return ( 
             <Modal
                 show={this.props.show}
@@ -96,15 +84,19 @@ class AddBulkStudents extends Component {
                                         )
                             }
                             <br/>
-                            <ControlLabel>Centre Name</ControlLabel>
-                            <center>
-                            <Dropdown overlay={menu}>
-                                <a className="ant-dropdown-link">
-                                    {this.props.centreName} 
-                                <Icon type="down" />
-                                </a>
-                            </Dropdown>
-                            </center>
+                            <ControlLabel className='form-input'>Centre Name * </ControlLabel>
+                              <FormControl 
+                                componentClass="select" 
+                                value={this.props.formData.location} 
+                                onChange={this.props.handleFormDataChange} 
+                                name="location">
+                                  <option value=''>Select Centre...</option>
+                                  { this.props.centres.map(item =>{
+                                    return(
+                                      <option value={item.id}>{item.location}</option>
+                                    )
+                                  })}
+                              </FormControl>
                             {
                                 Object.keys(errors)
                                     .some(item=> item === "centre") && 

@@ -97,7 +97,7 @@ class Sections extends Component {
       .then((res) => {
         this.setState({ deletingSection: false,sectionDeleted:true},()=>{
           this.fetchSections();
-          this.props.handleClick('tr','Deleted Successfully', 'warning');
+          this.props.handleClick('tr','Deleted Successfully');
           this.handleHideDeleteModal();
         })
       })
@@ -116,7 +116,7 @@ class Sections extends Component {
       .then((res) => {
         this.setState({ updatingSection: false, sectionUpdated:true }, ()=>{
           this.fetchSections();
-          this.props.handleClick('tr','Updated Successfully', 'info');
+          this.props.handleClick('tr','Updated Successfully');
           this.handleHideEditModal();
         })
       })

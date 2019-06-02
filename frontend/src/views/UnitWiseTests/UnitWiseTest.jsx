@@ -12,6 +12,7 @@ class UnitWiseTests extends Component {
     super();
     this.state = {
       data: [],
+      busy:true
     };
   }
 
@@ -29,12 +30,8 @@ class UnitWiseTests extends Component {
         item.sno = res.data.indexOf(item) + 1;
         return item;
       })
-      this.setState({data:data});
+      this.setState({data:data, busy:false});
     });
-  }
-
-  testFunction(){
-    alert('Clicked')
   }
 
   handleSubject(id){
@@ -52,7 +49,12 @@ class UnitWiseTests extends Component {
         />
         <center><h4 className="title-heading">Choose Subject</h4></center>
         <div style={{display:'block', textAlign:'center'}}>
-          {this.state.data.length === 0 && <p className="no-tests-placeholder">No Subjects available</p>}
+          {this.state.busy &&
+            <div className="wait">
+              <div className="loader"></div>
+            </div>
+          }
+          {!this.state.busy && this.state.data.length === 0 && <p className="no-tests-placeholder">No Subjects available</p>}
           {this.state.data.map(item=>{
             return(
               <div className="inline">

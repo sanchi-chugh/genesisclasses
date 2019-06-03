@@ -137,12 +137,13 @@ class AddStudents extends Component {
         }
     }else if(e.target.name === 'image'){
       if(e.target.files.length){
+        document.getElementById('text').innerHTML = `<a href="${URL.createObjectURL(e.target.files[0])}" target="_blank">${e.target.files[0].name}</a>`
         let file = e.target.files[0]
         this.setState({ 
           preview:URL.createObjectURL(e.target.files[0]),
           formData: {
           ...this.state.formData,
-          file : file
+          file : file,
       }});
       }
     }else{
@@ -395,19 +396,23 @@ class AddStudents extends Component {
                         }
                       ]}
                     />
-                    <FormInputs
-                      ncols={["col-md-12"]}
-                      proprieties={[
+                    <ControlLabel>Profile Image</ControlLabel>
+                        <label className="file">
+                            <FormControl
+                                type="file"
+                                placeholder="Profile Image"
+                                name='image'
+                                onChange={this.handleFormDataChange.bind(this)}
+                            />
+                            <span className="file-custom"><span id="text">Choose Image...</span></span>
+                        </label>
                         {
-                          label: "Profile Image",
-                          type: "file",
-                          bsClass: "form-control",
-                          name:'image',
-                          errors: errors,
-                          onChange:this.handleFormDataChange.bind(this)
+                            Object.keys(errors)
+                                .some(item=> item === "image") && 
+                                    errors.image.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
                         }
-                      ]}
-                    />
                     <LinearProgress
                         style={
                             this.state.addingStudent ? 

@@ -100,6 +100,7 @@ class EditProfile extends Component {
   handleFormDataChange(e) {
     if(e.target.name === 'image'){
       if(e.target.files.length){
+        document.getElementById('text').innerHTML = `<a href="${URL.createObjectURL(e.target.files[0])}" target="_blank">${e.target.files[0].name}</a>`
         let file = e.target.files[0]
         this.setState({ 
           user: {
@@ -355,13 +356,15 @@ class EditProfile extends Component {
                                 <HelpBlock>{err}</HelpBlock>
                             )
               } 
-              <br/>
-            <FormControl
-                type="file"
-                placeholder="Image"
-                name='image'
-                onChange={this.handleFormDataChange.bind(this)}
-            /> <br/>
+            <label className="file">
+                <FormControl
+                    type="file"
+                    placeholder="Profile Image"
+                    name='image'
+                    onChange={this.handleFormDataChange.bind(this)}
+                />
+                <span className="file-custom"><span id="text">Choose Image...</span></span>
+            </label>
             {!this.props.flag && 
               <div>
                 <Row xs={12} style={{marginBottom:'5px'}}>

@@ -180,6 +180,7 @@ class AddStudents extends Component {
         }
     }else if(e.target.name === 'image'){
       if(e.target.files.length){
+        document.getElementById('text').innerHTML = `<a href="${URL.createObjectURL(e.target.files[0])}" target="_blank">${e.target.files[0].name}</a>`
         let file = e.target.files[0]
         this.setState({ 
           preview:URL.createObjectURL(e.target.files[0]),
@@ -454,19 +455,22 @@ class AddStudents extends Component {
                               </Col>:
                             <Row md={12}>
                               <Col xs={4}>
-                                  <a href={this.state.formData.image} target="_blank">{this.state.formData.image.split('/')[3]}</a> 
+                                  <a href={this.state.formData.image} target="_blank">{this.state.formData.image.split('/')[5]}</a> 
                               </Col>
                               <Col xs={4}>
                                   <Checkbox onChange={this.handleFormDataChange.bind(this)} name="clear" >CLEAR</Checkbox><br/>
                               </Col>
                             </Row>
                         }
-                      <FormControl
-                          type="file"
-                          placeholder="Image"
-                          name='image'
-                          onChange={this.handleFormDataChange.bind(this)}
-                      />
+                      <label className="file">
+                          <FormControl
+                              type="file"
+                              placeholder="Profile Image"
+                              name='image'
+                              onChange={this.handleFormDataChange.bind(this)}
+                          />
+                          <span className="file-custom"><span id="text">Choose Image...</span></span>
+                      </label>
                       {
                         Object.keys(errors)
                                 .some(item=> item === "image") && 

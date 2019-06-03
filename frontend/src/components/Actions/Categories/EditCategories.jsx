@@ -84,13 +84,16 @@ class EditCategories extends Component {
                             </Col>
                             </Row>
                         }
-                        <FormControl
-                            type="file"
-                            value={this.props.formData.newImage}
-                            placeholder="Image"
-                            name='image'
-                            onChange={this.props.handleFormDataChange}
-                        />
+                        <label className="file">
+                            <FormControl
+                                type="file"
+                                placeholder="Image"
+                                value={this.props.formData.newImage}
+                                name='image'
+                                onChange={this.props.handleFormDataChange}
+                            />
+                            <span className="file-custom"><span id="text">Choose Image...</span></span>
+                        </label>
                         {
                             Object.keys(errors)
                                 .some(item=> item === "image") && 

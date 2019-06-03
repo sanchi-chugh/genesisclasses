@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import {
   FormGroup,
   ControlLabel,
+  HelpBlock
 } from "react-bootstrap";
 
 import { FormInputs } from "../../../../components/FormInputs/FormInputs.jsx";
@@ -14,7 +15,7 @@ import '../../../../../node_modules/antd/dist/antd.css';
 class PassageType extends Component {
 
   render() {
-
+    const { errors } = this.props;
     return (
       <div>
         
@@ -33,6 +34,13 @@ class PassageType extends Component {
                 editorClassName={'textarea'}
                 onEditorStateChange={this.props.onEditorStateChange2}
             /><hr/>
+            {
+                Object.keys(errors)
+                        .some(item=> item === "passage") && 
+                            errors.questionText.map(err=>
+                                <HelpBlock>{err}</HelpBlock>
+                            )
+              }
         </FormGroup>
         }
 
@@ -44,6 +52,13 @@ class PassageType extends Component {
                 editorClassName={'textarea'}
                 onEditorStateChange={this.props.onEditorStateChange}
             /><hr/>
+            {
+                Object.keys(errors)
+                        .some(item=> item === "questionText") && 
+                            errors.questionText.map(err=>
+                                <HelpBlock>{err}</HelpBlock>
+                            )
+              }
         </FormGroup>
         <FormInputs
             ncols={["col-md-12"]}
@@ -54,6 +69,7 @@ class PassageType extends Component {
                 bsClass: "form-control",
                 placeholder: "Enter Explanation",
                 name:'explanation',
+                errors:errors,
                 value:this.props.formData.explanation,
                 onChange:this.props.handleFormDataChange
             },
@@ -68,6 +84,7 @@ class PassageType extends Component {
                 bsClass: "form-control",
                 placeholder: "4",
                 min:'0',
+                errors:errors,
                 name:'marksPositive',
                 value:this.props.formData.marksPositive,
                 onChange:this.props.handleFormDataChange
@@ -82,6 +99,7 @@ class PassageType extends Component {
                 type: "number",
                 bsClass: "form-control",
                 placeholder: "1",
+                errors:errors,
                 min:'0',
                 name:'marksNegative',
                 value:this.props.formData.marksNegative,

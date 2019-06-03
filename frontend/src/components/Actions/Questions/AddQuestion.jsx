@@ -6,6 +6,7 @@ import {
   FormGroup,
   ControlLabel,
   FormControl,
+  HelpBlock
 } from "react-bootstrap";
 
 import axios from 'axios';
@@ -37,13 +38,14 @@ class AddQuestions extends Component {
         section:'Section ...',
         questionText: EditorState.createEmpty(),
         explanation:'',
-        marksPositive:null,
-        marksNegative:null,
-        intAnswer:null,
+        marksPositive:'',
+        marksNegative:'',
+        intAnswer:'',
         paragraph: EditorState.createEmpty()
       },
       addingQuestion:false,
       QuestionAdded:false,
+      errors: {},
       flag:false // for adding question in a paragraph
     };
   }
@@ -64,7 +66,7 @@ class AddQuestions extends Component {
       },
     })
     .then(callback)
-    .catch((err) => this.setState({ addingQuestion: false }, () => console.log(err)))
+    .catch((err) => this.setState({ addingQuestion: false, errors: err.response.data }, () => console.log(err)))
   }
 
   handleAddUtil(res=null){
@@ -73,7 +75,7 @@ class AddQuestions extends Component {
       formData.append('explanation',this.state.formData.explanation)
       formData.append('intAnswer',this.state.formData.intAnswer)
       formData.append('questionType',this.state.type)
-      formData.append('passage', res !== null ? res.data.passage : this.state.flag ? this.props.location.data.id :  null)
+      formData.append('passage', res !== null ? res.data.passage : this.state.flag ? this.props.location.data.id :  '')
       formData.append('marksPositive',this.state.formData.marksPositive)
       formData.append('marksNegative',this.state.formData.marksNegative)
       formData.append('section',this.props.match.params.id)
@@ -86,7 +88,7 @@ class AddQuestions extends Component {
         this.props.handleClick('tr','Added Successfully');
         this.props.history.goBack();
       }))
-      .catch((err) => this.setState({ addingQuestion: false }, () => console.log(err)))
+      .catch((err) => this.setState({ addingQuestion: false, errors: err.response.data }, () => console.log(err)))
   }
 
   handleAdd(e){
@@ -133,6 +135,7 @@ class AddQuestions extends Component {
   }
 
   render() {
+    const { errors } = this.state;
     return (
       <div className="content">
         <Grid fluid>
@@ -164,12 +167,20 @@ class AddQuestions extends Component {
                             <option value='mcq'>MULTIPLE CHOICE QUESTION</option>
                             <option value='scq'>SINGLE CHOICE QUESTION</option>
                         </FormControl>
+                        {
+                          Object.keys(errors)
+                                  .some(item=> item === "questionType") && 
+                                      errors.questionType.map(err=>
+                                          <HelpBlock>{err}</HelpBlock>
+                                      )
+                        }
                     </FormGroup>
                     { this.state.type === 'passage'?
                           <PassageType 
                             formData = {this.state.formData}
                             flag={this.state.flag}
                             data={this.props.location.data}
+                            errors={errors}
                             onEditorStateChange = {this.onEditorStateChange.bind(this)}
                             onEditorStateChange2 = {this.onEditorStateChange2.bind(this)}
                             handleFormDataChange = {this.handleFormDataChange.bind(this)}
@@ -179,6 +190,7 @@ class AddQuestions extends Component {
                       this.state.type === 'integer'?
                          <IntegerType 
                             formData = {this.state.formData}
+                            errors={errors}
                             onEditorStateChange = {this.onEditorStateChange.bind(this)}
                             handleFormDataChange = {this.handleFormDataChange.bind(this)}
                          />
@@ -187,6 +199,7 @@ class AddQuestions extends Component {
                     { this.state.type === 'mcq' || this.state.type ==='scq' ?
                           <ChoiceType
                             formData = {this.state.formData}
+                            errors={errors}
                             onEditorStateChange = {this.onEditorStateChange.bind(this)}
                             handleFormDataChange = {this.handleFormDataChange.bind(this)}
                           /> 

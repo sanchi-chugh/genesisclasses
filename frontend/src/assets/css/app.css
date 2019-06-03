@@ -7,6 +7,34 @@
     position: relative;
 }
 
+.progressBar{
+    background: #F5F5F5;
+    width: 100%;
+    height: 6px;
+    border-radius: 5px;
+}
+
+.progress-{
+    background: #01458E;
+    height: 6px;
+    border-radius: 5px;
+    width: 0px;
+}
+
+.results-test-list{
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(63, 63, 68, 0.1);
+    background: white;
+    padding: 20px;
+    margin-block-end: 8px;
+    cursor: pointer;
+}
+
+.results-test-list p{
+    color: #757575;
+    font-size: 12px;
+    margin: 0;
+}
+
 .file {
   position: relative;
   display: inline-block;

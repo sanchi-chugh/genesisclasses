@@ -101,8 +101,37 @@ class StudentResults extends Component {
 
   renderTitle(cell, row, enumObject, rowIndex){
     return (
-        <div style={{overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'}}>
+        <div style={{whiteSpace: 'normal'}}>
           {cell.title}
+        </div>
+      )
+  }
+
+  renderInfo(cell, row, enumObject, rowIndex){
+    return (
+        <div style={{display: 'block', whiteSpace:'normal'}}>
+          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
+            <b> Percentage:- </b>{row.percentage}
+          </div>
+          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
+            <b> Total Marks:- </b>{cell.totalMarks}
+          </div>
+          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
+            <b> Mark Obtained:- </b>{row.marksObtained}
+          </div>
+          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
+            <b> Total Questions:- </b>{cell.totalQuestions}
+          </div>
+          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
+            <b> Correct:- </b>{row.correct}
+          </div>
+          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
+            <b> Incorrect:- </b>{row.incorrect}
+          </div>
+          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
+            <b> Unattempted:- </b>{row.unattempted}
+          </div>
+          
         </div>
       )
   }
@@ -156,15 +185,9 @@ class StudentResults extends Component {
                                       sizePerPageList: [ 10 ],
                                       page: this.state.page} }>
                             <TableHeaderColumn width={40} dataField='sno' isKey hiddenOnInsert>SNo</TableHeaderColumn>
-                            <TableHeaderColumn dataField='test' dataFormat={this.renderTitle.bind(this)}>Name</TableHeaderColumn>
-                            <TableHeaderColumn dataField='testAttemptDate'>Date</TableHeaderColumn>
-                            <TableHeaderColumn dataField='percentage'>Percentage</TableHeaderColumn>
-                            <TableHeaderColumn dataField='marksObtained'>Total Marks</TableHeaderColumn>
-                            <TableHeaderColumn dataField='marksObtained'>Marks Obtained</TableHeaderColumn>
-                            <TableHeaderColumn dataField='correct'>Total Questions</TableHeaderColumn>
-                            <TableHeaderColumn dataField='correct'>Correct</TableHeaderColumn>
-                            <TableHeaderColumn dataField='incorrect'>Incorrect</TableHeaderColumn>
-                            <TableHeaderColumn dataField='unattempted'>Unattempted</TableHeaderColumn>
+                            <TableHeaderColumn width={100} dataField='test' dataFormat={this.renderTitle.bind(this)}>Name</TableHeaderColumn>
+                            <TableHeaderColumn width={120} dataField='testAttemptDate'>Date</TableHeaderColumn>
+                            <TableHeaderColumn dataField='test' dataFormat={this.renderInfo.bind(this)}>Details</TableHeaderColumn>
                             <TableHeaderColumn width={190} dataField='test' dataFormat={this.renderColumn.bind(this)}>Action</TableHeaderColumn>
                         </BootstrapTable>
                       </div>

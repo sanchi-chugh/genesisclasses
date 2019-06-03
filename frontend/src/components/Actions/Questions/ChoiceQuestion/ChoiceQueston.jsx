@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import {
   FormGroup,
   ControlLabel,
+  HelpBlock
 } from "react-bootstrap";
 
 import { FormInputs } from "../../../../components/FormInputs/FormInputs.jsx";
@@ -13,7 +14,7 @@ import '../../../../../node_modules/antd/dist/antd.css';
 class ChoiceType extends Component {
 
   render() {
-
+    const { errors } = this.props;
     return (
       <div>
          <FormGroup>
@@ -24,6 +25,13 @@ class ChoiceType extends Component {
                 editorClassName={'textarea'}
                 onEditorStateChange={this.props.onEditorStateChange}
             /><hr/>
+            {
+                Object.keys(errors)
+                        .some(item=> item === "questionText") && 
+                            errors.questionText.map(err=>
+                                <HelpBlock>{err}</HelpBlock>
+                            )
+              }
         </FormGroup>
         <FormInputs
             ncols={["col-md-12"]}
@@ -34,6 +42,7 @@ class ChoiceType extends Component {
                 bsClass: "form-control",
                 placeholder: "Enter Explanation",
                 name:'explanation',
+                errors:errors,
                 value:this.props.formData.explanation,
                 onChange:this.props.handleFormDataChange
             },
@@ -48,6 +57,7 @@ class ChoiceType extends Component {
                 bsClass: "form-control",
                 placeholder: "4",
                 min:'0',
+                errors:errors,
                 name:'marksPositive',
                 value:this.props.formData.marksPositive,
                 onChange:this.props.handleFormDataChange
@@ -62,6 +72,7 @@ class ChoiceType extends Component {
                 type: "number",
                 bsClass: "form-control",
                 placeholder: "1",
+                errors:errors,
                 min:'0',
                 name:'marksNegative',
                 value:this.props.formData.marksNegative,

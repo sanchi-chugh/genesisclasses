@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import {
   FormGroup,
   ControlLabel,
+  HelpBlock
 } from "react-bootstrap";
 
 import { FormInputs } from "../../../../components/FormInputs/FormInputs.jsx";
@@ -13,7 +14,7 @@ import '../../../../../node_modules/antd/dist/antd.css';
 class IntegerType extends Component {
 
   render() {
-
+    const { errors } = this.props;
     return (
       <div>
          <FormGroup>
@@ -24,6 +25,13 @@ class IntegerType extends Component {
                 editorClassName={'textarea'}
                 onEditorStateChange={this.props.onEditorStateChange}
             /><hr/>
+            {
+                Object.keys(errors)
+                        .some(item=> item === "questionText") && 
+                            errors.questionText.map(err=>
+                                <HelpBlock>{err}</HelpBlock>
+                            )
+              }
         </FormGroup>
         <FormInputs
             ncols={["col-md-12"]}
@@ -35,6 +43,7 @@ class IntegerType extends Component {
                 placeholder: "1",
                 name:'intAnswer',
                 min:"0",
+                errors:errors,
                 max:"9",
                 value:this.props.formData.intAnswer,
                 onChange:this.props.handleFormDataChange
@@ -49,6 +58,7 @@ class IntegerType extends Component {
                 componentClass: 'textarea',
                 bsClass: "form-control",
                 placeholder: "Enter Explanation",
+                errors:errors,
                 name:'explanation',
                 value:this.props.formData.explanation,
                 onChange:this.props.handleFormDataChange
@@ -63,6 +73,7 @@ class IntegerType extends Component {
                 type: "number",
                 bsClass: "form-control",
                 placeholder: "4",
+                errors:errors,
                 min:'0',
                 name:'marksPositive',
                 value:this.props.formData.marksPositive,
@@ -77,6 +88,7 @@ class IntegerType extends Component {
                 label: "Marks Negative *",
                 type: "number",
                 bsClass: "form-control",
+                errors:errors,
                 placeholder: "1",
                 min:'0',
                 name:'marksNegative',

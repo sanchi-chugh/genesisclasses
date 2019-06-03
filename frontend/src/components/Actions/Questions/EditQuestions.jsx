@@ -6,6 +6,7 @@ import {
   FormGroup,
   ControlLabel,
   FormControl,
+  HelpBlock
 } from "react-bootstrap";
 
 import axios from 'axios';
@@ -43,6 +44,7 @@ class EditQuestions extends Component {
         passage: EditorState.createEmpty()
       },
       updatingQuestion:false,
+      errors:{},
       questionUpdated:false
     };
   }
@@ -96,7 +98,7 @@ class EditQuestions extends Component {
         this.props.handleClick('tr','Updated Successfully'); 
         this.props.history.goBack();
       }))
-      .catch((err) => this.setState({ updatingQuestion: false }, () => console.log(err)))
+      .catch((err) => this.setState({ updatingQuestion: false, errors: err.response.data }, () => console.log(err)))
   }
 
   handleAdd(e){
@@ -138,7 +140,7 @@ class EditQuestions extends Component {
   }
 
   render() {
-
+    const { errors } = this.state;
     return (
       <div className="content">
         <Grid fluid>
@@ -170,10 +172,18 @@ class EditQuestions extends Component {
                             <option value='mcq'>MULTIPLE CHOICE QUESTION</option>
                             <option value='scq'>SINGLE CHOICE QUESTION</option>
                         </FormControl>
+                        {
+                          Object.keys(errors)
+                                  .some(item=> item === "questionType") && 
+                                      errors.questionType.map(err=>
+                                          <HelpBlock>{err}</HelpBlock>
+                                      )
+                        }
                     </FormGroup>
                     { this.state.type === 'passage'?
                           <PassageType 
                             formData = {this.state.formData}
+                            errors={errors}
                             onEditorStateChange = {this.onEditorStateChange.bind(this)}
                             onEditorStateChange2 = {this.onEditorStateChange2.bind(this)}
                             handleFormDataChange = {this.handleFormDataChange.bind(this)}
@@ -181,7 +191,8 @@ class EditQuestions extends Component {
                     }
                     { 
                       this.state.type === 'integer'?
-                         <IntegerType 
+                         <IntegerType
+                            errors={errors} 
                             formData = {this.state.formData}
                             onEditorStateChange = {this.onEditorStateChange.bind(this)}
                             handleFormDataChange = {this.handleFormDataChange.bind(this)}
@@ -191,6 +202,7 @@ class EditQuestions extends Component {
                     { this.state.type === 'mcq' || this.state.type ==='scq' ?
                           <ChoiceType
                             formData = {this.state.formData}
+                            errors={errors}
                             onEditorStateChange = {this.onEditorStateChange.bind(this)}
                             handleFormDataChange = {this.handleFormDataChange.bind(this)}
                           /> 

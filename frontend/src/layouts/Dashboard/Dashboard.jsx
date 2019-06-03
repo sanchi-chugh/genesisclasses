@@ -26,7 +26,7 @@ class Dashboard extends Component {
       ),
       level: level,
       position: position,
-      autoDismiss: 15
+      autoDismiss: 3
     });
   }
   componentDidMount() {

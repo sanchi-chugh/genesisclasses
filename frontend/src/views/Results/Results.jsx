@@ -90,18 +90,6 @@ class Results extends Component {
           <Row>
             <Col md={6}>
               <Grid fluid>
-                 <Row>
-                    <Col md={12}>
-                      <Kard
-                        title="Subject Wise Progress"
-                        content={
-                          <Grid fluid>
-                           
-                          </Grid>
-                        }
-                      />
-                    </Col>
-                  </Row>
                   <Row>
                     <Col md={12}>
                       <Kard
@@ -125,6 +113,7 @@ class Results extends Component {
                       fetchMore={this.fetchMore.bind(this)}
                       next={this.state.next}
                       data={this.state.data}
+                      flag={true}
                     />
                 }
                 {

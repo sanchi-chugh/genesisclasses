@@ -11,7 +11,7 @@ DEPLOYED = False
 
 # Get domain
 if DEPLOYED:
-    DOMAIN = 'http://13.233.138.166/'   # Public IP
+    DOMAIN = 'http://68.183.84.181/'   # Public IP
 else:
     DOMAIN = 'http://localhost:8000/'
 
@@ -109,16 +109,28 @@ WSGI_APPLICATION = 'test_series.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'genesis',
-        'USER': 'genesis',
-        'PASSWORD': 'genesis',
-        'HOST': 'localhost',
-        'PORT': '',
+if DEPLOYED:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'genesis',
+            'USER': 'genesisuser',
+            'PASSWORD': 'Genesis1122344!!@#',
+            'HOST': 'localhost',
+            'PORT': '',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'genesis',
+            'USER': 'genesis',
+            'PASSWORD': 'genesis',
+            'HOST': 'localhost',
+            'PORT': '',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {

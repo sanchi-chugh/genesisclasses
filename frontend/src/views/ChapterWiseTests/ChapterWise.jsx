@@ -163,6 +163,7 @@ class ChapterWise extends Component {
                           fetchMore={this.fetchMore.bind(this)}
                           next={this.state.next}
                           data={this.state.data}
+                          flag={false}
                       />
                     }
                 </Col>

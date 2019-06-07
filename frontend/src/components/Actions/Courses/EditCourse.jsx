@@ -24,8 +24,8 @@ class EditCourse extends Component {
                         EDIT COURSE
                     </Modal.Title>
                 </Modal.Header>
+                <form onSubmit={this.props.handleEdit}>
                 <Modal.Body>
-                    <form>
                         <FormGroup
                         controlId="formBasicText"
                         >
@@ -53,12 +53,12 @@ class EditCourse extends Component {
                             }
                         color="primary"
                         />
-                    </form>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.courseUpdated ? null : <Button bsStyle="primary" onClick={this.props.handleEdit}>EDIT COURSE</Button>}
+                    {this.props.courseUpdated ? null : <Button bsStyle="primary" type="submit">EDIT COURSE</Button>}
                 </Modal.Footer>
+                </form>
         </Modal>
     );
   }

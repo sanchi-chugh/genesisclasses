@@ -31,8 +31,8 @@ class EditUnit extends Component {
                         EDIT UNIT
                     </Modal.Title>
                 </Modal.Header>
+                <form onSubmit={this.props.handleEdit}>
                 <Modal.Body>
-                    <form>
                         <FormGroup
                         controlId="formBasicText"
                         >
@@ -132,12 +132,12 @@ class EditUnit extends Component {
                             }
                         color="primary"
                         />
-                    </form>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.unitUpdated ? null : <Button bsStyle="primary" onClick={this.props.handleEdit}>EDIT UNIT</Button>}
+                    {this.props.unitUpdated ? null : <Button bsStyle="primary" type="submit">EDIT UNIT</Button>}
                 </Modal.Footer>
+                </form>
         </Modal>
     );
   }

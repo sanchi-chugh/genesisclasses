@@ -30,8 +30,8 @@ class AddUnits extends Component {
                         ADD UNIT
                     </Modal.Title>
                 </Modal.Header>
+                <form onSubmit={this.props.handleAdd}>
                 <Modal.Body>
-                    <form>
                         <FormGroup
                         controlId="formBasicText"
                         >
@@ -118,12 +118,12 @@ class AddUnits extends Component {
                             }
                         color="primary"
                         />
-                    </form>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.unitAdded ? null : <Button bsStyle="success" onClick={this.props.handleAdd}>ADD UNIT</Button>}
+                    {this.props.unitAdded ? null : <Button bsStyle="success" type="submit">ADD UNIT</Button>}
                 </Modal.Footer>
+                </form>
         </Modal>
     );
   }

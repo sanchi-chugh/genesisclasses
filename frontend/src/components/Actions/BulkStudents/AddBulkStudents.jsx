@@ -28,8 +28,8 @@ class AddBulkStudents extends Component {
                         ADD BULK STUDENTS
                     </Modal.Title>
                 </Modal.Header>
+                <form onSubmit={this.props.handleAdd}>
                 <Modal.Body>
-                    <form>
                         <FormGroup
                         controlId="formBasicText"
                         >
@@ -50,7 +50,7 @@ class AddBulkStudents extends Component {
                                         )
                             }
                             <br/>
-                            <ControlLabel>Access Date</ControlLabel>
+                            <ControlLabel>Expiry Date</ControlLabel>
                             <FormControl
                                 type="date"
                                 value={this.props.formData.endAccessDate}
@@ -134,12 +134,12 @@ class AddBulkStudents extends Component {
                             }
                         color="primary"
                         />
-                    </form>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.bulkAdded ? null : <Button bsStyle="success" onClick={this.props.handleAdd}>ADD BULK STUDENTS</Button>}
+                    {this.props.bulkAdded ? null : <Button bsStyle="success">ADD BULK STUDENTS</Button>}
                 </Modal.Footer>
+                </form>
         </Modal>
     );
   }

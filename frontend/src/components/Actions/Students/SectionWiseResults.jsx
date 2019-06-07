@@ -47,6 +47,22 @@ class SectionWiseResults extends Component {
     });
   }
 
+  renderNumber(cell, row, enumObject, rowIndex, key){
+    return (
+        <div style={{whiteSpace: 'normal'}}>
+          {cell.totalQuestions}
+        </div>
+      )
+  }
+
+  renderMarks(cell, row, enumObject, rowIndex, key){
+    return (
+        <div style={{whiteSpace: 'normal'}}>
+          {cell.totalMarks}
+        </div>
+      )
+  }
+
   renderTitle(cell, row, enumObject, rowIndex){
     return (
         <div style={{overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'}}>
@@ -83,20 +99,43 @@ class SectionWiseResults extends Component {
                 title="Section Wise Results"
                 content={
                   <Grid fluid>
+                    <div style={{display: 'block', whiteSpace:'normal', marginBottom:'20px'}}>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'220px'}}>
+                        <b> TM:- </b> Total Marks
+                      </div>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'220px'}}>
+                        <b> TQ:- </b> Total Questions
+                      </div>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'220px'}}>
+                        <b> MO:- </b> Marks Obtained
+                      </div>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'220px'}}>
+                        <b> %age:- </b>  Percentage
+                      </div>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'220px'}}>
+                        <b> CQ:- </b>  Correct Questions
+                      </div>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'220px'}}>
+                        <b> IQ:- </b>  Incorrect Questions
+                      </div>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'280px'}}>
+                        <b> UAQ:- </b> Unattempted Questions
+                      </div>
+                    </div>
                     <div>
                         <BootstrapTable
                           condensed pagination
                           data={this.state.data}
                           search>
                             <TableHeaderColumn width={40} dataField='sno' isKey hiddenOnInsert>SNo</TableHeaderColumn>
-                            <TableHeaderColumn dataField='section' dataFormat={this.renderTitle.bind(this)}>Name</TableHeaderColumn>
-                            <TableHeaderColumn dataField='percentage'>Percentage</TableHeaderColumn>
-                            <TableHeaderColumn dataField='marksObtained'>Total Marks</TableHeaderColumn>
-                            <TableHeaderColumn dataField='marksObtained'>Marks Obtained</TableHeaderColumn>
-                            <TableHeaderColumn dataField='correct'>Total Questions</TableHeaderColumn>
-                            <TableHeaderColumn dataField='correct'>Correct</TableHeaderColumn>
-                            <TableHeaderColumn dataField='incorrect'>Incorrect</TableHeaderColumn>
-                            <TableHeaderColumn dataField='unattempted'>Unattempted</TableHeaderColumn>
+                            <TableHeaderColumn width={180} dataField='section' dataFormat={this.renderTitle.bind(this)}>Name</TableHeaderColumn>
+                            <TableHeaderColumn dataField='percentage'>%age</TableHeaderColumn>
+                            <TableHeaderColumn dataField='section' dataFormat={this.renderMarks.bind(this)}>TM</TableHeaderColumn>
+                            <TableHeaderColumn dataField='marksObtained'>MO</TableHeaderColumn>
+                            <TableHeaderColumn dataField='section' dataFormat={this.renderNumber.bind(this)}>TQ</TableHeaderColumn>
+                            <TableHeaderColumn dataField='correct'>CQ</TableHeaderColumn>
+                            <TableHeaderColumn dataField='incorrect'>IQ</TableHeaderColumn>
+                            <TableHeaderColumn dataField='unattempted'>UAQ</TableHeaderColumn>
                             <TableHeaderColumn width={190} dataField='section' dataFormat={this.renderColumn.bind(this)}>Action</TableHeaderColumn>
                         </BootstrapTable>
                       </div>

@@ -156,7 +156,8 @@ class Units extends Component {
     this.setState({ show2: false, deletingUnit:false, unitDeleted:false, transferData:false,transferTo:'Select Unit', unit:null});
   }
 
-  handleAdd(){
+  handleAdd(e){
+    e.preventDefault();
     this.setState({ addingUnit: true }, () => {
       var formData = new FormData();
       formData.append('title',this.state.formData.title)
@@ -217,7 +218,8 @@ class Units extends Component {
     });
   } 
 
-  handleEdit() {
+  handleEdit(e) {
+    e.preventDefault();
     this.setState({ updatingUnit: true }, () => {
       console.log(this.state.formData)
       var formData = new FormData();

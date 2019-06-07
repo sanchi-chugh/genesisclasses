@@ -24,8 +24,8 @@ class EditSection extends Component {
                         EDIT SECTION
                     </Modal.Title>
                 </Modal.Header>
+                <form onSubmit={this.props.handleEdit}>
                 <Modal.Body>
-                    <form>
                         <FormGroup
                         controlId="formBasicText"
                         >
@@ -52,12 +52,12 @@ class EditSection extends Component {
                             }
                         color="primary"
                         />
-                    </form>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.sectionUpdated ? null : <Button bsStyle="primary" onClick={this.props.handleEdit}>EDIT SECTION</Button>}
+                    {this.props.sectionUpdated ? null : <Button bsStyle="primary" type="submit">EDIT SECTION</Button>}
                 </Modal.Footer>
+                </form>
         </Modal>
     );
   }

@@ -24,8 +24,8 @@ class AddSection extends Component {
                         ADD SECTION
                     </Modal.Title>
                 </Modal.Header>
+                <form onSubmit={this.props.handleAdd}>
                 <Modal.Body>
-                    <form>
                         <FormGroup
                         controlId="formBasicText"
                         >
@@ -52,12 +52,12 @@ class AddSection extends Component {
                             }
                         color="primary"
                         />
-                    </form>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.sectionAdded ? null : <Button bsStyle="success" onClick={this.props.handleAdd}>ADD SECTION</Button>}
+                    {this.props.sectionAdded ? null : <Button bsStyle="success" type="submit">ADD SECTION</Button>}
                 </Modal.Footer>
+                </form>
         </Modal>
     );
   }

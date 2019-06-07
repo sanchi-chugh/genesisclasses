@@ -24,8 +24,8 @@ class AddCourse extends Component {
                         ADD COURSE
                     </Modal.Title>
                 </Modal.Header>
+                <form onSubmit={this.props.handleAdd}>
                 <Modal.Body>
-                    <form>
                         <FormGroup
                         controlId="formBasicText"
                         >
@@ -53,12 +53,12 @@ class AddCourse extends Component {
                             }
                         color="primary"
                         />
-                    </form>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.courseAdded ? null : <Button bsStyle="success" onClick={this.props.handleAdd}>ADD COURSE</Button>}
+                    {this.props.courseAdded ? null : <Button bsStyle="success" type="submit">ADD COURSE</Button>}
                 </Modal.Footer>
+                </form>
         </Modal>
     );
   }

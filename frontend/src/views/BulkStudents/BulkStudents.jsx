@@ -9,6 +9,7 @@ import { Grid,
          Badge
 } from "react-bootstrap";
 import axios from 'axios';
+import moment from 'moment';
 
 import Card from "../../components/Card/Card.jsx";
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
@@ -33,7 +34,7 @@ class BulkStudents extends Component {
             number:'',
             course:[],
             endAccessDate:'',
-            joiningDate:'',
+            joiningDate:moment(new Date()).format("YYYY-MM-DD"),
             location:''
           },
           id:null,
@@ -51,6 +52,7 @@ class BulkStudents extends Component {
    this.fetchBulkStudents(`?page=1`);
    this.fetchCourses();
    this.fetchCentres();
+   console.log(this.state)
   }
 
   fetchBulkStudents(page,index=0,url=null){
@@ -125,7 +127,8 @@ class BulkStudents extends Component {
     this.setState({centreName:item.location, centreId:item.id})
   }
 
-  handleAdd(){
+  handleAdd(e){
+    e.preventDefault();
     this.setState({ addingBulk: true }, () => {
       var formData = new FormData();
       formData.append('number',this.state.formData.number)

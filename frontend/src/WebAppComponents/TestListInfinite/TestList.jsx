@@ -27,11 +27,11 @@ class TestList extends Component {
                     useWindow={true}
                     threshold={10}>
                     {this.props.data.results.map(item=>{
-                        let width = item.userResult.marksObtained/item.totalMarks;
+                        if(this.props.flag){
+                            let width = item.userResult.marksObtained/item.totalMarks;
                         width += '%'
-                        console.log(width);
-                            return(
-                                <div className="results-test-list" key={item.id}>
+                        return(
+                                <div className="results-test-list" key={item.id} onClick={this.testFunction.bind(this,item)}>
                                     <p>Rank {item.userResult.rank}</p>
                                     <div style={{display: 'block'}}>
                                         <div style={{display: 'inline-block', fontWeight:'600',fontSize:'16px', position: 'relative', marginBottom:'4px'}}>
@@ -46,6 +46,8 @@ class TestList extends Component {
                                     </div>
                                 </div>
                             );
+                        }
+                        if(!this.props.flag)
                             return(
                                 <div className="test inline" key={item.id}>
                                     <Card

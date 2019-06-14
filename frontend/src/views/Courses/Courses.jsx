@@ -69,7 +69,8 @@ class Courses extends Component {
     this.setState({ show2: false, deletingCourse:false, courseDeleted:false, transferData:false,transferTo:'Select Course', course:null, errors:{}});
   }
 
-  handleAdd(){
+  handleAdd(e){
+    e.preventDefault();
     this.setState({ addingCourse: true }, () => {
       const data = {title:this.state.value}
       axios.post('/api/courses/add/', data, {
@@ -104,7 +105,8 @@ class Courses extends Component {
     });
   } 
 
-  handleEdit() {
+  handleEdit(e) {
+    e.preventDefault();
     this.setState({ updatingCourse: true }, () => {
       const data = {title:this.state.value}
       axios.put(`/api/courses/edit/${this.state.id}/`, data, {

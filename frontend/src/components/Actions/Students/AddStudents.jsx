@@ -18,6 +18,7 @@ import { UserCard } from "../../../components/UserCard/UserCard.jsx";
 import Button from "../../../components/CustomButton/CustomButton.jsx";
 import { Checkbox, Menu, Dropdown, Icon} from 'antd';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import moment from 'moment';
 
 import '../../../../node_modules/antd/dist/antd.css'; 
 
@@ -36,7 +37,7 @@ class AddStudents extends Component {
         email:'',
         contact_number:'',
         endAccessDate:'',
-        joiningDate:'',
+        joiningDate:moment(new Date()).format("YYYY-MM-DD"),
         father_name:'',
         gender:'',
         dateOfBirth:'',
@@ -222,7 +223,7 @@ class AddStudents extends Component {
                           onChange:this.handleFormDataChange.bind(this)
                         },
                         {
-                          label: "Access Date *",
+                          label: "Expiry Date *",
                           type: "date",
                           bsClass: "form-control",
                           name:'endAccessDate',

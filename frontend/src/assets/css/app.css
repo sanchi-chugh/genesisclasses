@@ -15,10 +15,33 @@
 }
 
 .progress-{
-    background: #01458E;
+    background: rgba(228, 242, 251, 1);
     height: 6px;
     border-radius: 5px;
     width: 0px;
+}
+
+.results-rank-list{
+    background: white;
+    padding: 4px;
+    border-block-end: 1px solid #E5E5E5;
+    margin-block-end: 4px;
+    padding-block-start: 8px;
+    padding-block-end: 8px;
+}
+
+.results-rank-list p{
+    color: #02458e;
+    font-size: 18px;
+    margin: 0px 8px;
+    font-weight: 900 !important;
+    display: inline-block;
+}
+
+.results-rank-list img{
+    width: 30px;
+    height: 30px;
+    vertical-align: bottom;
 }
 
 .results-test-list{
@@ -33,6 +56,16 @@
     color: #757575;
     font-size: 12px;
     margin: 0;
+    display: inline-block;
+}
+
+.results-test-list a{
+    color: #01458E;
+    font-weight: 900;
+    font-size: 12px;
+    margin: 0;
+    float: right;
+    display: inline-block;
 }
 
 .file {

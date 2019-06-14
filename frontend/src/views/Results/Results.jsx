@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Grid, Row, Col } from "react-bootstrap";
 import TestList from "../../WebAppComponents/TestListInfinite/TestList.jsx";
+import RankList from "../../WebAppComponents/RankListInfinite/RankList.jsx";
 
 import { Card } from "../../WebAppComponents/Card/Card.jsx";
 import Axios from "axios";
@@ -13,9 +14,13 @@ class Results extends Component {
     super();
     this.state = {
       data: {results:[]},
+      rank: {results:[]},
+      next2:null,
+      busy2:true,
       busy:true,
       next:null,
-      type: 'upcoming'
+      type: 'upcoming',
+      active:''
     };
   }
 
@@ -58,12 +63,58 @@ class Results extends Component {
               return item
             })
             console.log('tests list', res.data)
-            this.setState({data:data, next:res.data.next,busy:false});
+            this.setState({data:data, next:res.data.next,busy:false, active:res.data.count > 0 ? res.data.results[0].id : ''},()=>{
+              this.fetchRankList(`?page=1`);
+            });
         });
+    }
+
+  fetchRankListMore(){
+    Axios.get(this.state.next2, {
+        headers: {
+        Authorization: `Token ${localStorage.token}`
+        }
+    }).then(res => {
+        let data = {}
+        data.results = res.data.results.map(item => {
+              item.attempted = true
+              return item
+            })
+        this.setState({
+          rank: {...this.state.rank,
+              results:[...this.state.data.results, ...data.results],
+          },
+          next2:res.data.next});
+    });
+  }
+  
+  fetchRankList(page,index=0){
+        if(page===`?page=1`){
+            page=""
+        }
+        if(this.state.active === ''){
+          this.setState({busy2:false, rank:{results:[]}});
+        }else{
+          Axios.get( `/api/app/result/tests/${this.state.active}/rankList/`, {
+              headers: {
+              Authorization: `Token ${localStorage.token}`
+              }
+          }).then(res => {
+              let rank = res.data;
+              console.log('tests list', res.data)
+              this.setState({rank:rank, next:res.data.next,busy2:false});
+          });
+        }
     }
   
   testFunction(id){
     this.props.history.push(`/app/test/start/${id}`)
+  }
+
+  handleClick(id){
+    this.setState({busy2:true, active:id},()=>{
+      this.fetchRankList(`?page=1`);
+    });
   }
 
   render() {
@@ -96,7 +147,19 @@ class Results extends Component {
                         title="Leaderboard"
                         content={
                           <Grid fluid>
-                           
+                           {
+                              !this.state.busy2 && this.state.rank.results.length >0 &&
+                                <RankList
+                                  {...this.props}
+                                  fetchMore={this.fetchRankListMore.bind(this)}
+                                  next={this.state.next2}
+                                  data={this.state.rank}
+                                />
+                            }
+                            {
+                              !this.state.busy2 && this.state.rank.results.length === 0 &&
+                              <div className="no-tests-placeholder">No Data Available</div>
+                            }
                           </Grid>
                         }
                       />
@@ -114,6 +177,8 @@ class Results extends Component {
                       next={this.state.next}
                       data={this.state.data}
                       flag={true}
+                      handleClick={(id)=>this.handleClick(id)}
+                      active={this.state.active}
                     />
                 }
                 {

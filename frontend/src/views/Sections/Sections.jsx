@@ -70,7 +70,8 @@ class Sections extends Component {
     this.setState({ show2: false, deletingSection:false, sectionDeleted:false});
   }
 
-  handleAdd(){
+  handleAdd(e){
+    e.preventDefault();
     this.setState({ addingSection: true }, () => {
       const data = {title:this.state.value,test:this.props.match.params.id}
       axios.post('/api/tests/sections/add/', data, {
@@ -105,7 +106,8 @@ class Sections extends Component {
     });
   } 
 
-  handleEdit() {
+  handleEdit(e) {
+    e.preventDefault();
     this.setState({ updatingSection: true }, () => {
       const data = {title:this.state.value}
       axios.put(`/api/tests/sections/edit/${this.state.id}/`, data, {

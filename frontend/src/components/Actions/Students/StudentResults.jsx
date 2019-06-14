@@ -107,31 +107,18 @@ class StudentResults extends Component {
       )
   }
 
-  renderInfo(cell, row, enumObject, rowIndex){
+  renderNumber(cell, row, enumObject, rowIndex, key){
     return (
-        <div style={{display: 'block', whiteSpace:'normal'}}>
-          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
-            <b> Percentage:- </b>{row.percentage}
-          </div>
-          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
-            <b> Total Marks:- </b>{cell.totalMarks}
-          </div>
-          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
-            <b> Mark Obtained:- </b>{row.marksObtained}
-          </div>
-          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
-            <b> Total Questions:- </b>{cell.totalQuestions}
-          </div>
-          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
-            <b> Correct:- </b>{row.correct}
-          </div>
-          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
-            <b> Incorrect:- </b>{row.incorrect}
-          </div>
-          <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'200px'}}>
-            <b> Unattempted:- </b>{row.unattempted}
-          </div>
-          
+        <div style={{whiteSpace: 'normal'}}>
+          {cell.totalQuestions}
+        </div>
+      )
+  }
+
+  renderMarks(cell, row, enumObject, rowIndex, key){
+    return (
+        <div style={{whiteSpace: 'normal'}}>
+          {cell.totalMarks}
         </div>
       )
   }
@@ -173,6 +160,29 @@ class StudentResults extends Component {
                 title="Student Results"
                 content={
                   <Grid fluid>
+                    <div style={{display: 'block', whiteSpace:'normal',marginBottom:'20px'}}>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'220px'}}>
+                        <b> TM:- </b> Total Marks
+                      </div>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'220px'}}>
+                        <b> TQ:- </b> Total Questions
+                      </div>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'220px'}}>
+                        <b> MO:- </b> Marks Obtained
+                      </div>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'220px'}}>
+                        <b> %age:- </b>  Percentage
+                      </div>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'220px'}}>
+                        <b> CQ:- </b>  Correct Questions
+                      </div>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'220px'}}>
+                        <b> IQ:- </b>  Incorrect Questions
+                      </div>
+                      <div style={{display: 'inline-block', paddingInlineEnd:'8px', width:'280px'}}>
+                        <b> UAQ:- </b> Unattempted Questions
+                      </div>
+                    </div>
                     <div>
                         <BootstrapTable
                           condensed pagination
@@ -185,9 +195,15 @@ class StudentResults extends Component {
                                       sizePerPageList: [ 10 ],
                                       page: this.state.page} }>
                             <TableHeaderColumn width={40} dataField='sno' isKey hiddenOnInsert>SNo</TableHeaderColumn>
-                            <TableHeaderColumn width={100} dataField='test' dataFormat={this.renderTitle.bind(this)}>Name</TableHeaderColumn>
+                            <TableHeaderColumn width={100} dataField='test' dataFormat={this.renderTitle.bind(this)}>Test Name</TableHeaderColumn>
                             <TableHeaderColumn width={120} dataField='testAttemptDate'>Date</TableHeaderColumn>
-                            <TableHeaderColumn dataField='test' dataFormat={this.renderInfo.bind(this)}>Details</TableHeaderColumn>
+                            <TableHeaderColumn dataField='test' dataFormat={this.renderMarks.bind(this)}>TM</TableHeaderColumn>
+                            <TableHeaderColumn dataField='test' dataFormat={this.renderNumber.bind(this)}>TQ</TableHeaderColumn>
+                            <TableHeaderColumn dataField='percentage'>%age</TableHeaderColumn>
+                            <TableHeaderColumn dataField='marksObtained'>MO</TableHeaderColumn>
+                            <TableHeaderColumn dataField='correct'>CQ</TableHeaderColumn>
+                            <TableHeaderColumn dataField='incorrect'>IQ</TableHeaderColumn>
+                            <TableHeaderColumn dataField='unattempted'>UAQ</TableHeaderColumn>
                             <TableHeaderColumn width={190} dataField='test' dataFormat={this.renderColumn.bind(this)}>Action</TableHeaderColumn>
                         </BootstrapTable>
                       </div>

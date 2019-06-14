@@ -19,7 +19,7 @@ class Logout extends Component {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                       Are you sure you want to log out!
+                       Are you sure you want to log out?
                 </Modal.Body>
                 <Modal.Footer>
                     <Button bsStyle="primary" onClick={this.props.logout}>Logout</Button>

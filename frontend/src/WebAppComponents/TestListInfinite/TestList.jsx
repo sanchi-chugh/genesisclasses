@@ -14,7 +14,6 @@ class TestList extends Component {
     }
 
     render(){
-        console.log(this.props.next)
         return(
             <div style={{display:'block'}}>
                 <InfiniteScroll
@@ -27,12 +26,15 @@ class TestList extends Component {
                     useWindow={true}
                     threshold={10}>
                     {this.props.data.results.map(item=>{
-                        let width = item.userResult.marksObtained/item.totalMarks;
+                        if(this.props.flag){
+                            let width = item.userResult.marksObtained/item.totalMarks;
                         width += '%'
-                        console.log(width);
-                            return(
-                                <div className="results-test-list" key={item.id}>
-                                    <p>Rank {item.userResult.rank}</p>
+                        return(
+                                <div className="results-test-list" key={item.id} onClick={()=>this.props.handleClick(item.id)}>
+                                    <div style={{display: 'block'}}>
+                                        <p>Rank {item.userResult.rank}</p>
+                                        <a onClick={this.testFunction.bind(this,item)}>Results</a>
+                                    </div>
                                     <div style={{display: 'block'}}>
                                         <div style={{display: 'inline-block', fontWeight:'600',fontSize:'16px', position: 'relative', marginBottom:'4px'}}>
                                             {item.title}
@@ -42,10 +44,12 @@ class TestList extends Component {
                                         </div>
                                     </div>
                                     <div className="progressBar">
-                                        <div className="progress-" style={{width:width}}></div>
+                                        <div className="progress-" style={{width:width, backgroundColor:this.props.active === item.id ? '#01458E' : ''}}></div>
                                     </div>
                                 </div>
                             );
+                        }
+                        if(!this.props.flag)
                             return(
                                 <div className="test inline" key={item.id}>
                                     <Card

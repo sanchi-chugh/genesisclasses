@@ -84,6 +84,11 @@ class TestResults extends Component {
         Authorization: `Token ${localStorage.token}`
         }
     }).then(res => {
+        const results = res.data.results.map(item => {
+          item.sno = res.data.results.indexOf(item) + 1+index;
+          return item;
+        })
+        res.data.results = results
         const data = res.data;
         console.log(data)
         this.setState({
@@ -116,7 +121,7 @@ class TestResults extends Component {
   renderTitle(cell, row, enumObject, rowIndex){
     return (
         <div style={{whiteSpace: 'normal'}}>
-          {cell.title}
+          {cell.name}
         </div>
       )
   }
@@ -261,7 +266,7 @@ class TestResults extends Component {
                                       sizePerPageList: [ 10 ],
                                       page: this.state.page} }>
                             <TableHeaderColumn width={40} dataField='sno' isKey hiddenOnInsert>SNo</TableHeaderColumn>
-                            <TableHeaderColumn width={100} dataField='test' dataFormat={this.renderTitle.bind(this)}>Test Name</TableHeaderColumn>
+                            <TableHeaderColumn width={100} dataField='student' dataFormat={this.renderTitle.bind(this)}>Student Name</TableHeaderColumn>
                             <TableHeaderColumn width={120} dataField='testAttemptDate'>Date</TableHeaderColumn>
                             <TableHeaderColumn dataField='percentile'>%tile</TableHeaderColumn>
                             <TableHeaderColumn dataField='test' dataFormat={this.renderMarks.bind(this)}>TM</TableHeaderColumn>

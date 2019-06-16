@@ -141,6 +141,26 @@ class Results extends Component {
           <Row>
             <Col md={6}>
               <Grid fluid>
+                {
+                  !this.state.busy &&
+                    <TestList
+                      {...this.props}
+                      fetchMore={this.fetchMore.bind(this)}
+                      next={this.state.next}
+                      data={this.state.data}
+                      flag={true}
+                      handleClick={(id)=>this.handleClick(id)}
+                      active={this.state.active}
+                    />
+                }
+                {
+                  !this.state.busy && this.state.data.results.length === 0 &&
+                  <div className="no-tests-placeholder">No Tests Attempted</div>
+                }
+              </Grid>
+            </Col>
+            <Col md={6}>
+              <Grid fluid>
                   <Row>
                     <Col md={12}>
                       <Kard
@@ -166,26 +186,6 @@ class Results extends Component {
                     </Col>
                   </Row>
                 </Grid>
-            </Col>
-            <Col md={6}>
-              <Grid fluid>
-                {
-                  !this.state.busy &&
-                    <TestList
-                      {...this.props}
-                      fetchMore={this.fetchMore.bind(this)}
-                      next={this.state.next}
-                      data={this.state.data}
-                      flag={true}
-                      handleClick={(id)=>this.handleClick(id)}
-                      active={this.state.active}
-                    />
-                }
-                {
-                  !this.state.busy && this.state.data.results.length === 0 &&
-                  <div className="no-tests-placeholder">No Tests Attempted</div>
-                }
-              </Grid>
             </Col>
           </Row>
         </Grid>

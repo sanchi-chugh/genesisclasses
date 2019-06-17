@@ -909,6 +909,7 @@
 .inline{
     display: inline-block;
     width: 300px;
+    height: 250px;
     margin: 20px;
     margin-bottom: 0px;
 }

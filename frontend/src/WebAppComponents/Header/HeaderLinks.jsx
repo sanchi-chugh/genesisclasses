@@ -28,8 +28,16 @@ class HeaderLinks extends Component {
             }}/>
             </div>
                     </li>}
-          {!this.props.flag && <li href="#">
+          {/*
+            !this.props.flag && <li href="#">
                       <a ><Glyphicon glyph="menu-hamburger" style={{color:'white', fontSize: '18px'}} onClick={this.props.toggle}/></a>
+                    </li>
+          */}
+          {!this.props.flag && <li href="#">
+                      <a ><Glyphicon glyph="chevron-left" style={{color:'white', fontSize: '18px'}} onClick={()=>{
+                        console.log(this.props)
+                        this.props.history.goBack()
+                      }}/></a>
                     </li>}
           {/*
             <li>

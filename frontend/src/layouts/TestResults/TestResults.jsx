@@ -30,6 +30,7 @@ class TestResultsLayout extends Component {
         next: false,
         prev: true
       },
+      buttonBusy:false
     };
   }
 
@@ -66,15 +67,19 @@ class TestResultsLayout extends Component {
     });
   }
   //toggle right side navigation headers
-  getData(url){
+  async getData(url){
+    await this.setState({
+      busyButton: true
+    })
     return axios.get(url, {
         headers: {
         Authorization: `Token ${localStorage.token}`
         },
-    }).then(res => {
-        const data = res.data.detail;
+      }).then(res => {
+          const data = res.data.detail;
+          this.setState({busyButton:false})
           return data;
-    });
+      });
   }
 
   setRefs(ref, id){
@@ -281,6 +286,7 @@ class TestResultsLayout extends Component {
               <h3>{this.state.data.title}</h3>
             </div>
           </div>
+          {this.state.busyButton && <div className="loader"></div>}
           {
             this.state.flag ?
             <TestAnalytics 
@@ -299,6 +305,7 @@ class TestResultsLayout extends Component {
               handleNext={this.handleNext.bind(this)}
               setRefs={(ref, id) => this.setRefs(ref,id)}
               setWindow={(ref) => this.setWindow(ref)}
+              busyButton={this.state.busyButton}
             /> :
             <Results />
           } 

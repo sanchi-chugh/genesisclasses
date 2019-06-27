@@ -909,6 +909,7 @@
 .inline{
     display: inline-block;
     width: 300px;
+    height: 250px;
     margin: 20px;
     margin-bottom: 0px;
 }
@@ -1500,4 +1501,31 @@
     color: rgba(1, 69, 142, 1);
     left: 49%;
     font-weight: 600;
+}
+
+@media (max-width: 768px){
+    .login-card{
+        width: 90%;
+    }
+    .study{
+        right: 0;
+    }
+    #main-panel{
+        width: 100%;
+    }
+    .inline{
+        margin: 0;
+        padding: 20px;
+    }
+    .side-chap{
+        margin-bottom: 20px;
+    }
+    .test{
+        width: 100%;
+    }
+    .home-cards{
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+    }
 }

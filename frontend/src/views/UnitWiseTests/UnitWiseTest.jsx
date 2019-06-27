@@ -4,6 +4,7 @@ import { Card } from "../../WebAppComponents/Card/Card.jsx";
 import Axios from "axios";
 import DescriptionCard from "../../WebAppComponents/DescriptionCard/DescriptionCard.jsx";
 import placeholder from "../../assets/img/placeholder.jpg";
+import unitIcon from "../../assets/img/assets_in.jpg"
 
 const description = "Unit Wise Test Series for NEET 2020. In this Test Series, there will be total 29 Tests. In these 29 tests there will be 14 unit tests based on 2 to 3 units of NEET (ug) ..."
 
@@ -44,7 +45,7 @@ class UnitWiseTests extends Component {
     return (
       <div className="content home-content">
         <DescriptionCard 
-           image={ placeholder }
+           image={ unitIcon }
            description={description}
            title={'Unit Wise Tests'}
         />

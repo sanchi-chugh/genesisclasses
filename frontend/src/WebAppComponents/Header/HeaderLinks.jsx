@@ -36,7 +36,8 @@ class HeaderLinks extends Component {
           {!this.props.flag && <li href="#">
                       <a ><Glyphicon glyph="chevron-left" style={{color:'white', fontSize: '18px'}} onClick={()=>{
                         console.log(this.props)
-                        this.props.history.goBack()
+                        if(this.props.location.pathname !== '/home')
+                          this.props.history.goBack()
                       }}/></a>
                     </li>}
           {/*

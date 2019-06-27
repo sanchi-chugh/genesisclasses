@@ -97,6 +97,7 @@ class App extends React.Component {
         )
     }
     if(isLoggedIn){
+      console.log('try',user)
       return (
         <BrowserRouter>
             <Switch>

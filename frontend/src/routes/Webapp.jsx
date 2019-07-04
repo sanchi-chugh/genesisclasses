@@ -8,9 +8,9 @@ const webappRoutes = [
     path: "/results",
     name: "Results",
     icon: "certificate",
-    component: ()=>(
+    component: (props)=>(
       <Suspense fallback={<div className="loader"></div>}>
-        <ResultsLayout />
+        <ResultsLayout {...props} />
       </Suspense>
     )
 
@@ -19,9 +19,9 @@ const webappRoutes = [
     path: "/home",
     name: "Home",
     icon: "home",
-    component: ()=>(
+    component: (props)=>(
       <Suspense fallback={<div className="loader"></div>}>
-        <HomeLayout />
+        <HomeLayout {...props} />
       </Suspense>
     )
 

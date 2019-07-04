@@ -16,9 +16,9 @@ const dashboardRoutes = [
     path: "/bulkStudents",
     name: "Bulk Students",
     icon: "pe-7s-study",
-    component: ()=>(
+    component: (props)=>(
       <Suspense fallback={<div className="loader"></div>}>
-        <BulkStudents />
+        <BulkStudents {...props} />
       </Suspense>
     )
   },
@@ -26,9 +26,9 @@ const dashboardRoutes = [
     path: "/students",
     name: "Students",
     icon: "pe-7s-user",
-    component: ()=>(
+    component: (props)=>(
       <Suspense fallback={<div className="loader"></div>}>
-        <Students />
+        <Students {...props} />
       </Suspense>
     )
   },
@@ -36,9 +36,9 @@ const dashboardRoutes = [
     path: "/centre",
     name: "Centres",
     icon: "pe-7s-culture",
-    component: ()=>(
+    component: (props)=>(
       <Suspense fallback={<div className="loader"></div>}>
-        <Centres />
+        <Centres {...props} />
       </Suspense>
     )
   },
@@ -46,9 +46,9 @@ const dashboardRoutes = [
     path: "/course",
     name: "Courses",
     icon: "pe-7s-study",
-    component: ()=>(
+    component: (props)=>(
       <Suspense fallback={<div className="loader"></div>}>
-        <Courses />
+        <Courses {...props} />
       </Suspense>
     )
   },
@@ -56,9 +56,9 @@ const dashboardRoutes = [
     path: "/categories",
     name: "Categories",
     icon: "pe-7s-study",
-    component: ()=>(
+    component: (props)=>(
       <Suspense fallback={<div className="loader"></div>}>
-        <Categories />
+        <Categories {...props} />
       </Suspense>
     )
   },
@@ -66,9 +66,9 @@ const dashboardRoutes = [
     path: "/subjects",
     name: "Subjects",
     icon: "pe-7s-study",
-    component: ()=>(
+    component: (props)=>(
       <Suspense fallback={<div className="loader"></div>}>
-        <Subjects />
+        <Subjects {...props} />
       </Suspense>
     )
   },
@@ -76,9 +76,9 @@ const dashboardRoutes = [
     path: "/units",
     name: "Units",
     icon: "pe-7s-study",
-    component: ()=>(
+    component: (props)=>(
       <Suspense fallback={<div className="loader"></div>}>
-        <Units />
+        <Units {...props} />
       </Suspense>
     )
   },
@@ -86,9 +86,9 @@ const dashboardRoutes = [
     path: "/tests",
     name: "Tests",
     icon: "pe-7s-culture",
-    component: ()=>(
+    component: (props)=>(
       <Suspense fallback={<div className="loader"></div>}>
-        <Tests />
+        <Tests {...props} />
       </Suspense>
     )
   },

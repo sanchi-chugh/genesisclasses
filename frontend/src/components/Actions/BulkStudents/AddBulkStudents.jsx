@@ -137,7 +137,7 @@ class AddBulkStudents extends Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.props.onHide}>CLOSE</Button>
-                    {this.props.bulkAdded ? null : <Button bsStyle="success">ADD BULK STUDENTS</Button>}
+                    {this.props.bulkAdded ? null : <Button bsStyle="success" type="submit">ADD BULK STUDENTS</Button>}
                 </Modal.Footer>
                 </form>
         </Modal>

@@ -7,11 +7,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # Turn deployed True when in production
-DEPLOYED = False
+DEPLOYED = True
 
 # Get domain
 if DEPLOYED:
-    DOMAIN = 'http://68.183.84.181/'   # Public IP
+    DOMAIN = 'http://genesisclasses.tk/'   # Public IP
 else:
     DOMAIN = 'http://localhost:8000/'
 
@@ -113,7 +113,7 @@ if DEPLOYED:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'genesis',
+            'NAME': 'genesis_classes',
             'USER': 'genesisuser',
             'PASSWORD': 'Genesis1122344!!@#',
             'HOST': 'localhost',

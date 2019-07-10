@@ -7,7 +7,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # Turn deployed True when in production
-DEPLOYED = True
+DEPLOYED = False
 
 # Get domain
 if DEPLOYED:

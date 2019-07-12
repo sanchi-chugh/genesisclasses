@@ -71,6 +71,7 @@ class Webapp extends Component {
                     getUser={this.props.getUser} 
                     handleClick={this.handleNotificationClick}
                     expanded={this.state.expanded}
+                    logout={this.props.logout}
                   />
                 )} key={key} />
               );

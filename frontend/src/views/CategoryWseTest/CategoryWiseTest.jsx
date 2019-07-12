@@ -30,7 +30,11 @@ class CategoryWiseTests extends Component {
                results:[...this.state.data.results, ...data.results]
            },
            next:res.data.next});
-     });
+     }).catch( err=> {
+          if(err.response.status === 401){
+            this.props.logout(() =>{this.props.history.push('/')})
+          }
+        });
    }
    
   fetchTests(page){
@@ -45,7 +49,11 @@ class CategoryWiseTests extends Component {
             const data = res.data
             console.log(res.data)
             this.setState({data:data, next:data.next,busy:false});
-        });
+        }).catch( err=> {
+            if(err.response.status === 401){
+              this.props.logout(() =>{this.props.history.push('/')})
+            }
+          });
     }
 
   render() {

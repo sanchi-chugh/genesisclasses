@@ -86,6 +86,11 @@ class TakeTestLayout extends Component {
             return sum + item.totalQuestions;
           }, 0),
         },()=>this.setState({busy:false}));
+    }).catch( err=> {
+      if(err.response.status === 401){
+        this.props.logout(() =>{this.props.history.push('/')})
+        this.setState({ busyTests: false });
+      }
     });
   }
 
@@ -189,8 +194,12 @@ class TakeTestLayout extends Component {
       .then((res) => this.setState({ busy: false},() => {
         this.props.history.push(`/app/test/result/${this.props.match.params.id}`)
       }))
-      .catch((err) => this.setState({ busy: false }, () => console.log(err)))
-    });
+      .catch( err=> {
+        if(err.response.status === 401){
+          this.props.logout(() =>{this.props.history.push('/')})
+        }
+        this.setState({ busy: false }, () => console.log(err))
+      });
   }
 
   handleReview(id){

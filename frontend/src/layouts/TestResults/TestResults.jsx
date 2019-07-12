@@ -64,6 +64,10 @@ class TestResultsLayout extends Component {
              return obj
            }, {}),
         },()=>this.setState({busy:false},console.log(this.state)));
+    }).catch( err=> {
+      if(err.response.status === 401){
+        this.props.logout(() =>{this.props.history.push('/')})
+      }
     });
   }
   //toggle right side navigation headers
@@ -79,7 +83,11 @@ class TestResultsLayout extends Component {
           const data = res.data.detail;
           this.setState({busyButton:false})
           return data;
-      });
+      }).catch( err=> {
+          if(err.response.status === 401){
+            this.props.logout(() =>{this.props.history.push('/')})
+          }
+        });
   }
 
   setRefs(ref, id){

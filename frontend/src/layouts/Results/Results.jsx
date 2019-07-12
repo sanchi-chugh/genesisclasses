@@ -17,6 +17,7 @@ class ResultsLayout extends Component {
                   <prop.component
                     {...routeProps}
                     handleClick={this.props.handleClick}
+                    logout={this.props.logout}
                   />
                 )} key={key} />
               );

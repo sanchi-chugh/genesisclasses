@@ -195,11 +195,12 @@ class TakeTestLayout extends Component {
         this.props.history.push(`/app/test/result/${this.props.match.params.id}`)
       }))
       .catch( err=> {
-        if(err.response.status === 401){
-          this.props.logout(() =>{this.props.history.push('/')})
-        }
-        this.setState({ busy: false }, () => console.log(err))
-      });
+          if(err.response.status === 401){
+            this.props.logout(() =>{this.props.history.push('/')})
+          }
+          this.setState({ busy: false }, () => console.log(err))
+        });
+    });
   }
 
   handleReview(id){

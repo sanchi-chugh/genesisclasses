@@ -44,6 +44,10 @@ class Results extends Component {
               results:[...this.state.data.results, ...data.results],
           },
           next:res.data.next});
+    }).catch( err=> {
+      if(err.response.status === 401){
+        this.props.logout(() =>{this.props.history.push('/')})
+      }
     });
   }
   
@@ -66,7 +70,11 @@ class Results extends Component {
             this.setState({data:data, next:res.data.next,busy:false, active:res.data.count > 0 ? res.data.results[0].id : ''},()=>{
               this.fetchRankList(`?page=1`);
             });
-        });
+        }).catch( err=> {
+            if(err.response.status === 401){
+              this.props.logout(() =>{this.props.history.push('/')})
+            }
+          });
     }
 
   fetchRankListMore(){
@@ -85,6 +93,10 @@ class Results extends Component {
               results:[...this.state.data.results, ...data.results],
           },
           next2:res.data.next});
+    }).catch( err=> {
+      if(err.response.status === 401){
+        this.props.logout(() =>{this.props.history.push('/')})
+      }
     });
   }
   
@@ -103,7 +115,11 @@ class Results extends Component {
               let rank = res.data;
               console.log('tests list', res.data)
               this.setState({rank:rank, next:res.data.next,busy2:false});
-          });
+          }).catch( err=> {
+              if(err.response.status === 401){
+                this.props.logout(() =>{this.props.history.push('/')})
+              }
+            });
         }
     }
   

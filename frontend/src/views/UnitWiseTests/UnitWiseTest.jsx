@@ -33,6 +33,10 @@ class UnitWiseTests extends Component {
         return item;
       })
       this.setState({data:data, busy:false});
+    }).catch( err=> {
+      if(err.response.status === 401){
+        this.props.logout(() =>{this.props.history.push('/')})
+      }
     });
   }
 

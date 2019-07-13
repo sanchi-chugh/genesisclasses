@@ -45,6 +45,10 @@ class ChapterWise extends Component {
                 this.fetchTests(`?page=1`);
             }
         });
+    }).catch( err=> {
+      if(err.response.status === 401){
+        this.props.logout(() =>{this.props.history.push('/')})
+      }
     });
   }
 
@@ -60,6 +64,10 @@ class ChapterWise extends Component {
           details:data,
           busySubjectDetails:false
         });
+    }).catch( err=> {
+      if(err.response.status === 401){
+        this.props.logout(() =>{this.props.history.push('/')})
+      }
     });
   }
 
@@ -75,6 +83,10 @@ class ChapterWise extends Component {
               results:[...this.state.data.results, ...data.results],
           },
           next:res.data.next});
+    }).catch( err=> {
+      if(err.response.status === 401){
+        this.props.logout(() =>{this.props.history.push('/')})
+      }
     });
   }
   
@@ -91,7 +103,11 @@ class ChapterWise extends Component {
             const data = res.data
             console.log('tests list', res.data)
             this.setState({data:data, next:data.next,count:data.count,busy:false});
-        });
+        }).catch( err=> {
+            if(err.response.status === 401){
+              this.props.logout(() =>{this.props.history.push('/')})
+            }
+          });
     }
 
   handleUnitSelect(id){

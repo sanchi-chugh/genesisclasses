@@ -250,7 +250,9 @@ class Tests extends Component {
   renderSubjects(cell, row, enumObject, rowIndex) {
     return (
         <Row md={12}>
-            <Col md={6}><div>{row.subject !== null ? row.subject.title : ''} { row.unit !== null ? ' ('+row.unit.title+')' : '...'}</div></Col>
+            <Col md={12}>
+              <div style={{overflow: 'hidden',whiteSpace: 'nowrap', textOverflow: 'ellipsis'}}>
+                {row.subject !== null ? row.subject.title : ''} { row.unit !== null ? ' ('+row.unit.title+')' : '...'}</div></Col>
         </Row>
     )
   }

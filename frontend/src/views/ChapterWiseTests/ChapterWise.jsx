@@ -162,7 +162,7 @@ class ChapterWise extends Component {
                         </div>
                     </div>
                 </Col>
-                <Col md={9} style={{backgroundColor:'white',paddingTop:'25px',fontWeight:'500',color:'black',borderRadius:'4px', minHeight:'200px'}}>
+                <Col md={9} style={{backgroundColor:'white',paddingTop:'25px',fontWeight:'500',color:'black',borderRadius:'4px', minHeight:'200px', paddingBottom:'50px'}}>
                     <h4 className="title-heading">Tests For {this.state.units[this.state.units.findIndex(obj => obj.id === this.state.unitSelected)].title}</h4>
                     {!this.state.busy && this.state.count === 0 && 
                       <p className="no-tests-placeholder">No tests available</p>

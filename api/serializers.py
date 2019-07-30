@@ -537,6 +537,7 @@ class CentreSpecificStudentResultSerializer(serializers.ModelSerializer):
     testAttemptDate = serializers.DateField(format='%b %d, %Y')
     sectionalResult = serializers.SerializerMethodField()
     percentage = serializers.FloatField(source='get_percentage')
+    test = NestedTestSerializer()
     class Meta:
         model = UserTestResult
         exclude = ['id']
@@ -714,11 +715,16 @@ class OptionDetailSerializer(serializers.ModelSerializer):
 
 # Return question details for attempting the test
 class QuestionDetailSerializer(serializers.ModelSerializer):
-    options = OptionDetailSerializer(many=True)
+    options = serializers.SerializerMethodField()
     quesNumber = serializers.SerializerMethodField()
     class Meta:
         model = Question
         exclude = ['section', 'intAnswer', 'valid', 'explanation']
+
+    def get_options(self, obj):
+        optionObjs = Option.objects.filter(question=obj).order_by('pk')
+        optionData = OptionDetailSerializer(optionObjs, many=True).data
+        return optionData
 
     def get_quesNumber(self, obj):
         prevSections = Section.objects.filter(sectionNumber__lt=obj.section.sectionNumber)
@@ -727,11 +733,16 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
 
 # Return question details of passage type questions
 class PassageQuestionDetailSerializer(serializers.ModelSerializer):
-    options = OptionDetailSerializer(many=True)
+    options = serializers.SerializerMethodField()
     quesNumber = serializers.SerializerMethodField()
     class Meta:
         model = Question
         exclude = ['section', 'intAnswer', 'valid', 'explanation', 'passage']
+
+    def get_options(self, obj):
+        optionObjs = Option.objects.filter(question=obj).order_by('pk')
+        optionData = OptionDetailSerializer(optionObjs, many=True).data
+        return optionData
 
     def get_quesNumber(self, obj):
         prevSections = Section.objects.filter(sectionNumber__lt=obj.section.sectionNumber)
@@ -918,12 +929,17 @@ class SectionAnalysisSerializer(serializers.ModelSerializer):
 
 # Return question details for attempting the test
 class QuestionAnalysisSerializer(serializers.ModelSerializer):
-    options = OptionDetailSerializer(many=True)
+    options = serializers.SerializerMethodField()
     userResult = serializers.SerializerMethodField()
     correctOptions = serializers.SerializerMethodField()
     class Meta:
         model = Question
         exclude = ['valid']
+
+    def get_options(self, obj):
+        optionObjs = Option.objects.filter(question=obj).order_by('pk')
+        optionData = OptionDetailSerializer(optionObjs, many=True).data
+        return optionData
 
     def get_userResult(self, obj):
         studentObj = self.context['student']

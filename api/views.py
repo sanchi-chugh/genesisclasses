@@ -13,6 +13,7 @@ from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.core.validators import validate_email, ValidationError
+from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
 from test_series.settings import DOMAIN, MEDIA_ROOT
 from .paginators import *
@@ -23,6 +24,7 @@ import json
 import uuid
 import os
 import shutil
+import http.client
 
 # Helper func to get super admin of a user
 def get_super_admin(user):
@@ -704,6 +706,26 @@ class AddBulkStudentsView(CreateAPIView):
         if not os.path.exists(directory):
             os.makedirs(directory)
 
+        # Take phone numbers if mobile phones csv has been uploaded
+        mobileNums = []
+        if data['mobileCSV']:
+            fs = FileSystemStorage()
+            fs.save(directory + data['mobileCSV'].name, data['mobileCSV'])
+            csvFile = open(directory + data['mobileCSV'].name, 'r')
+            for mobile_num in csvFile.readlines():
+                mobileNums.append(mobile_num.strip())
+            mobileNums.pop(0)
+            conn = http.client.HTTPSConnection("api.msg91.com")
+
+        # See if mobile numbers are correctly uploaded
+        for number in mobileNums:
+            try:
+                int_num = int(number)
+            except ValueError:
+                return Response({'mobileCSV': [
+                    'CSV format is not correct. Please provide a column with mobile numbers.']},
+                    status=HTTP_400_BAD_REQUEST)
+
         # Create a unique filename
         filename = str(uuid.uuid4()) + '.csv'
         csvFile = open(directory + filename, 'w')
@@ -749,6 +771,17 @@ class AddBulkStudentsView(CreateAPIView):
 
             # Add username and password to csv file
             csvFile.write(username + ',' + password + '\n')
+
+            # Send sms
+            if count < len(mobileNums):
+                conn.request(
+                    "GET",
+                    "/api/sendhttp.php?mobiles=" + mobileNums[count] + "&authkey=221689AxUNM83I85d3f3d80&route=4" +
+                    "&sender=GNSCOA&message=Your login Credentials for Genesis Test Series Platform are" +
+                    "-%0a%0aUsername - " + username + "%0apassword - " + password + "&country=91"
+                )
+                res = conn.getresponse()
+
             count += 1
 
         csvFile.close()
@@ -840,11 +873,14 @@ class DownloadStudentDataView(APIView):
                 pic = DOMAIN + student.image.url[1:]
 
             csvFile.write(
-                name.replace(',', '|') + ',' + contact.replace(',', '|') + ',' + email.replace(',', '|') + ',' + pic.replace(',', '|') +
-                ',' + centre.replace(',', '|')  + ',' + courses.replace(',', '|') + ',' + joiningDate.replace(',', '|') +
-                ',' + endAccessDate.replace(',', '|')  + ',' + gender.replace(',', '|') + ',' + dateOfBirth.replace(',', '|')  +
-                ',' + father_name.replace(',', '|')  + ',' + address.replace(',', '|') + ',' + city.replace(',', '|')  +
-                ',' + state.replace(',', '|')  + ',' + pinCode.replace(',', '|') + '\n'
+                str(name.replace(',', '|').encode('utf-8')) + ',' + str(contact.replace(',', '|').encode('utf-8')) +
+                ',' + str(email.replace(',', '|').encode('utf-8')) + ',' + str(pic.replace(',', '|').encode('utf-8')) +
+                ',' + str(centre.replace(',', '|').encode('utf-8')) + ',' + str(courses.replace(',', '|').encode('utf-8')) +
+                ',' + str(joiningDate.replace(',', '|').encode('utf-8')) + ',' + str(endAccessDate.replace(',', '|').encode('utf-8')) +
+                ',' + str(gender.replace(',', '|').encode('utf-8')) + ',' + str(dateOfBirth.replace(',', '|').encode('utf-8')) +
+                ',' + str(father_name.replace(',', '|').encode('utf-8')) + ',' + str(address.replace(',', '|').encode('utf-8')) +
+                ',' + str(city.replace(',', '|').encode('utf-8')) + ',' + str(state.replace(',', '|').encode('utf-8')) +
+                ',' + str(pinCode.replace(',', '|').encode('utf-8')) + '\n'
             )
 
         csvFile.close()
@@ -3101,6 +3137,19 @@ class TestSubmitView(CreateAPIView):
                 # save the response and move on to the next question
                 quesResponse.status = 'unattempted'
                 quesResponse.save()
+
+        testResultObjs = UserTestResult.objects.filter(student=studentObj, test=testObj)
+        if len(testResultObjs):
+            testResultObj = testResultObjs[0]
+            conn = http.client.HTTPSConnection("api.msg91.com")
+            conn.request(
+                "GET",
+                "/api/sendhttp.php?mobiles=" + str(studentObj.contact_number) + "&authkey=221689AxUNM83I85d3f3d80&route=4" +
+                "&sender=GNSCOA&message=Student " + studentObj.first_name + " " + studentObj.last_name + " " +
+                "scored " + str(testResultObj.marksObtained) + " out of " + str(testObj.totalMarks) + " in recent test submission titled " +
+                testObj.title + ".%0a%0aFor detailed result, visit " + DOMAIN + "results/.&country=91"
+            )
+            res = conn.getresponse()
 
         return Response({'status': 'successful'})
 

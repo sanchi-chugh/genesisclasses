@@ -10,10 +10,10 @@ class Instructions extends Component {
           <div className="upper-section">
             <div className="left">
               <div className="instruction">
-                <div className="content"><strong>Category:</strong> Unit Wise Test</div>
-                {this.props.data.subject && <div className="content"><strong>Subject:</strong> {this.props.data.subject.title}</div>}
-                <div className="content"><strong>Course:</strong> {this.props.data.course.join(', ')}</div>
-                {this.props.data.unit && <div className="content"><strong>Unit:</strong> {this.props.data.unit.title}</div>}
+                <div className="content" style={{display:'inline-flex', width: '65%'}}><strong>Category:-</strong> {this.props.data.category.join(', ')}</div>
+                {this.props.data.subject && <div className="content" style={{display:'inline-flex', width: '35%'}}><strong>Subject:-</strong> {this.props.data.subject.title}</div>}
+                <div className="content" style={{display:'inline-flex', width: '65%'}}><strong>Course:-</strong> {this.props.data.course.join(', ')}</div>
+                {this.props.data.unit && <div className="content" style={{display:'inline-flex', width: '35%'}}><strong>Unit:-</strong> {this.props.data.unit.title}</div>}
               </div>
               <div>
                 <div className="instruction-card" id="color1">

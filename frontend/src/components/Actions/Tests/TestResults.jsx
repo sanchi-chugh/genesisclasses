@@ -8,10 +8,12 @@ import {
   FormGroup,
   HelpBlock,
   ControlLabel,
+  Button,
+  Glyphicon
 } from "react-bootstrap";
 
 import axios from 'axios';
-import Button from "../../../components/CustomButton/CustomButton.jsx";
+import Butto from "../../../components/CustomButton/CustomButton.jsx";
 import LinearProgress from '@material-ui/core/LinearProgress';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 import { VictoryStack, VictoryChart, VictoryGroup, VictoryBar } from 'victory';
@@ -28,6 +30,7 @@ class TestResults extends Component {
       busy:true,
       flag: false,
       page: 1,
+      csv: null,
       centres:[],
       results:{results:[]},
       formData:{
@@ -98,6 +101,18 @@ class TestResults extends Component {
         if(!this.state.flag){
           this.props.handleClick('tr', 'No results found', 'warning');
         }
+      });
+    });
+
+    axios.get(`/api/results/tests/${this.props.match.params.id}/csv/?start_date=${this.state.formData.start_date}&end_date=${this.state.formData.end_date}&centre=${this.state.formData.centre}`, {
+        headers: {
+        Authorization: `Token ${localStorage.token}`
+        }
+    }).then(res => {
+        const data = res.data;
+        console.log(data)
+        this.setState({
+         csv: data.csvFile
       });
     });
   }
@@ -224,9 +239,9 @@ class TestResults extends Component {
                                   }
                               color="primary"
                               />
-                          <Button bsStyle="warning" pullRight fill type="submit">
+                          <Butto bsStyle="warning" pullRight fill type="submit">
                             View Results
-                          </Button>
+                          </Butto>
                         <div className="clearfix" />
                       </form>
                       <div style={{display: 'block', whiteSpace:'normal', marginTop:'24px'}}>
@@ -256,6 +271,13 @@ class TestResults extends Component {
                         </div>
                       </div>
                       <div style={{marginTop:50}}>
+                        <div style={{marginBottom:20}}>
+                          <Button bsSize="small" bsStyle="info" onClick={()=>{
+                              window.open(this.state.csv, '_blank');
+                          }}>
+                            <Glyphicon glyph="download" /> Export Results
+                          </Button>
+                        </div>
                         <BootstrapTable
                           condensed pagination
                           data={this.state.results.results}
@@ -355,9 +377,9 @@ class TestResults extends Component {
                               }
                           color="primary"
                           />
-                      <Button bsStyle="warning" pullRight fill type="submit">
+                      <Butto bsStyle="warning" pullRight fill type="submit">
                         View Results
-                      </Button>
+                      </Butto>
                     <div className="clearfix" />
                   </form>
                   </Grid>

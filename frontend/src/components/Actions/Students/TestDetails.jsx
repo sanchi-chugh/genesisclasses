@@ -28,23 +28,23 @@ class TestDetails extends Component {
                     <Grid fluid>
                         <Row xs={12} style={{margin:12}}>
                           <b><Col md={4}>TITLE</Col></b>
-                          <Col md={8}>{this.props.data.title === undefined ? '...' : this.props.data.title.toUpperCase() }</Col>
+                          <Col md={8}>{this.props.data.title === undefined || this.props.data.title === null ? '...' : this.props.data.title.toUpperCase() }</Col>
                         </Row>
                         <Row xs={12} style={{margin:12}}>
                           <b><Col md={4}>UNIT</Col></b>
-                          <Col md={8}>{this.props.data.unit === undefined ? '...' : this.props.data.unit.toUpperCase() }</Col>
+                          <Col md={8}>{this.props.data.unit === undefined || this.props.data.unit === null ? '...' : this.props.data.unit.toUpperCase() }</Col>
                         </Row>
                         <Row xs={12} style={{margin:12}}>
                           <b><Col md={4}>SUBJECT</Col></b>
-                          <Col md={8}>{this.props.data.subject === undefined ? '...' : this.props.data.subject.toUpperCase() }</Col>
+                          <Col md={8}>{this.props.data.subject === undefined || this.props.data.subject === null ? '...' : this.props.data.subject.toUpperCase() }</Col>
                         </Row>
                         <Row xs={12} style={{margin:12}}>
                           <b><Col md={4}>COURSES</Col></b>
-                          <Col md={8}>{this.props.data.course === undefined ? '...' : this.props.data.course.map(item => {return (<Badge style={{marginRight:2}}>{item}</Badge>)})}</Col>
+                          <Col md={8}>{this.props.data.course === undefined || this.props.data.course === null ? '...' : this.props.data.course.map(item => {return (<Badge style={{marginRight:2}}>{item}</Badge>)})}</Col>
                         </Row>
                         <Row xs={12} style={{margin:12}}>
                           <b><Col md={4}>CATEGORIES</Col></b>
-                          <Col md={8}>{this.props.data.category === undefined ? '...' : this.props.data.category.map(item => {return (<Badge style={{marginRight:2}}>{item}</Badge>)})}</Col>
+                          <Col md={8}>{this.props.data.category === undefined || this.props.data.category === null ? '...' : this.props.data.category.map(item => {return (<Badge style={{marginRight:2}}>{item}</Badge>)})}</Col>
                         </Row>
                     </Grid> 
                 </Modal.Body>

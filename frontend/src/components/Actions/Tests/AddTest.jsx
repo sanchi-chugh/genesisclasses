@@ -262,8 +262,10 @@ class AddTests extends Component {
             <Col md={12}>
               <Card
                 title={this.state.doc_errors ? null : "Add Test"}
-                // activeButton={true}
-                // handleRadioButton={this.handleFormDataChange.bind(this)}
+                downloadSampleButton={true}
+                handleDownloadSampleButton={()=>{
+                  window.open('/sample_doc.docx', '_blank');
+                }}
                 content={
                   this.state.doc_errors 
                   ? 

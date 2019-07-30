@@ -537,6 +537,7 @@ class CentreSpecificStudentResultSerializer(serializers.ModelSerializer):
     testAttemptDate = serializers.DateField(format='%b %d, %Y')
     sectionalResult = serializers.SerializerMethodField()
     percentage = serializers.FloatField(source='get_percentage')
+    test = NestedTestSerializer()
     class Meta:
         model = UserTestResult
         exclude = ['id']

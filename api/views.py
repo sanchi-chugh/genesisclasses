@@ -2424,6 +2424,46 @@ class StudentTestResultViewSet(viewsets.ReadOnlyModelViewSet):
             test__super_admin=super_admin, student__id=student_id).order_by('-pk')
         return testResultObjs
 
+# Return csv link to test results of a particular student
+class StudentTestResultCSVView(APIView):
+    model = UserTestResult
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, pk, *args, **kwargs):
+        studentObj = get_object_or_404(Student, pk=pk)
+
+        # Get desired testResultObjs
+        testResultObjs = UserTestResult.objects.filter(student=studentObj)
+
+        # Make directory having test result csv(s)
+        directory = MEDIA_ROOT + '/studentResultCSVs/'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # Make csv and return the link of this csv in response
+        csv_name = studentObj.user.username.replace(' ', '_') + '_result_data.csv'
+        path = directory + csv_name
+        csvFile = open(path, 'w')
+        csvFile.write('Test Name,Attempt Date,Total Marks,Total Questions,Percentage Obtained,'
+            'Marks Obtained,Correct Questions,Incorrect Questions,Unattempted Questions\n')
+
+        for testResultObj in testResultObjs:
+            csvFile.write(
+                testResultObj.test.title.replace(',', '|') + ',' +
+                str(testResultObj.testAttemptDate).replace(',', '|') + ',' +
+                str(testResultObj.test.totalMarks).replace(',', '|') + ',' +
+                str(testResultObj.test.totalQuestions).replace(',', '|') + ',' +
+                str(testResultObj.get_percentage()).replace(',', '|') + ',' +
+                str(testResultObj.marksObtained).replace(',', '|') + ',' +
+                str(testResultObj.correct).replace(',', '|') + ',' +
+                str(testResultObj.incorrect).replace(',', '|') + ',' +
+                str(testResultObj.unattempted).replace(',', '|') + '\n'
+            )
+
+        csvFile.close()
+        absolute_path = DOMAIN + 'media/studentResultCSVs/' + csv_name
+        return Response({'status': 'successful', 'csvFile': absolute_path})
+
 # Viewset for returning result of all sections of a particular test (for a particular student)
 class StudentSectionResultView(viewsets.ReadOnlyModelViewSet):
     model = UserSectionWiseResult
@@ -2436,6 +2476,46 @@ class StudentSectionResultView(viewsets.ReadOnlyModelViewSet):
         sectionResultObjs = self.model.objects.filter(
             section__test__id=test_id, student__id=student_id).order_by('section__sectionNumber')
         return sectionResultObjs
+
+# Returns csv containing result of all sections of a particular test (for a particular student)
+class StudentSectionResultCSVView(APIView):
+    model = UserSectionWiseResult
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, stud_pk, test_pk, *args, **kwargs):
+        studentObj = get_object_or_404(Student, pk=stud_pk)
+
+        # Get desired sectionResultObjs
+        sectionResultObjs = self.model.objects.filter(
+            section__test__id=test_pk, student__id=stud_pk).order_by('section__sectionNumber')
+
+        # Make directory having test result csv(s)
+        directory = MEDIA_ROOT + '/studentResultCSVs/'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # Make csv and return the link of this csv in response
+        csv_name = studentObj.user.username.replace(' ', '_') + '_sectional_result_data.csv'
+        path = directory + csv_name
+        csvFile = open(path, 'w')
+        csvFile.write('Section Name,Percentage Obtained,Total Marks,Marks Obtained,Total Questions,'
+            'Correct Questions,Incorrect Questions,Unattempted Questions\n')
+
+        for sectionResultObj in sectionResultObjs:
+            csvFile.write(
+                sectionResultObj.section.title.replace(',', '|') + ',' +
+                str(sectionResultObj.get_percentage()).replace(',', '|') + ',' +
+                str(sectionResultObj.section.totalMarks).replace(',', '|') + ',' +
+                str(sectionResultObj.marksObtained).replace(',', '|') + ',' +
+                str(sectionResultObj.section.totalQuestions).replace(',', '|') + ',' +
+                str(sectionResultObj.correct).replace(',', '|') + ',' +
+                str(sectionResultObj.incorrect).replace(',', '|') + ',' +
+                str(sectionResultObj.unattempted).replace(',', '|') + '\n'
+            )
+
+        csvFile.close()
+        absolute_path = DOMAIN + 'media/studentResultCSVs/' + csv_name
+        return Response({'status': 'successful', 'csvFile': absolute_path})
 
 # Viewset for returning responses of all questions of a particular section (for a particular student)
 class StudentQuestionResponseView(viewsets.ReadOnlyModelViewSet):
@@ -2453,6 +2533,51 @@ class StudentQuestionResponseView(viewsets.ReadOnlyModelViewSet):
         questionResponseObjs = self.model.objects.filter(
             question__section__id=section_id, student__id=student_id).order_by('question__quesNumber')
         return questionResponseObjs
+
+# Returns csv containing responses of all questions of a particular section (for a particular student)
+class StudentQuestionResponseCSVView(APIView):
+    model = UserQuestionWiseResponse
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, stud_pk, sec_pk, *args, **kwargs):
+        studentObj = get_object_or_404(Student, pk=stud_pk)
+
+        # Get desired questionResponseObjs
+        questionResponseObjs = self.model.objects.filter(
+            question__section__id=sec_pk, student__id=stud_pk).order_by('question__quesNumber')
+
+        # Make directory having test result csv(s)
+        directory = MEDIA_ROOT + '/studentResultCSVs/'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # Make csv and return the link of this csv in response
+        csv_name = studentObj.user.username.replace(' ', '_') + '_question_wise_result_data.csv'
+        path = directory + csv_name
+        csvFile = open(path, 'w')
+        csvFile.write('Question Number,Question Type,Marks Awarded,Marked For Review,Status\n')
+
+        count = 1
+        for questionResponseObj in questionResponseObjs:
+            # Calculate marks obtained
+            marksObtained = 0
+            if questionResponseObj.status == 'correct':
+                marksObtained = questionResponseObj.question.marksPositive
+            elif questionResponseObj.status == 'incorrect':
+                marksObtained = '-' + str(questionResponseObj.question.marksNegative)
+
+            csvFile.write(
+                str(count) + ',' +
+                questionResponseObj.question.questionType.replace(',', '|') + ',' +
+                str(marksObtained).replace(',', '|') + ',' +
+                str(questionResponseObj.isMarkedForReview).replace(',', '|') + ',' +
+                str(questionResponseObj.status).replace(',', '|') + '\n'
+            )
+            count += 1
+
+        csvFile.close()
+        absolute_path = DOMAIN + 'media/studentResultCSVs/' + csv_name
+        return Response({'status': 'successful', 'csvFile': absolute_path})
 
 # Return JSON for bar graph containing information of past 10 years' test results
 class TestResultGraphView(APIView):

@@ -27,7 +27,11 @@ class TakeTest extends Component {
                   checkpoints={[
                       {
                           time: 0,
-                          callback: () => this.props.handleSubmit(),
+                          callback: () => {
+                            this.props.freeze();
+                            this.props.showModal();
+                            this.props.handleSubmit();
+                          },
                       },
                   ]}
                   formatValue={(value) => `${(value < 10 ? `0${value}` : value)} `}>

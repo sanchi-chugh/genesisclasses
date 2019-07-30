@@ -46,7 +46,7 @@ export default function (ComposedComponent) {
               <p>Internet connection lost.</p>
             </div>)
           }
-          <ComposedComponent {...this.props} />
+          <ComposedComponent {...this.props} isDisconnected={isDisconnected } />
         </div>
       );
     }

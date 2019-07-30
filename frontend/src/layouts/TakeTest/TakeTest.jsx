@@ -20,6 +20,8 @@ class TakeTestLayout extends Component {
     this.state = {
       expanded:false,
       busy:true,
+      busy2:false,
+      freeze:false,
       data:null,
       flag:false,
       show:false,
@@ -49,6 +51,13 @@ class TakeTestLayout extends Component {
     this.fetchTestDetails();
     this.setState({ _notificationSystem: this.refs.notificationSystem });
     var _notificationSystem = this.refs.notificationSystem;
+  }
+
+  componentWillReceiveProps(props){
+    console.log(props)
+    if(props.isDisconnected === false && this.state.freeze){
+      this.handleSubmit();
+    }
   }
 
   fetchTestDetails(){
@@ -185,20 +194,20 @@ class TakeTestLayout extends Component {
       return ans;
     },[]);
 
-    this.setState({ busy: true }, () => {
+    this.setState({ busy2: true, freeze: true}, () => {
       axios.post(`/api/app/tests/${this.props.match.params.id}/submit/`, data, {
         headers: {
           Authorization: `Token ${localStorage.token}`,
           'Content-Type':  'application/json'
         },
       })
-      .then((res) => this.setState({ busy: false},() => {
+      .then((res) => this.setState({ busy2: false},() => {
         console.log(res, res.data)
         this.props.history.push(`/app/test/result/${this.props.match.params.id}`)
       }))
       .catch( err=> {
           console.log('error', err)
-          this.setState({ busy: false }, () => console.log(err))
+          this.setState({ busy2: false }, () => console.log(err))
           if(err.response.status === 401){
             this.props.logout(() =>{this.props.history.push('/')})
           }
@@ -500,8 +509,7 @@ class TakeTestLayout extends Component {
             <div className="loading-percentage">
               {this.state.percentCompleted +' '}%
             </div>
-          </div>
-          
+          </div>  
         )
     return (
       <div className="wrapper" id="wrapper">
@@ -512,25 +520,39 @@ class TakeTestLayout extends Component {
           show={this.state.show}
           keyboard={true}>
           <Modal.Body bsClass="modal-body mymodal">
-            <h4>Are you sure you want to submit the test?</h4>
-            <div className="labels">
-                <div style={{marginBottom:'8px'}}>
-                  <div className="disc" id="unattempted"></div>
-                  <div className="inline-labels">Unattempted <span style={{fontSize:'12px'}}> {this.state.unattempted} </span></div>
+            {this.state.freeze && 
+              <div>
+                <div className="loader"></div>
+                <div className="loading-percentage">
                 </div>
-                <div style={{marginBottom:'8px'}}>
-                  <div className="disc" id="review"></div>
-                  <div className="inline-labels">Marked For Review <span style={{fontSize:'12px'}}> {this.state.markedForReview} </span></div>
+              </div>
+            } 
+            {this.state.freeze && 
+              <h4>Do not close this tab, test will be submitted once connection is restored.</h4>
+            }
+            {!this.state.freeze && 
+              <div>
+                <h4>Are you sure you want to submit the test?</h4>
+                <div className="labels">
+                    <div style={{marginBottom:'8px'}}>
+                      <div className="disc" id="unattempted"></div>
+                      <div className="inline-labels">Unattempted <span style={{fontSize:'12px'}}> {this.state.unattempted} </span></div>
+                    </div>
+                    <div style={{marginBottom:'8px'}}>
+                      <div className="disc" id="review"></div>
+                      <div className="inline-labels">Marked For Review <span style={{fontSize:'12px'}}> {this.state.markedForReview} </span></div>
+                    </div>
+                    <div style={{marginBottom:'8px'}}>
+                      <div className="disc" id="attempted"></div>
+                      <div className="inline-labels">Attempted <span style={{fontSize:'12px'}}> {this.state.attempted} </span></div>
+                    </div>
                 </div>
-                <div style={{marginBottom:'8px'}}>
-                  <div className="disc" id="attempted"></div>
-                  <div className="inline-labels">Attempted <span style={{fontSize:'12px'}}> {this.state.attempted} </span></div>
+                <div className="modalfooter">
+                  <div className="btn-left" onClick={()=>this.setState({show:false})}>No</div>
+                  <div className="btn-right" onClick={this.handleSubmit.bind(this)}>Yes</div>
                 </div>
-            </div>
-            <div className="modalfooter">
-              <div className="btn-left" onClick={()=>this.setState({show:false})}>No</div>
-              <div className="btn-right" onClick={this.handleSubmit.bind(this)}>Yes</div>
-            </div>
+              </div>
+            }
           </Modal.Body>
         </Modal>
         <div id="main-panel" className="wrapper-test main-panel-expanded" ref="mainPanel">
@@ -554,6 +576,7 @@ class TakeTestLayout extends Component {
               handlePrevious={this.handlePrevious.bind(this)}
               toggle={(id) => {this.toggle(id)}}
               ref={this.ref}
+              freezeTest={()=>this.setState({freeze:true})}
               disabled={this.state.disabled}
               questionIndex={this.state.questionIndex}
               sectionIndex={this.state.sectionIndex}

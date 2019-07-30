@@ -126,6 +126,23 @@ class AddBulkStudents extends Component {
                             }
                             </FormGroup>
                         </FormGroup>
+                        <ControlLabel>CSV File</ControlLabel>
+                        <label className="file">
+                            <FormControl
+                                type="file"
+                                placeholder="CSV File With Mobile Numbers"
+                                name='mobileCSV'
+                                onChange={this.props.handleFormDataChange}
+                            />
+                            <span className="file-custom"><span id="text">Choose CSV...</span></span>
+                        </label>
+                        {
+                            Object.keys(errors)
+                                .some(item=> item === "mobileCSV") && 
+                                    errors.image.map(err=>
+                                        <HelpBlock>{err}</HelpBlock>
+                                    )
+                        }
                         <LinearProgress
                         style={
                             this.props.addingBulk ? 

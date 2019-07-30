@@ -24,6 +24,7 @@ class StudentResults extends Component {
       data:{results:[]},
       busy:true,
       page: 1,
+      csv: null,
       show:false,
       search:false,
       searchString:'',
@@ -47,6 +48,7 @@ class StudentResults extends Component {
         searchString = '&search='+this.state.searchString;
       }
     }
+
     axios.get(`/api/results/students/${this.props.match.params.id}/${page}${searchString}`, {
         headers: {
         Authorization: `Token ${localStorage.token}`
@@ -61,6 +63,18 @@ class StudentResults extends Component {
         this.setState({
          data: data,
          busy: false 
+      });
+    });
+
+    axios.get(`/api/results/students/${this.props.match.params.id}/csv/`, {
+        headers: {
+        Authorization: `Token ${localStorage.token}`
+        }
+    }).then(res => {
+        const data = res.data;
+        console.log(data)
+        this.setState({
+         csv: data.csvFile
       });
     });
   }
@@ -184,6 +198,13 @@ class StudentResults extends Component {
                       </div>
                     </div>
                     <div>
+                    <div style={{marginBottom:20}}>
+                      <Button bsSize="small" bsStyle="info" onClick={()=>{
+                          window.open(this.state.csv, '_blank');
+                      }}>
+                        <Glyphicon glyph="download" /> Export Results
+                      </Button>
+                    </div>
                         <BootstrapTable
                           condensed pagination
                           data={this.state.data.results}

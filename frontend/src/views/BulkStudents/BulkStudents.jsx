@@ -35,7 +35,8 @@ class BulkStudents extends Component {
             course:[],
             endAccessDate:'',
             joiningDate:moment(new Date()).format("YYYY-MM-DD"),
-            location:''
+            location:'',
+            file: null
           },
           id:null,
           subject:null,
@@ -136,6 +137,11 @@ class BulkStudents extends Component {
       formData.append('centre',this.state.formData.location)
       formData.append('endAccessDate', this.state.formData.endAccessDate )
       formData.append('joiningDate', this.state.formData.joiningDate )
+      if(this.state.formData.file !== null){
+        formData.append('mobileCSV',this.state.formData.file,this.state.formData.file.name)
+      }else{
+        formData.append('mobileCSV','')
+      }
       axios.post('/api/users/students/bulk/create/', formData, {
         headers: {
           Authorization: `Token ${localStorage.token}`,
@@ -166,6 +172,16 @@ class BulkStudents extends Component {
             }
           })
         }
+    }else if(e.target.name === 'mobileCSV'){
+        if(e.target.files.length){
+          document.getElementById('text').innerHTML = `<a href="${URL.createObjectURL(e.target.files[0])}" target="_blank">${e.target.files[0].name}</a>`
+          let file = e.target.files[0]
+          this.setState({ 
+            formData: {
+            ...this.state.formData,
+            file : file
+        }});
+      }
     }else{
       this.setState({ formData: {
         ...this.state.formData,

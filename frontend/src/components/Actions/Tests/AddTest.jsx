@@ -264,7 +264,13 @@ class AddTests extends Component {
                 title={this.state.doc_errors ? null : "Add Test"}
                 downloadSampleButton={true}
                 handleDownloadSampleButton={()=>{
-                  window.open('/sample_doc.docx', '_blank');
+                  axios.get("/api/tests/doc/sample/", {
+                      headers: {
+                      Authorization: `Token ${localStorage.token}`
+                      }
+                  }).then(res => {
+                    window.open(res.data.sample_doc, '_blank');
+                  });
                 }}
                 content={
                   this.state.doc_errors 

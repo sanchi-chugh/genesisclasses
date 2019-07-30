@@ -7,6 +7,7 @@ import Instructions from "../../views/TakeTest/Instructions";
 import axios from 'axios';
 import { toggleFullScreen }  from "../../utils.jsx";
 import { style } from "../../variables/Variables.jsx";
+import NetworkDetector from '../../components/HOC/network';
 
 import '../../assets/css/app.css';
 
@@ -192,13 +193,15 @@ class TakeTestLayout extends Component {
         },
       })
       .then((res) => this.setState({ busy: false},() => {
+        console.log(res, res.data)
         this.props.history.push(`/app/test/result/${this.props.match.params.id}`)
       }))
       .catch( err=> {
+          console.log('error', err)
+          this.setState({ busy: false }, () => console.log(err))
           if(err.response.status === 401){
             this.props.logout(() =>{this.props.history.push('/')})
           }
-          this.setState({ busy: false }, () => console.log(err))
         });
     });
   }
@@ -575,4 +578,4 @@ class TakeTestLayout extends Component {
   }
 }
 
-export default TakeTestLayout;
+export default NetworkDetector(TakeTestLayout);

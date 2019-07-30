@@ -19,6 +19,7 @@ class HomeLayout extends Component {
                     user={this.props.user}
                     getUser={this.props.getUser} 
                     handleClick={this.props.handleClick}
+                    logout={this.props.logout}
                   />
                 )} key={key} />
               );

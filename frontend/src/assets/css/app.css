@@ -815,6 +815,9 @@
     margin-bottom:5px;
     font-weight: 700;
     word-wrap: break-word;
+    line-height: 1.4em;
+    max-height: 3.5em;
+    overflow: hidden;
     word-break: normal;
     color: rgba(1, 69, 142, 1);
     text-align: center;

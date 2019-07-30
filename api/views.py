@@ -873,11 +873,14 @@ class DownloadStudentDataView(APIView):
                 pic = DOMAIN + student.image.url[1:]
 
             csvFile.write(
-                name.replace(',', '|') + ',' + contact.replace(',', '|') + ',' + email.replace(',', '|') + ',' + pic.replace(',', '|') +
-                ',' + centre.replace(',', '|')  + ',' + courses.replace(',', '|') + ',' + joiningDate.replace(',', '|') +
-                ',' + endAccessDate.replace(',', '|')  + ',' + gender.replace(',', '|') + ',' + dateOfBirth.replace(',', '|')  +
-                ',' + father_name.replace(',', '|')  + ',' + address.replace(',', '|') + ',' + city.replace(',', '|')  +
-                ',' + state.replace(',', '|')  + ',' + pinCode.replace(',', '|') + '\n'
+                str(name.replace(',', '|').encode('utf-8')) + ',' + str(contact.replace(',', '|').encode('utf-8')) +
+                ',' + str(email.replace(',', '|').encode('utf-8')) + ',' + str(pic.replace(',', '|').encode('utf-8')) +
+                ',' + str(centre.replace(',', '|').encode('utf-8')) + ',' + str(courses.replace(',', '|').encode('utf-8')) +
+                ',' + str(joiningDate.replace(',', '|').encode('utf-8')) + ',' + str(endAccessDate.replace(',', '|').encode('utf-8')) +
+                ',' + str(gender.replace(',', '|').encode('utf-8')) + ',' + str(dateOfBirth.replace(',', '|').encode('utf-8')) +
+                ',' + str(father_name.replace(',', '|').encode('utf-8')) + ',' + str(address.replace(',', '|').encode('utf-8')) +
+                ',' + str(city.replace(',', '|').encode('utf-8')) + ',' + str(state.replace(',', '|').encode('utf-8')) +
+                ',' + str(pinCode.replace(',', '|').encode('utf-8')) + '\n'
             )
 
         csvFile.close()

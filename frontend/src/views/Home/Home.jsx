@@ -29,11 +29,16 @@ class Home extends Component {
         Authorization: `Token ${localStorage.token}`
         }
     }).then(res => {
+      console.log(res.data)
       const data = res.data.map(item => {
         item.sno = res.data.indexOf(item) + 1;
         return item;
       })
       this.setState({data:data, busyCategories:false});
+    }).catch( err=> {
+      if(err.response.status === 401){
+        this.props.logout(() =>{this.props.history.push('/')})
+      }
     });
   }
 
@@ -49,6 +54,10 @@ class Home extends Component {
         return item;
       })
       this.setState({upcomingTests:data, busyTests:false});
+    }).catch( err=> {
+      if(err.response.status === 401){
+        this.props.logout(() =>{this.props.history.push('/')})
+      }
     });
   }
   

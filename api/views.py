@@ -1871,6 +1871,12 @@ def deleteTest(request, pk):
     testObj.delete()
     return Response({'status': 'successful'})
 
+# Return sample doc
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, IsSuperadmin, ))
+def SampleDocView(request):
+    return Response({'status': 'successful', 'sample_doc': DOMAIN + 'static/sample_doc.docx'})
+
 # View sections of a particular test
 class SectionsViewSet(viewsets.ReadOnlyModelViewSet):
     model = Section

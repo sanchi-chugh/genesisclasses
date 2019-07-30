@@ -90,6 +90,8 @@ urlpatterns = [
     path('results/students/<int:pk>/csv/', StudentTestResultCSVView.as_view()),
     # Result of all sections of a test for a student
     path('results/students/<int:stud_pk>/tests/<int:test_pk>/', StudentSectionResultView.as_view({'get': 'list'})),
+    # Returns link to csv containing result of all sections of a test for a student
+    path('results/students/<int:stud_pk>/tests/<int:test_pk>/csv/', StudentSectionResultCSVView.as_view()),
     # Result of all questions of a section for a student
     path('results/students/<int:stud_pk>/tests/sections/<int:sec_pk>/', StudentQuestionResponseView.as_view({'get': 'list'})),
 

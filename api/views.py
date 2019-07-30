@@ -2534,6 +2534,51 @@ class StudentQuestionResponseView(viewsets.ReadOnlyModelViewSet):
             question__section__id=section_id, student__id=student_id).order_by('question__quesNumber')
         return questionResponseObjs
 
+# Returns csv containing responses of all questions of a particular section (for a particular student)
+class StudentQuestionResponseCSVView(APIView):
+    model = UserQuestionWiseResponse
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, stud_pk, sec_pk, *args, **kwargs):
+        studentObj = get_object_or_404(Student, pk=stud_pk)
+
+        # Get desired questionResponseObjs
+        questionResponseObjs = self.model.objects.filter(
+            question__section__id=sec_pk, student__id=stud_pk).order_by('question__quesNumber')
+
+        # Make directory having test result csv(s)
+        directory = MEDIA_ROOT + '/studentResultCSVs/'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # Make csv and return the link of this csv in response
+        csv_name = studentObj.user.username.replace(' ', '_') + '_question_wise_result_data.csv'
+        path = directory + csv_name
+        csvFile = open(path, 'w')
+        csvFile.write('Question Number,Question Type,Marks Awarded,Marked For Review,Status\n')
+
+        count = 1
+        for questionResponseObj in questionResponseObjs:
+            # Calculate marks obtained
+            marksObtained = 0
+            if questionResponseObj.status == 'correct':
+                marksObtained = questionResponseObj.question.marksPositive
+            elif questionResponseObj.status == 'incorrect':
+                marksObtained = '-' + str(questionResponseObj.question.marksNegative)
+
+            csvFile.write(
+                str(count) + ',' +
+                questionResponseObj.question.questionType.replace(',', '|') + ',' +
+                str(marksObtained).replace(',', '|') + ',' +
+                str(questionResponseObj.isMarkedForReview).replace(',', '|') + ',' +
+                str(questionResponseObj.status).replace(',', '|') + '\n'
+            )
+            count += 1
+
+        csvFile.close()
+        absolute_path = DOMAIN + 'media/studentResultCSVs/' + csv_name
+        return Response({'status': 'successful', 'csvFile': absolute_path})
+
 # Return JSON for bar graph containing information of past 10 years' test results
 class TestResultGraphView(APIView):
     model = UserTestResult

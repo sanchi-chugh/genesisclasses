@@ -86,6 +86,8 @@ urlpatterns = [
     # Endpoints for student wise test results
     # Result of all tests of a student
     path('results/students/<int:pk>/', StudentTestResultViewSet.as_view({'get': 'list'})),
+    # Returns link to csv containing result of all tests of a particular student
+    path('results/students/<int:pk>/csv/', StudentTestResultCSVView.as_view()),
     # Result of all sections of a test for a student
     path('results/students/<int:stud_pk>/tests/<int:test_pk>/', StudentSectionResultView.as_view({'get': 'list'})),
     # Result of all questions of a section for a student

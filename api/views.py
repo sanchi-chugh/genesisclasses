@@ -2421,6 +2421,46 @@ class StudentTestResultViewSet(viewsets.ReadOnlyModelViewSet):
             test__super_admin=super_admin, student__id=student_id).order_by('-pk')
         return testResultObjs
 
+# Return csv link to test results of a particular student
+class StudentTestResultCSVView(APIView):
+    model = UserTestResult
+    permission_classes = (permissions.IsAuthenticated, IsSuperadmin, )
+
+    def get(self, request, pk, *args, **kwargs):
+        studentObj = get_object_or_404(Student, pk=pk)
+
+        # Get desired testResultObjs
+        testResultObjs = UserTestResult.objects.filter(student=studentObj)
+
+        # Make directory having test result csv(s)
+        directory = MEDIA_ROOT + '/studentResultCSVs/'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # Make csv and return the link of this csv in response
+        csv_name = studentObj.user.username.replace(' ', '_') + '_result_data.csv'
+        path = directory + csv_name
+        csvFile = open(path, 'w')
+        csvFile.write('Test Name,Attempt Date,Total Marks,Total Questions,Percentage Obtained,'
+            'Marks Obtained,Correct Questions,Incorrect Questions,Unattempted Questions\n')
+
+        for testResultObj in testResultObjs:
+            csvFile.write(
+                testResultObj.test.title.replace(',', '|') + ',' +
+                str(testResultObj.testAttemptDate).replace(',', '|') + ',' +
+                str(testResultObj.test.totalMarks).replace(',', '|') + ',' +
+                str(testResultObj.test.totalQuestions).replace(',', '|') + ',' +
+                str(testResultObj.get_percentage()).replace(',', '|') + ',' +
+                str(testResultObj.marksObtained).replace(',', '|') + ',' +
+                str(testResultObj.correct).replace(',', '|') + ',' +
+                str(testResultObj.incorrect).replace(',', '|') + ',' +
+                str(testResultObj.unattempted).replace(',', '|') + '\n'
+            )
+
+        csvFile.close()
+        absolute_path = DOMAIN + 'media/studentResultCSVs/' + csv_name
+        return Response({'status': 'successful', 'csvFile': absolute_path})
+
 # Viewset for returning result of all sections of a particular test (for a particular student)
 class StudentSectionResultView(viewsets.ReadOnlyModelViewSet):
     model = UserSectionWiseResult

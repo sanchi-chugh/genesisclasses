@@ -708,7 +708,10 @@ class AddBulkStudentsView(CreateAPIView):
 
         # Take phone numbers if mobile phones csv has been uploaded
         mobileNums = []
-        if data['mobileCSV']:
+        if 'mobileCSV' in data:
+            if not data['mobileCSV'].name.endswith('.csv'):
+                return Response({'mobileCSV': ['Please upload a valid document ending with .csv']},
+                    status=HTTP_400_BAD_REQUEST)
             fs = FileSystemStorage()
             fs.save(directory + data['mobileCSV'].name, data['mobileCSV'])
             csvFile = open(directory + data['mobileCSV'].name, 'r')

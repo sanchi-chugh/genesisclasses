@@ -46,6 +46,8 @@ urlpatterns = [
     path('tests/add/', AddTestInfoView.as_view()),
     path('tests/edit/<int:pk>/', EditTestInfoView.as_view()),
     path('tests/delete/<int:pk>/', deleteTest),
+    # Sample doc containing doc format
+    path('tests/doc/sample/', SampleDocView),
 
     # Endpoints for sections
     # List sections of a particular test (takes test pk as input)

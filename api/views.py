@@ -3135,6 +3135,19 @@ class TestSubmitView(CreateAPIView):
                 quesResponse.status = 'unattempted'
                 quesResponse.save()
 
+        testResultObjs = UserTestResult.objects.filter(student=studentObj, test=testObj)
+        if len(testResultObjs):
+            testResultObj = testResultObjs[0]
+            conn = http.client.HTTPSConnection("api.msg91.com")
+            conn.request(
+                "GET",
+                "/api/sendhttp.php?mobiles=" + str(studentObj.contact_number) + "&authkey=221689AxUNM83I85d3f3d80&route=4" +
+                "&sender=GNSCOA&message=Student " + studentObj.first_name + " " + studentObj.last_name + " " +
+                "scored " + str(testResultObj.marksObtained) + " out of " + str(testObj.totalMarks) + " in recent test submission titled " +
+                testObj.title + ".%0a%0aFor detailed result, visit " + DOMAIN + "results/.&country=91"
+            )
+            res = conn.getresponse()
+
         return Response({'status': 'successful'})
 
 # Shows overall result of the test

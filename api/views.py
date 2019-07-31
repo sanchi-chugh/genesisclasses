@@ -715,7 +715,6 @@ class AddBulkStudentsView(CreateAPIView):
             for mobile_num in csvFile.readlines():
                 mobileNums.append(mobile_num.strip())
             mobileNums.pop(0)
-            conn = http.client.HTTPSConnection("api.msg91.com")
 
         # See if mobile numbers are correctly uploaded
         for number in mobileNums:
@@ -774,6 +773,7 @@ class AddBulkStudentsView(CreateAPIView):
 
             # Send sms
             if count < len(mobileNums):
+                conn = http.client.HTTPSConnection("api.msg91.com")
                 conn.request(
                     "GET",
                     "/api/sendhttp.php?mobiles=" + mobileNums[count] + "&authkey=221689AxUNM83I85d3f3d80&route=4" +

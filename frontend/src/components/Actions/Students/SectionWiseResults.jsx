@@ -45,6 +45,18 @@ class SectionWiseResults extends Component {
          busy: false 
       });
     });
+
+    axios.get(`/api/results/students/${this.props.match.params.id}/tests/${this.props.match.params.test}/csv/`, {
+        headers: {
+        Authorization: `Token ${localStorage.token}`
+        }
+    }).then(res => {
+        const data = res.data;
+        console.log(data)
+        this.setState({
+         csv: data.csvFile
+      });
+    });
   }
 
   renderNumber(cell, row, enumObject, rowIndex, key){
@@ -123,6 +135,13 @@ class SectionWiseResults extends Component {
                       </div>
                     </div>
                     <div>
+                    <div style={{marginBottom:20}}>
+                      <Button bsSize="small" bsStyle="info" onClick={()=>{
+                          window.open(this.state.csv, '_blank');
+                      }}>
+                        <Glyphicon glyph="download" /> Export Results
+                      </Button>
+                    </div>
                         <BootstrapTable
                           condensed pagination
                           data={this.state.data}

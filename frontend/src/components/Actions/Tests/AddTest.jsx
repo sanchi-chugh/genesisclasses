@@ -262,8 +262,16 @@ class AddTests extends Component {
             <Col md={12}>
               <Card
                 title={this.state.doc_errors ? null : "Add Test"}
-                // activeButton={true}
-                // handleRadioButton={this.handleFormDataChange.bind(this)}
+                downloadSampleButton={true}
+                handleDownloadSampleButton={()=>{
+                  axios.get("/api/tests/doc/sample/", {
+                      headers: {
+                      Authorization: `Token ${localStorage.token}`
+                      }
+                  }).then(res => {
+                    window.open(res.data.sample_doc, '_blank');
+                  });
+                }}
                 content={
                   this.state.doc_errors 
                   ? 

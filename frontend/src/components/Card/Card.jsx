@@ -17,12 +17,17 @@ export class Card extends Component {
         <div className={"header" + (this.props.hCenter ? " text-center" : "")}>
           <div>
             <Row>
-              <Col md={this.props.downloadButton ? 8 : this.props.editButton || this.props.activeButton  ? 10 : 11}>
+              <Col md={this.props.downloadButton ? 8 : this.props.editButton || this.props.activeButton  ? 10 : this.props.downloadSampleButton ? 9 : 11}>
                 <h4 className="title" style={{display: 'inline-block'}}>{this.props.title}</h4>
               </Col>
               {this.props.downloadButton ? <Col md={3}>
                 <Button bsSize="small" bsStyle="info" style={{width:"100%"}}onClick={this.props.handleDownloadButton}>
                   <Glyphicon glyph="download" /> Download Students Data
+                </Button>
+              </Col> :''}
+              {this.props.downloadSampleButton ? <Col md={3}>
+                <Button bsSize="small" bsStyle="info" style={{width:"100%"}}onClick={this.props.handleDownloadSampleButton}>
+                  <Glyphicon glyph="download" /> Download Sample Test
                 </Button>
               </Col> :''}
               {this.props.addButton ? <Col md={1}>

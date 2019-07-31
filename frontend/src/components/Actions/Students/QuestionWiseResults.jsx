@@ -62,6 +62,18 @@ class QuestionWiseResults extends Component {
          busy: false 
       });
     });
+
+    axios.get(`/api/results/students/${this.props.match.params.id}/tests/sections/${this.props.match.params.section}/csv/`, {
+        headers: {
+        Authorization: `Token ${localStorage.token}`
+        }
+    }).then(res => {
+        const data = res.data;
+        console.log(data)
+        this.setState({
+         csv: data.csvFile
+      });
+    });
   }
 
   onPageChange(page, sizePerPage=10) {
@@ -141,6 +153,13 @@ class QuestionWiseResults extends Component {
                 content={
                   <Grid fluid>
                     <div>
+                    <div style={{marginBottom:20}}>
+                      <Button bsSize="small" bsStyle="info" onClick={()=>{
+                          window.open(this.state.csv, '_blank');
+                      }}>
+                        <Glyphicon glyph="download" /> Export Results
+                      </Button>
+                    </div>
                         <BootstrapTable
                           condensed pagination
                           data={this.state.data.results}

@@ -139,7 +139,7 @@ class AddBulkStudents extends Component {
                         {
                             Object.keys(errors)
                                 .some(item=> item === "mobileCSV") && 
-                                    errors.image.map(err=>
+                                    errors.mobileCSV.map(err=>
                                         <HelpBlock>{err}</HelpBlock>
                                     )
                         }

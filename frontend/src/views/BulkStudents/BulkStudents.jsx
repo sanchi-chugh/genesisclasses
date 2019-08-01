@@ -111,8 +111,12 @@ class BulkStudents extends Component {
       addingBulk:false, 
       bulkAdded:false,
       formData:{
+        ...this.state.formData,
         number:'',
         course:[],
+        endAccessDate:'',
+        file: null,
+        location: ''
       },
       centreId:'',
       centreName:'Select Centre',
@@ -139,8 +143,6 @@ class BulkStudents extends Component {
       formData.append('joiningDate', this.state.formData.joiningDate )
       if(this.state.formData.file !== null){
         formData.append('mobileCSV',this.state.formData.file,this.state.formData.file.name)
-      }else{
-        formData.append('mobileCSV','')
       }
       axios.post('/api/users/students/bulk/create/', formData, {
         headers: {

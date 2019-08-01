@@ -427,6 +427,14 @@
     text-align: right;
 }
 
+.content .index-head .right h4, .index-head-paragraph #explain{
+    margin: 0;
+    display: inline;
+    margin-right: 8px;
+    color: #02458e;
+    cursor: pointer;
+}
+
 .index-head .right p{
     font-size: 13px;
     margin-top: 8px;

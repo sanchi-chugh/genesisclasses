@@ -1,25 +1,44 @@
 import React, { Component } from "react";
 import { Glyphicon, FormGroup, Checkbox } from "react-bootstrap";
 import renderHTML from 'react-render-html';
+import Explanation from './Explanation';
 
 class MCQTypeQuestion extends Component {
+
+  constructor(props){
+    super(props);
+    this.state = {
+      show:false
+    }
+  }
+
+  handleHide(){
+    this.setState({
+      show: false
+    })
+  }
 
   render() {
     console.log(this.props)
     return (
         <div>
+          <Explanation 
+            data={this.props.questionDetails.explanation}
+            onHide={this.handleHide.bind(this)}
+            show={this.state.show}
+          />
           <div className="index-head">
             <div className="left">
               <h4>Question : {this.props.questionDetails.quesNumber}</h4>
               <p>Multiple Choice Question</p>
             </div>
             <div className="right">
+              <h4 className="explanation-button" onClick={()=>this.setState({show:true})}>View Explanation</h4>
               <Glyphicon 
                 glyph={this.props.reviewDetails.status === 'correct' ? 'ok-circle' 
                   : this.props.reviewDetails.status === 'incorrect' ? 'remove-circle' : ''
                 } 
                 style={{
-                  cursor:'pointer',
                   color:this.props.reviewDetails.status === 'correct'? 
                     'rgba(49, 143, 9, 1)' : 'rgba(255, 0, 0, 1)',
                   fontSize:'18px'}}

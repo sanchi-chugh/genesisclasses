@@ -1,15 +1,36 @@
 import React, { Component } from "react";
 import { Glyphicon, FormGroup, Checkbox } from "react-bootstrap";
 import renderHTML from 'react-render-html';
+import Explanation from './Explanation';
 
 class ParagraphTypeQuestion extends Component {
+
+  constructor(props){
+    super(props);
+    this.state = {
+      show:false
+    }
+  }
+
+  handleHide(){
+    this.setState({
+      show: false
+    })
+  }
 
   render() {
     console.log(this.props)
     return (
         <div style={{width:'100%', height: '100%'}}>
+          <Explanation 
+              data={this.props.questionDetails.questions}
+              onHide={this.handleHide.bind(this)}
+              show={this.state.show}
+              type={'passage'}
+            />
           <div className="index-head-paragraph">
-            <h4>Paragraph</h4>
+            <h4 style={{display: "inline"}}>Paragraph</h4>
+            <h4 style={{display: "inline", float: "right"}} id="explain" onClick={()=>this.setState({show:true})}>View Explanation</h4>
           </div>
           <div className="paragraph-block">
             <div className="paragraph-left">

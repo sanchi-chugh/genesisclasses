@@ -31,9 +31,9 @@ class TestList extends Component {
                         width += '%'
                         return(
                                 <div className="results-test-list" key={item.id} onClick={()=>this.props.handleClick(item.id)}>
-                                    <div style={{display: 'block'}}>
+                                    <div style={{display: 'block', marginBottom: 8}}>
                                         <p>Rank {item.userResult.rank}</p>
-                                        <a onClick={this.testFunction.bind(this,item)}>Results</a>
+                                        <a onClick={this.testFunction.bind(this,item)}>View Result</a>
                                     </div>
                                     <div style={{display: 'block'}}>
                                         <div style={{display: 'inline-block', fontWeight:'600',fontSize:'16px', position: 'relative', marginBottom:'4px'}}>

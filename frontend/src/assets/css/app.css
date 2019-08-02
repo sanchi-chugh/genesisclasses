@@ -308,6 +308,7 @@
     border-radius: 50%;
     display: inline-block;
     color: black !important;
+    cursor: pointer;
     margin: 8px;
     border: 1px solid rgba(240, 240, 240, 1);
     padding-top: 3px;

@@ -9,6 +9,7 @@ import ParagraphType from "./ParagraphTypeQuestion";
 class TestAnalytics extends Component {
 
   render() {
+    console.log(this.props)
     return (
         <div className="main-body">
           <div className="nav-right">
@@ -43,7 +44,9 @@ class TestAnalytics extends Component {
                           return(
                               <a>
                                 <div 
-                                className={'question-badge ' + (this.props.data.sections[sectionIndex]
+                                className={'question-badge ' + (this.props.activeId === question.id
+                                                                            ? 'active'
+                                                                            :this.props.data.sections[sectionIndex]
                                                                 .questionsAttempted.some(item => item === question.id)
                                                                             ? 'attempted'
                                                                             : 'unattempted')}

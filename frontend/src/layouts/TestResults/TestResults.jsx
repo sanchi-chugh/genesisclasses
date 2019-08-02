@@ -55,6 +55,7 @@ class TestResultsLayout extends Component {
           data:data,
           questions: [questions, ...Array(data.sections.length-1).fill(null)],
           reviewDetails: reviewDetails,
+          activeId: questions.questions[0].id,
           questionDetails: questionDetails,
           expanded: data.sections.reduce((obj, item) => {
              if(item === data.sections[0])
@@ -65,8 +66,13 @@ class TestResultsLayout extends Component {
            }, {}),
         },()=>this.setState({busy:false},console.log(this.state)));
     }).catch( err=> {
-      if(err.response.status === 401){
-        this.props.logout(() =>{this.props.history.push('/')})
+      if(err.response !== undefined){
+        if(err.response.status === 401){
+          this.props.logout(() =>{this.props.history.push('/')})
+        }
+      }
+      else{
+        console.log(err)
       }
     });
   }
@@ -152,6 +158,7 @@ class TestResultsLayout extends Component {
       paraQues: paraQuestionIndex,
       questionDetails: questionDetails,
       reviewDetails: reviewDetails,
+      activeId: this.state.questions[sectionIndex].questions[questionIndex].id,
       disabled: bool
     })
     console.log('para ', paraQuestionIndex, questionIndex )
@@ -184,11 +191,13 @@ class TestResultsLayout extends Component {
       const reviewDetails = await this.state.questions[this.state.sectionIndex - 1]
         .questions[this.state.questions[this.state.sectionIndex-1].questions.length-1]
       const questionDetails = await this.getData(reviewDetails.question);
+      this.toggle(this.state.data.sections[this.state.sectionIndex-1].id);
       this.setState({
         questionIndex: this.state.questions[this.state.sectionIndex-1].questions.length-1,
         sectionIndex: this.state.sectionIndex - 1,
         questionDetails: questionDetails,
         reviewDetails: reviewDetails,
+        activeId: this.state.questions[this.state.sectionIndex-1].questions[this.state.questions[this.state.sectionIndex-1].questions.length-1].id,
         disabled: bool
       })
     }
@@ -206,7 +215,8 @@ class TestResultsLayout extends Component {
         questionIndex: this.state.questionIndex - 1,
         questionDetails: questionDetails,
         reviewDetails: reviewDetails,
-        disabled: bool
+        disabled: bool,
+        activeId: this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex-1].id
       })
       if(reviewDetails.questionType === 'passage'){
         let id = this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex].id
@@ -231,11 +241,13 @@ class TestResultsLayout extends Component {
       }
       const reviewDetails = await this.state.questions[this.state.sectionIndex + 1].questions[0]
       const questionDetails = await this.getData(reviewDetails.question);
+      this.toggle(this.state.data.sections[this.state.sectionIndex+1].id);
       this.setState({
         questionIndex: 0,
         sectionIndex: this.state.sectionIndex + 1,
         questionDetails: questionDetails,
         reviewDetails: reviewDetails,
+        activeId: this.state.questions[this.state.sectionIndex+1].questions[0].id,
         disabled: bool
       })
     }
@@ -253,7 +265,8 @@ class TestResultsLayout extends Component {
         questionIndex: this.state.questionIndex + 1,
         questionDetails: questionDetails,
         reviewDetails: reviewDetails,
-        disabled: bool
+        disabled: bool,
+        activeId: this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex+1].id,
       })
       if(reviewDetails.questionType === 'passage'){
         let id = this.state.questions[this.state.sectionIndex].questions[this.state.questionIndex].id

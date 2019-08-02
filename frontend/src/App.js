@@ -7,6 +7,7 @@ import './App.css';
 import LoginScreen from './views/LoginScreen/LoginScreen';
 import ForgotScreen from './views/ForgotScreen/ForgotScreen';
 import EditProfile from "./layouts/EditProfile/EditProfile";
+import NetworkDetector from "./components/HOC/network";
 
 class App extends React.Component {
   constructor(props) {
@@ -121,4 +122,4 @@ class App extends React.Component {
   }
 }
 
-export default App;
+export default NetworkDetector(App);
